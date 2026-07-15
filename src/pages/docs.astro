@@ -1,0 +1,69 @@
+---
+import Base from "../layouts/Base.astro";
+import { PACKAGES, REPO, NPM, GODOC } from "../consts";
+---
+
+<Base title="Docs" description="Documentation for the tabnas parser engine and its grammar packages.">
+  <h1>Documentation</h1>
+  <p class="lede">
+    tabnas is a parser <em>engine</em> plus a set of ready-made grammars. Each
+    package carries four-quadrant
+    <a href="https://diataxis.fr" target="_blank" rel="noopener">Diátaxis</a>
+    docs — tutorial, guide, reference, concepts — in both TypeScript and Go.
+    A unified docs hub lives here soon; for now these link straight to each
+    package's docs.
+  </p>
+
+  <h2>Start here</h2>
+  <p>
+    New to tabnas? Read the <a href={`${REPO("parser")}#readme`} target="_blank" rel="noopener">parser
+    README</a> for the core ideas, then define a grammar in ABNF:
+  </p>
+
+  <pre><code># an addition grammar, in ABNF
+add = NR [ PL add ]
+PL  = "+"
+
+# tn.parse('1+2+3').value  // =&gt; 6</code></pre>
+
+  <p>Try it live in the <a href="/playground">playground</a>, or read the tested
+    example in the <a href={`${REPO("abnf")}#readme`} target="_blank" rel="noopener">@tabnas/abnf README</a>.</p>
+
+  <h2>Packages</h2>
+  <ul class="doclist">
+    {PACKAGES.map((p) => (
+      <li>
+        <div class="row">
+          <code>@tabnas/{p.name}</code>
+          <span class={`tier ${p.tier}`}>{p.tier}</span>
+        </div>
+        <p>{p.blurb}</p>
+        <div class="links">
+          <a href={`${REPO(p.name)}/tree/main/ts/doc`} target="_blank" rel="noopener">TS docs</a>
+          {p.go && <a href={`${REPO(p.name)}/tree/main/go/doc`} target="_blank" rel="noopener">Go docs</a>}
+          <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>
+          {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">pkg.go.dev</a>}
+        </div>
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style>
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+  .doclist { list-style: none; padding: 0; display: grid; gap: 1rem; }
+  .doclist li {
+    border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem;
+    background: var(--surface);
+  }
+  .doclist .row { display: flex; align-items: center; gap: 0.75rem; }
+  .doclist code { font-size: 1rem; }
+  .doclist p { margin: 0.4rem 0 0.6rem; color: var(--ink-soft); }
+  .tier {
+    font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 0.12rem 0.45rem; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--accent);
+  }
+  .links { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.9rem; }
+  .links a { color: var(--primary); text-decoration: none; }
+  .links a:hover { text-decoration: underline; }
+</style>

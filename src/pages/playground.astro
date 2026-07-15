@@ -1,0 +1,46 @@
+---
+import Base from "../layouts/Base.astro";
+import { REPO } from "../consts";
+---
+
+<Base title="Playground" description="Try tabnas grammars in your browser — an interactive parser is on the way.">
+  <h1>Playground</h1>
+  <p class="lede">
+    Type a grammar and some input, watch the syntax tree appear — powered by
+    the real <code>@tabnas/parser</code> build running in your browser. The
+    interactive editor is being wired up next; here's what it will run.
+  </p>
+
+  <div class="demo">
+    <div class="pane">
+      <h2>Grammar (ABNF)</h2>
+      <pre><code>add = NR [ PL add ]
+PL  = "+"</code></pre>
+    </div>
+    <div class="pane">
+      <h2>Input</h2>
+      <pre><code>12+3+45</code></pre>
+    </div>
+    <div class="pane">
+      <h2>Result</h2>
+      <pre><code>{"{"} value: 60 {"}"}</code></pre>
+    </div>
+  </div>
+
+  <p>
+    Until the editor lands, every package ships runnable, tested examples in
+    its README — see <a href={`${REPO("abnf")}#readme`} target="_blank" rel="noopener">@tabnas/abnf</a>
+    and <a href={`${REPO("parser")}#readme`} target="_blank" rel="noopener">@tabnas/parser</a>.
+  </p>
+</Base>
+
+<style>
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 60ch; }
+  .demo { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+  .pane h2 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--ink-mute); margin: 0 0 0.4rem;
+  }
+  .pane pre { margin: 0; min-height: 5rem; }
+  @media (max-width: 760px) { .demo { grid-template-columns: 1fr; } }
+</style>

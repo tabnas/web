@@ -1,50 +1,220 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import Base from "../layouts/Base.astro";
+import { PACKAGES, NPM, REPO, GODOC, SITE_TAGLINE, SPONSOR } from "../consts";
+import emblem from "../assets/brand/mark.svg";
+
+const core = PACKAGES.filter((p) => p.tier === "core");
+const plugins = PACKAGES.filter((p) => p.tier === "plugin");
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to <a href="https://docs.astro.build/"
-					>read the docs
-				</a> or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out <a
-					href="https://github.com/Charca/astro-blog-template"
-					>astro-blog-template
-				</a> by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
-</html>
+<Base wide>
+  <!-- Hero: the thesis — a grammar becomes a parser. -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Polyglot parser engine</p>
+      <h1>{SITE_TAGLINE}</h1>
+      <p class="lede">
+        Describe a language once. tabnas turns that grammar into a working
+        parser that builds a small, uniform syntax tree — the
+        <strong>same grammar</strong> and the <strong>same tree</strong> in
+        TypeScript and Go.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="/docs">Get started</a>
+        <a class="btn ghost" href="/playground">Try the playground</a>
+      </div>
+    </div>
+
+    <figure class="hero-demo">
+      <img class="emblem" src={emblem.src} width="120" height="120" alt="" aria-hidden="true" />
+      <pre class="grammar" aria-label="An addition grammar in ABNF"><code><span class="c"># an addition grammar, in ABNF</span>
+<span class="r">add</span> = NR [ <span class="r">PL</span> add ]
+<span class="r">PL</span>&nbsp; = <span class="s">"+"</span></code></pre>
+      <div class="arrow">↓</div>
+      <pre class="run"><code>tn.parse(<span class="s">'1+2+3'</span>).value <span class="c">// =&gt; 6</span></code></pre>
+    </figure>
+  </section>
+
+  <!-- One grammar, two runtimes -->
+  <section class="feature-row">
+    <article class="feature">
+      <h3>One grammar, two runtimes</h3>
+      <p>TypeScript is canonical; Go tracks it exactly. Ship the same language
+        support to a Node service and a Go binary — verified against shared
+        fixtures.</p>
+    </article>
+    <article class="feature">
+      <h3>Grammars as data</h3>
+      <p>Write grammars by hand, or compile <a href="/docs">ABNF</a> straight
+        into the engine. Inspect a live grammar and render it back to ABNF or a
+        railroad diagram.</p>
+    </article>
+    <article class="feature">
+      <h3>A uniform tree</h3>
+      <p>Every parse yields the same shape — <code>{"{ rule, src, kids }"}</code> —
+        so tooling, walkers, and actions carry across every language you define.</p>
+    </article>
+  </section>
+
+  <!-- Packages -->
+  <section class="packages">
+    <div class="sec-head">
+      <h2>The ecosystem</h2>
+      <p>A small core engine and a growing set of ready-made grammars — each an
+        npm package and a Go module.</p>
+    </div>
+
+    <div class="grid">
+      {core.map((p) => (
+        <article class="pkg core">
+          <div class="pkg-top">
+            <h3>@tabnas/{p.name}</h3>
+            <span class="badge">core</span>
+          </div>
+          <p>{p.blurb}</p>
+          <div class="pkg-links">
+            <a href={REPO(p.name)} target="_blank" rel="noopener">GitHub</a>
+            {p.npm && <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>}
+            {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">Go</a>}
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <div class="plugin-row">
+      {plugins.map((p) => (
+        <a class="chip" href={REPO(p.name)} target="_blank" rel="noopener">
+          @tabnas/{p.name}
+        </a>
+      ))}
+      <a class="chip more" href="/docs">all packages →</a>
+    </div>
+  </section>
+
+  <!-- Split CTA: agents + community/sponsor -->
+  <section class="split">
+    <a class="panel" href="/agents">
+      <h3>Built for AI agents</h3>
+      <p>Constrain LLM output to a grammar, parse agent DSLs, and read
+        agent-consumable docs. →</p>
+    </a>
+    <a class="panel alt" href="/community">
+      <h3>Join the community</h3>
+      <p>Questions, ideas, and contributions welcome. {SPONSOR.blurb} →</p>
+    </a>
+  </section>
+</Base>
+
+<style>
+  /* Hero */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 2.5rem;
+    align-items: center;
+    padding: 2.5rem 0 3.5rem;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--accent); margin: 0 0 0.6rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 6vw, 4rem);
+    line-height: 1.02;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+  }
+  .lede { font-size: 1.2rem; color: var(--ink-soft); max-width: 40ch; }
+  .lede strong { color: var(--ink); }
+  .cta { display: flex; gap: 0.75rem; margin-top: 1.75rem; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 0.7rem 1.25rem; border-radius: 10px;
+    font-weight: 600; text-decoration: none; font-size: 1rem;
+  }
+  .btn.primary { background: var(--primary); color: var(--on-primary); }
+  .btn.primary:hover { background: var(--primary-hover); }
+  .btn.ghost { color: var(--primary); border: 1.5px solid var(--border-strong); }
+  .btn.ghost:hover { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); }
+
+  .hero-demo {
+    margin: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  }
+  .hero-demo .emblem { filter: drop-shadow(0 6px 20px rgba(11, 45, 26, 0.28)); margin-bottom: 0.5rem; }
+  .hero-demo pre {
+    width: 100%; margin: 0; padding: 1rem 1.25rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow);
+    font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.7;
+    overflow-x: auto;
+  }
+  .hero-demo code { background: none; padding: 0; color: var(--ink); font-size: inherit; }
+  .hero-demo .r { color: var(--primary); font-weight: 600; }
+  .hero-demo .s { color: var(--accent); }
+  .hero-demo .c { color: var(--ink-mute); }
+  .hero-demo .arrow { color: var(--accent-strong); font-size: 1.4rem; line-height: 1; }
+  .hero-demo .run { font-size: 1rem; }
+
+  /* Feature row */
+  .feature-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+    padding: 1rem 0 3rem; border-top: 1px solid var(--border);
+  }
+  .feature h3 { font-size: 1.3rem; margin: 0 0 0.4rem; }
+  .feature p { color: var(--ink-soft); margin: 0; }
+
+  /* Packages */
+  .sec-head { text-align: center; margin: 1.5rem 0 2rem; }
+  .sec-head h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); }
+  .sec-head p { color: var(--ink-soft); max-width: 52ch; margin: 0.3rem auto 0; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .pkg {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem 1.4rem; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .pkg-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .pkg-top h3 { font-family: var(--font-mono); font-size: 1rem; margin: 0; color: var(--ink); }
+  .badge {
+    font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); border: 1px solid var(--border-strong); border-radius: 999px; padding: 0.15rem 0.5rem;
+  }
+  .pkg p { color: var(--ink-soft); font-size: 0.95rem; margin: 0; flex: 1; }
+  .pkg-links { display: flex; gap: 0.9rem; font-size: 0.9rem; }
+  .pkg-links a { color: var(--primary); text-decoration: none; }
+  .pkg-links a:hover { text-decoration: underline; }
+
+  .plugin-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.25rem; justify-content: center; }
+  .chip {
+    font-family: var(--font-mono); font-size: 0.85rem;
+    color: var(--ink-soft); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.4rem 0.85rem;
+    background: var(--surface);
+  }
+  .chip:hover { color: var(--primary); border-color: var(--border-strong); }
+  .chip.more { color: var(--primary); border-style: dashed; }
+
+  /* Split CTA */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 3.5rem 0 1rem; }
+  .panel {
+    display: block; text-decoration: none; color: inherit;
+    border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem;
+    background: var(--surface);
+  }
+  .panel h3 { font-size: 1.5rem; margin: 0 0 0.4rem; color: var(--ink); }
+  .panel p { color: var(--ink-soft); margin: 0; }
+  .panel:hover { border-color: var(--border-strong); }
+  .panel.alt {
+    background: linear-gradient(140deg, color-mix(in srgb, var(--accent-strong) 12%, var(--surface)), var(--surface));
+  }
+
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; }
+    .feature-row { grid-template-columns: 1fr; gap: 1.25rem; }
+    .split { grid-template-columns: 1fr; }
+  }
+</style>

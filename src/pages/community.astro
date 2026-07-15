@@ -1,0 +1,51 @@
+---
+import Base from "../layouts/Base.astro";
+import { GITHUB_ORG, REPO, SPONSOR } from "../consts";
+---
+
+<Base title="Community" description="Get help, share ideas, and contribute to tabnas.">
+  <h1>Community &amp; contributing</h1>
+  <p class="lede">
+    tabnas is open source and built in the open. Whether you're adopting it,
+    reporting a bug, or adding a grammar, there's a place for you.
+  </p>
+
+  <div class="cards">
+    <a class="card" href={`${GITHUB_ORG}/parser/discussions`} target="_blank" rel="noopener">
+      <h2>Discuss</h2>
+      <p>Ask questions and share what you're building in GitHub Discussions.</p>
+    </a>
+    <a class="card" href={`${REPO("parser")}/issues`} target="_blank" rel="noopener">
+      <h2>Report</h2>
+      <p>File issues and feature requests on the relevant repository.</p>
+    </a>
+    <a class="card" href={GITHUB_ORG} target="_blank" rel="noopener">
+      <h2>Contribute</h2>
+      <p>Good first issues, grammar packages, and TS/Go parity work await.</p>
+    </a>
+  </div>
+
+  <h2>How the project works</h2>
+  <ul>
+    <li><strong>TypeScript is canonical; Go tracks it.</strong> Changes land in TS first, then Go to match.</li>
+    <li><strong>One grammar, shared fixtures.</strong> Both implementations parse the same test grammars and must agree.</li>
+    <li><strong>Small, focused packages.</strong> The engine stays lean; languages live in their own repos.</li>
+  </ul>
+
+  <p class="sponsor-note">{SPONSOR.blurb} — see the
+    <a href="/sponsors">sponsors</a> page.</p>
+</Base>
+
+<style>
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 60ch; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 1rem; }
+  .card {
+    display: block; text-decoration: none; color: inherit;
+    border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; background: var(--surface);
+  }
+  .card:hover { border-color: var(--border-strong); }
+  .card h2 { font-size: 1.2rem; margin: 0 0 0.35rem; color: var(--ink); }
+  .card p { margin: 0; color: var(--ink-soft); font-size: 0.95rem; }
+  .sponsor-note { color: var(--ink-soft); }
+  @media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
+</style>

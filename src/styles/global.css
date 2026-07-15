@@ -4,8 +4,9 @@
   License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
  */
 
-/* Brand design tokens (colour system, type, light/dark). */
+/* Brand design tokens (colour system, type, light/dark) + self-hosted fonts. */
 @import "./tokens.css";
+@import "./fonts.css";
 @font-face {
 	font-family: "Atkinson";
 	src: url("/fonts/atkinson-regular.woff") format("woff");
