@@ -8,6 +8,10 @@ import cloudflare from "@astrojs/cloudflare";
 // https://astro.build/config
 export default defineConfig({
 	site: "https://tabnas.dev",
+	// On-demand rendering so the under-construction Basic-Auth middleware
+	// (src/middleware.ts) runs per request. Individual pages can still opt
+	// into prerendering; revert to output:"static" when the gate is removed.
+	output: "server",
 	integrations: [mdx(), sitemap()],
 	adapter: cloudflare({
 		// Optimise imported raster images with sharp at build time
