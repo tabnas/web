@@ -1,0 +1,178 @@
+/*
+  tabnas design tokens
+  ---------------------
+  Colour system derived from the brand emblem (an illuminated-manuscript
+  "table of translations"): deep monastery GREEN, illuminated GOLD, warm
+  PARCHMENT, and WOOD accents.
+
+  Best-practice structure:
+   1. Raw brand *scales* (green/gold/parchment/wood) — the source of truth,
+      never referenced directly by components.
+   2. *Semantic* tokens (--bg, --ink, --primary, …) — what components use.
+      Remapped wholesale between light and dark themes.
+   3. Back-compat aliases for the Astro-template variables so existing
+      components keep working while we migrate.
+
+  Contrast: body text pairs meet WCAG AA (≥4.5:1); gold is treated as a
+  DECORATIVE / large-text accent only (it fails 4.5:1 on parchment), so it
+  is never used for body copy — links/text use green (light) or light-green
+  and bright-gold (dark), all AA-verified.
+*/
+
+:root {
+  /* 1 ── raw brand scales ─────────────────────────────────────────── */
+
+  /* Green — the dominant brand hue (emblem field, ink) */
+  --green-950: #0b2d1a;
+  --green-900: #0e3320;
+  --green-800: #123c24;
+  --green-700: #14512e; /* primary brand green */
+  --green-600: #1e6b3e;
+  --green-500: #2c7045;
+  --green-400: #4f9268;
+  --green-300: #82b89b;
+  --green-200: #b9d7c6;
+  --green-100: #dcebe2;
+  --green-50:  #eef5f0;
+
+  /* Gold — illumination / accent (decorative & large text only on light) */
+  --gold-900: #5c4715;
+  --gold-800: #7a5e1c;
+  --gold-700: #9e7720;
+  --gold-600: #b8912f;
+  --gold-500: #cb9e3e; /* brand gold */
+  --gold-400: #d8b45f;
+  --gold-300: #e6cd8b;
+  --gold-200: #f0d585;
+  --gold-100: #f6e6b8;
+  --gold-50:  #faf1d8;
+
+  /* Parchment — warm paper neutrals (light surfaces) */
+  --parch-50:  #fdfbf3;
+  --parch-100: #faf6ea;
+  --parch-200: #f7eed4; /* brand parchment */
+  --parch-300: #ece0bf;
+  --parch-400: #e5d4aa;
+  --parch-500: #d3c39a;
+
+  /* Wood — bark/frame accent (decorative only) */
+  --wood-700: #3f2812;
+  --wood-600: #553519;
+  --wood-500: #8a5a30;
+  --wood-400: #b07d3f;
+
+  /* 2 ── semantic tokens: LIGHT theme (default) ───────────────────── */
+  --bg:            var(--parch-100);   /* page background */
+  --gradient-stops: var(--parch-200), var(--parch-50); /* stops for linear-gradient(...) */
+  --bg-gradient:   linear-gradient(180deg, var(--gradient-stops));
+  --surface:       var(--parch-50);    /* cards / raised */
+  --surface-2:     var(--parch-200);   /* insets, code chrome */
+  --ink:           var(--green-800);   /* body text  (~12:1 on --bg) */
+  --ink-soft:      #3a4a3f;            /* secondary text (~7:1) */
+  --ink-mute:      #6a7269;            /* captions/meta (~4.6:1) */
+
+  --primary:       var(--green-700);   /* links, primary actions (~9:1) */
+  --primary-hover: var(--green-900);
+  --on-primary:    var(--parch-50);    /* text on primary fill */
+
+  --accent:        var(--gold-700);    /* accent text/underline (large, ~3.9:1) */
+  --accent-strong: var(--gold-500);    /* decorative fills, rules, glyphs */
+
+  --border:        #ddd0af;            /* hairlines on parchment */
+  --border-strong: var(--gold-500);
+  --ring:          color-mix(in srgb, var(--green-700) 55%, transparent);
+
+  --code-bg:       var(--parch-200);
+  --code-ink:      var(--green-900);
+  --shadow:        0 1px 2px rgba(11, 45, 26, .06),
+                   0 6px 20px rgba(11, 45, 26, .10);
+
+  /* status */
+  --ok:    var(--green-600);
+  --warn:  #9a6b14;
+  --error: #9e2b1e;
+  --info:  #1f5d6b;
+
+  /* type */
+  --font-display: "Uncial Antiqua", "Kells Uncial", "Luminari", serif;
+  --font-heading: "Cormorant Garamond", "Georgia", serif;
+  --font-body:    "Atkinson", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, "SFMono-Regular", "JetBrains Mono", "Menlo", monospace;
+
+  color-scheme: light;
+}
+
+/* 2b ── semantic tokens: DARK theme ───────────────────────────────── */
+/* Applied by OS preference, and overridable via [data-theme] for a toggle. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            var(--green-950);
+    --gradient-stops: var(--green-900), var(--green-950);
+    --surface:       var(--green-800);
+    --surface-2:     #0f3822;
+    --ink:           #f1e8cd;          /* parchment text (~12:1 on --bg) */
+    --ink-soft:      #cdbf98;          /* secondary (~7:1) */
+    --ink-mute:      #9aa79b;          /* meta (~4.7:1) */
+
+    --primary:       var(--green-300); /* light green links (~6:1) */
+    --primary-hover: var(--green-200);
+    --on-primary:    var(--green-950);
+
+    --accent:        var(--gold-300);  /* bright gold reads well on dark (~9:1) */
+    --accent-strong: var(--gold-400);
+
+    --border:        #29452f;
+    --border-strong: var(--gold-700);
+    --ring:          color-mix(in srgb, var(--green-300) 55%, transparent);
+
+    --code-bg:       #0f3822;
+    --code-ink:      var(--gold-100);
+    --shadow:        0 1px 2px rgba(0, 0, 0, .3),
+                     0 8px 26px rgba(0, 0, 0, .45);
+
+    --ok:    var(--green-300);
+    --warn:  var(--gold-300);
+    --error: #e08b7f;
+    --info:  #7fc4d4;
+
+    color-scheme: dark;
+  }
+}
+
+/* Explicit theme override (toggle stamps data-theme on <html>). */
+:root[data-theme="dark"] {
+  --bg:            var(--green-950);
+  --gradient-stops: var(--green-900), var(--green-950);
+  --surface:       var(--green-800);
+  --surface-2:     #0f3822;
+  --ink:           #f1e8cd;
+  --ink-soft:      #cdbf98;
+  --ink-mute:      #9aa79b;
+  --primary:       var(--green-300);
+  --primary-hover: var(--green-200);
+  --on-primary:    var(--green-950);
+  --accent:        var(--gold-300);
+  --accent-strong: var(--gold-400);
+  --border:        #29452f;
+  --border-strong: var(--gold-700);
+  --ring:          color-mix(in srgb, var(--green-300) 55%, transparent);
+  --code-bg:       #0f3822;
+  --code-ink:      var(--gold-100);
+  --shadow:        0 1px 2px rgba(0, 0, 0, .3), 0 8px 26px rgba(0, 0, 0, .45);
+  --ok:    var(--green-300);
+  --warn:  var(--gold-300);
+  --error: #e08b7f;
+  --info:  #7fc4d4;
+  color-scheme: dark;
+}
+
+/* 3 ── back-compat with the Astro blog template variables ─────────── */
+:root {
+  --accent-dark: var(--primary-hover);
+  --black: 18, 60, 36;          /* --green-800 as an r,g,b triplet */
+  --gray: 106, 114, 105;        /* --ink-mute-ish */
+  --gray-light: 236, 224, 191;  /* --parch-300 */
+  --gray-dark: 58, 74, 63;      /* --ink-soft */
+  --gray-gradient: var(--gradient-stops);
+  --box-shadow: var(--shadow);
+}
