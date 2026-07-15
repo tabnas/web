@@ -55,6 +55,10 @@ export const PACKAGES: {
   { name: "csv", tier: "plugin", blurb: "Parse CSV/TSV into rows and records.", npm: true, go: true },
 ];
 
+// Curated testimonials — add real quotes as they come in; the section only
+// renders when this is non-empty (Evil Martians: even one early quote helps).
+export const TESTIMONIALS: { quote: string; name: string; role?: string; url?: string }[] = [];
+
 export const REPO = (name: string) => `${GITHUB_ORG}/${name}`;
 export const NPM = (name: string) => `https://www.npmjs.com/package/@tabnas/${name}`;
 export const GODOC = (name: string) => `https://pkg.go.dev/github.com/tabnas/${name}/go`;

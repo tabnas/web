@@ -30,7 +30,15 @@ PL  = "+"
     example in the <a href={`${REPO("abnf")}#readme`} target="_blank" rel="noopener">@tabnas/abnf README</a>.</p>
 
   <h2>Packages</h2>
-  <ul class="doclist">
+  <input
+    id="pkg-filter"
+    class="filter"
+    type="search"
+    placeholder="Filter packages…"
+    aria-label="Filter packages"
+    autocomplete="off"
+  />
+  <ul class="doclist" id="doclist">
     {PACKAGES.map((p) => (
       <li>
         <div class="row">
@@ -49,8 +57,29 @@ PL  = "+"
   </ul>
 </Base>
 
+<script>
+  // Lightweight client-side filter over the package list. (Full-text site
+  // search via Pagefind lands with the static launch — it needs prerendered
+  // HTML, which the under-construction SSR gate currently precludes.)
+  const input = document.getElementById("pkg-filter");
+  const items = Array.from(document.querySelectorAll("#doclist > li"));
+  input?.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    for (const li of items) {
+      li.style.display = !q || li.textContent.toLowerCase().includes(q) ? "" : "none";
+    }
+  });
+</script>
+
 <style>
   .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+  .filter {
+    width: 100%; box-sizing: border-box; margin: 0 0 1rem;
+    font-family: var(--font-body); font-size: 1rem; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.6rem 0.9rem;
+  }
+  .filter:focus { outline: 2px solid var(--ring); outline-offset: 1px; border-color: var(--border-strong); }
   .doclist { list-style: none; padding: 0; display: grid; gap: 1rem; }
   .doclist li {
     border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem;

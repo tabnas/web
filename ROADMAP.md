@@ -4,6 +4,28 @@ A prioritized plan for the site, grounded in current best practice for
 open-source developer sites and documentation. Written 2026-07-15, against the
 foundation in PR #1.
 
+## Status (2026-07-15)
+
+**Done:** P0 #1–6 (landing CTAs, quickstart, trust strip w/ live stars,
+problem-oriented copy, final CTA band, `llms-full.txt` + `/blog/<slug>.md`);
+a top-level **Why** page (nav + above-the-fold); **P1 #7 interactive
+playground** (real engine, client-side); P2 #11 live GitHub signals; P2 #13
+Why/explanation; P2 #10 partial — `CONTRIBUTING.md` + `CODE_OF_CONDUCT.md`
+added, GitHub **Discussions enabled** on `parser` + `web`; P2 #15 testimonials
+scaffolded (renders when populated).
+
+**Staged for the static launch (blocked by the SSR under-construction gate):**
+P1 #8 full Astro Starlight docs migration and P1 #9 **Pagefind full-text
+search** — Pagefind indexes prerendered HTML, which `output:"server"` (needed
+for the auth gate) doesn't emit. A lightweight client-side package filter is in
+place on `/docs` meanwhile. P2 #12 per-page **OG images** — build-time
+generation needs static output too (a Cloudflare Worker can't render images at
+runtime). All three unblock the moment the gate comes off.
+
+**Needs org action (not code):** label "good first issue" across repos; keep
+Discussions seeded. P2 #14 blog cadence and #15 real testimonials are
+content, not build.
+
 ## Reference material
 
 - **Dev-tool landing pages** — Evil Martians, *"We studied 100 dev tool landing
