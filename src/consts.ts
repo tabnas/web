@@ -15,6 +15,7 @@ export const STATUS_URL = "https://tabnas.github.io/status/";
 
 // Primary navigation.
 export const NAV: { href: string; label: string }[] = [
+  { href: "/why", label: "Why" },
   { href: "/docs", label: "Docs" },
   { href: "/playground", label: "Playground" },
   { href: "/agents", label: "AI agents" },

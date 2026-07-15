@@ -11,7 +11,7 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
   <!-- Hero: the thesis — a grammar becomes a parser. -->
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow">Polyglot parser engine</p>
+      <p class="eyebrow">Polyglot parser engine · TypeScript + Go</p>
       <h1>{SITE_TAGLINE}</h1>
       <p class="lede">
         Describe a language once. tabnas turns that grammar into a working
@@ -20,13 +20,14 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
         TypeScript and Go.
       </p>
       <div class="cta">
-        <a class="btn primary" href="/docs">Get started</a>
-        <a class="btn ghost" href="/playground">Try the playground</a>
+        <a class="btn primary" href="/docs/quickstart">Start building</a>
+        <a class="btn ghost" href="/playground">Try in the browser</a>
       </div>
+      <a class="why-link" href="/why">Why tabnas? — the case for one grammar, two runtimes →</a>
     </div>
 
     <figure class="hero-demo">
-      <img class="emblem" src={emblem.src} width="120" height="120" alt="" aria-hidden="true" />
+      <img class="emblem" src={emblem.src} width="112" height="112" alt="" aria-hidden="true" />
       <pre class="grammar" aria-label="An addition grammar in ABNF"><code><span class="c"># an addition grammar, in ABNF</span>
 <span class="r">add</span> = NR [ <span class="r">PL</span> add ]
 <span class="r">PL</span>&nbsp; = <span class="s">"+"</span></code></pre>
@@ -35,24 +36,36 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
     </figure>
   </section>
 
-  <!-- One grammar, two runtimes -->
+  <!-- Trust strip (honest metrics, live where possible). -->
+  <section class="trust" aria-label="At a glance">
+    <div class="stat"><span class="n" id="gh-stars">★</span><span class="l">GitHub stars</span></div>
+    <div class="stat"><span class="n">2</span><span class="l">runtimes, one grammar</span></div>
+    <div class="stat"><span class="n">25</span><span class="l">packages</span></div>
+    <div class="stat"><span class="n">MIT</span><span class="l">open source</span></div>
+    <a class="stat sponsor" href={SPONSOR.url} target="_blank" rel="noopener">
+      <span class="n">Voxgig</span><span class="l">sponsor</span>
+    </a>
+  </section>
+
+  <!-- Problem-oriented feature story. -->
   <section class="feature-row">
     <article class="feature">
-      <h3>One grammar, two runtimes</h3>
-      <p>TypeScript is canonical; Go tracks it exactly. Ship the same language
-        support to a Node service and a Go binary — verified against shared
-        fixtures.</p>
+      <h3>Stop writing the parser twice</h3>
+      <p>Shipping the same language to a Node service and a Go binary usually
+        means two parsers that drift apart. Define it once; TypeScript is
+        canonical and Go tracks it, checked against shared fixtures.</p>
     </article>
     <article class="feature">
-      <h3>Grammars as data</h3>
-      <p>Write grammars by hand, or compile <a href="/docs">ABNF</a> straight
-        into the engine. Inspect a live grammar and render it back to ABNF or a
-        railroad diagram.</p>
+      <h3>Grammars that can't drift</h3>
+      <p>The grammar <em>is</em> the parser — no generated code to fall out of
+        sync. Compile <a href="/docs">ABNF</a> straight into the engine, or
+        render a live grammar back to ABNF or a railroad diagram.</p>
     </article>
     <article class="feature">
-      <h3>A uniform tree</h3>
+      <h3>One tree to walk</h3>
       <p>Every parse yields the same shape — <code>{"{ rule, src, kids }"}</code> —
-        so tooling, walkers, and actions carry across every language you define.</p>
+        so your walkers, actions, and tooling carry across every language you
+        define, in both runtimes.</p>
     </article>
   </section>
 
@@ -91,7 +104,7 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
     </div>
   </section>
 
-  <!-- Split CTA: agents + community/sponsor -->
+  <!-- Split CTA: agents + community -->
   <section class="split">
     <a class="panel" href="/agents">
       <h3>Built for AI agents</h3>
@@ -103,7 +116,33 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
       <p>Questions, ideas, and contributions welcome. {SPONSOR.blurb} →</p>
     </a>
   </section>
+
+  <!-- Final CTA band (full-bleed) -->
+  <section class="final-cta">
+    <div class="final-inner">
+      <h2>Define your first grammar in five minutes</h2>
+      <p>Install the engine, write three lines, and parse.</p>
+      <a class="btn on-dark" href="/docs/quickstart">Start building</a>
+    </div>
+  </section>
 </Base>
+
+<script>
+  // Live GitHub star count across the org (single unauthenticated call).
+  (async () => {
+    const el = document.getElementById("gh-stars");
+    if (!el) return;
+    try {
+      const res = await fetch("https://api.github.com/orgs/tabnas/repos?per_page=100&type=public");
+      if (!res.ok) return;
+      const repos = await res.json();
+      const stars = repos.reduce((n, r) => n + (r.stargazers_count || 0), 0);
+      el.textContent = stars >= 1000 ? (stars / 1000).toFixed(1) + "k" : String(stars);
+    } catch {
+      /* leave the ★ placeholder */
+    }
+  })();
+</script>
 
 <style>
   /* Hero */
@@ -112,7 +151,7 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
     grid-template-columns: 1.1fr 0.9fr;
     gap: 2.5rem;
     align-items: center;
-    padding: 2.5rem 0 3.5rem;
+    padding: 2.5rem 0 2.5rem;
   }
   .eyebrow {
     font-family: var(--font-mono);
@@ -128,6 +167,12 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
   .lede { font-size: 1.2rem; color: var(--ink-soft); max-width: 40ch; }
   .lede strong { color: var(--ink); }
   .cta { display: flex; gap: 0.75rem; margin-top: 1.75rem; flex-wrap: wrap; }
+  .why-link {
+    display: inline-block; margin-top: 1rem; font-size: 0.95rem;
+    color: var(--accent); text-decoration: none; font-family: var(--font-heading);
+    font-style: italic; font-size: 1.05rem;
+  }
+  .why-link:hover { text-decoration: underline; }
   .btn {
     display: inline-block; padding: 0.7rem 1.25rem; border-radius: 10px;
     font-weight: 600; text-decoration: none; font-size: 1rem;
@@ -156,10 +201,23 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
   .hero-demo .arrow { color: var(--accent-strong); font-size: 1.4rem; line-height: 1; }
   .hero-demo .run { font-size: 1rem; }
 
+  /* Trust strip */
+  .trust {
+    display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; align-items: center;
+    padding: 1.1rem 1.4rem; margin: 0 0 2rem;
+    border: 1px solid var(--border); border-radius: 14px;
+    background: var(--surface);
+  }
+  .trust .stat { display: flex; flex-direction: column; line-height: 1.15; text-decoration: none; }
+  .trust .n { font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; color: var(--primary); font-variant-numeric: tabular-nums; }
+  .trust .l { font-size: 0.78rem; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+  .trust .sponsor .n { color: var(--accent); }
+  .trust .sponsor:hover .n { text-decoration: underline; }
+
   /* Feature row */
   .feature-row {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
-    padding: 1rem 0 3rem; border-top: 1px solid var(--border);
+    padding: 1rem 0 3rem;
   }
   .feature h3 { font-size: 1.3rem; margin: 0 0 0.4rem; }
   .feature p { color: var(--ink-soft); margin: 0; }
@@ -199,7 +257,7 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
   .chip.more { color: var(--primary); border-style: dashed; }
 
   /* Split CTA */
-  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 3.5rem 0 1rem; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 3.5rem 0 0; }
   .panel {
     display: block; text-decoration: none; color: inherit;
     border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem;
@@ -211,6 +269,20 @@ const plugins = PACKAGES.filter((p) => p.tier === "plugin");
   .panel.alt {
     background: linear-gradient(140deg, color-mix(in srgb, var(--accent-strong) 12%, var(--surface)), var(--surface));
   }
+
+  /* Final CTA band — full-bleed */
+  .final-cta {
+    width: 100vw; position: relative; left: 50%; transform: translateX(-50%);
+    margin-top: 4rem;
+    background: linear-gradient(140deg, var(--green-800), var(--green-950));
+    color: #f1e8cd;
+    text-align: center;
+  }
+  .final-inner { max-width: 640px; margin: 0 auto; padding: 3.5rem 1.5rem; }
+  .final-cta h2 { color: #f6e6b8; font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
+  .final-cta p { color: color-mix(in srgb, #f1e8cd 80%, transparent); margin: 0 0 1.5rem; }
+  .btn.on-dark { background: var(--gold-300); color: var(--green-950); }
+  .btn.on-dark:hover { background: var(--gold-200); }
 
   @media (max-width: 880px) {
     .hero { grid-template-columns: 1fr; }

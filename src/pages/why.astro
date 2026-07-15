@@ -1,0 +1,117 @@
+---
+import Base from "../layouts/Base.astro";
+import { SITE_MOTTO } from "../consts";
+---
+
+<Base title="Why tabnas" description="Why tabnas exists: one grammar, two runtimes, a parser you can trust.">
+  <article class="why">
+    <p class="eyebrow">Why tabnas</p>
+    <h1>A grammar is a table of translations.</h1>
+    <p class="lede">
+      Parsing is a solved problem — and yet every team solves it again, badly,
+      once per language and once per runtime. tabnas exists to stop that.
+    </p>
+
+    <h2>The problem</h2>
+    <p>
+      Reach for a parser today and you pick a compromise:
+    </p>
+    <ul>
+      <li><strong>Hand-rolled parsers</strong> are fast to start and slow to
+        trust. Edge cases pile up, the code becomes the spec, and no two are
+        alike.</li>
+      <li><strong>Regex</strong> works until the language nests — then it
+        quietly gives wrong answers instead of errors.</li>
+      <li><strong>Parser generators</strong> (ANTLR, tree-sitter, PEG tools)
+        give you a grammar, but also a build step, generated code to keep in
+        sync, and a runtime that usually only speaks one language well.</li>
+    </ul>
+    <p>
+      And when you need the <em>same</em> language in more than one place — a
+      Node service and a Go binary, an editor plugin and a CLI — you write it
+      twice and watch the two drift apart.
+    </p>
+
+    <h2>The tabnas approach</h2>
+    <div class="pillars">
+      <div class="pillar">
+        <h3>The grammar is the parser</h3>
+        <p>No generated code to fall out of sync. You install a grammar and it
+          parses — or you compile one from ABNF at runtime. Inspect it live,
+          render it back to ABNF, draw it as a diagram.</p>
+      </div>
+      <div class="pillar">
+        <h3>One grammar, two runtimes</h3>
+        <p>TypeScript is canonical; Go tracks it exactly, verified against the
+          same fixtures. Ship identical language support to Node and Go without
+          maintaining two parsers.</p>
+      </div>
+      <div class="pillar">
+        <h3>A uniform tree</h3>
+        <p>Every parse yields the same shape — <code>{"{ rule, src, kids }"}</code> —
+          so walkers, actions, and tooling written once work for every language
+          you define.</p>
+      </div>
+    </div>
+
+    <h2>Where it fits</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Approach</th><th>Grammar as source of truth</th><th>Build step</th><th>Same in TS &amp; Go</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Hand-written parser</td><td>No</td><td>No</td><td>Rewrite per language</td></tr>
+          <tr><td>Regex</td><td>No</td><td>No</td><td>Rewrite, and fragile</td></tr>
+          <tr><td>Parser generator</td><td>Yes</td><td>Yes (codegen)</td><td>Usually one runtime</td></tr>
+          <tr class="hi"><td>tabnas</td><td>Yes</td><td>No</td><td>Yes — canonical + tracked</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">
+      tabnas isn't the fastest parser for every workload, and it isn't trying to
+      be a full compiler toolchain. It's the shortest path from "I have a
+      grammar" to "I have a parser I can trust, everywhere I run."
+    </p>
+
+    <h2>The name</h2>
+    <p>
+      <strong>tabnas</strong> is Irish — <em>{SITE_MOTTO}</em>, "a table of
+      translations." That's exactly what a grammar is: a table that turns one
+      form into another. The emblem is that table, illuminated.
+    </p>
+
+    <div class="cta-row">
+      <a class="btn primary" href="/docs/quickstart">Start building</a>
+      <a class="btn ghost" href="/playground">Try it in the browser</a>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .why { max-width: 44rem; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;
+    letter-spacing: 0.16em; color: var(--accent); margin: 0 0 0.5rem;
+  }
+  .why h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); text-wrap: balance; margin: 0 0 1rem; }
+  .lede { font-size: 1.25rem; color: var(--ink-soft); }
+  .why h2 { margin-top: 2.5rem; }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.25rem 0; }
+  .pillar { border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem; background: var(--surface); }
+  .pillar h3 { font-size: 1.15rem; margin: 0 0 0.4rem; }
+  .pillar p { color: var(--ink-soft); font-size: 0.92rem; margin: 0; }
+  .table-wrap { overflow-x: auto; margin: 1.25rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
+  th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); }
+  tr.hi td { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); font-weight: 600; color: var(--ink); }
+  .fine { color: var(--ink-soft); }
+  .cta-row { display: flex; gap: 0.75rem; margin-top: 2.5rem; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 0.7rem 1.25rem; border-radius: 10px; font-weight: 600; text-decoration: none; }
+  .btn.primary { background: var(--primary); color: var(--on-primary); }
+  .btn.primary:hover { background: var(--primary-hover); }
+  .btn.ghost { color: var(--primary); border: 1.5px solid var(--border-strong); }
+  .btn.ghost:hover { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); }
+  @media (max-width: 760px) { .pillars { grid-template-columns: 1fr; } }
+</style>
