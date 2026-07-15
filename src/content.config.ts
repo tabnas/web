@@ -16,4 +16,16 @@ const blog = defineCollection({
 	}),
 });
 
-export const collections = { blog };
+const docs = defineCollection({
+	// Markdown docs under src/content/docs/, grouped by `section`.
+	loader: glob({ base: "./src/content/docs", pattern: "**/*.{md,mdx}" }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+		// Sidebar grouping + ordering.
+		section: z.enum(["Start", "Guides", "Concepts", "Reference"]),
+		order: z.number().default(100),
+	}),
+});
+
+export const collections = { blog, docs };

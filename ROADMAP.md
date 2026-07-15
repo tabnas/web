@@ -14,13 +14,20 @@ Why/explanation; P2 #10 partial — `CONTRIBUTING.md` + `CODE_OF_CONDUCT.md`
 added, GitHub **Discussions enabled** on `parser` + `web`; P2 #15 testimonials
 scaffolded (renders when populated).
 
+**Docs (P1 #8/#9) — custom, built, verified:** chose a **custom docs layout +
+standalone Pagefind** over Starlight (full brand control). Shipped: a `docs`
+content collection (Diátaxis — Start/Guides/Concepts/Reference), `DocsLayout`
+(sidebar, on-this-page TOC, prev/next), five real pages, and a Pagefind-backed
+`DocsSearch` box. Pagefind runs as a post-build step (`build:static`). Verified
+by a temporary static build: it indexes all 5 docs pages and emits
+`/pagefind/pagefind.js`. While the SSR gate is on there's no static docs HTML, so
+the index is empty and the search box **auto-disables**; it goes live the moment
+docs prerender at launch.
+
 **Staged for the static launch (blocked by the SSR under-construction gate):**
-P1 #8 full Astro Starlight docs migration and P1 #9 **Pagefind full-text
-search** — Pagefind indexes prerendered HTML, which `output:"server"` (needed
-for the auth gate) doesn't emit. A lightweight client-side package filter is in
-place on `/docs` meanwhile. P2 #12 per-page **OG images** — build-time
-generation needs static output too (a Cloudflare Worker can't render images at
-runtime). All three unblock the moment the gate comes off.
+Docs search activation (prerender docs → Pagefind index populates). P2 #12
+per-page **OG images** — build-time generation needs static output too (a
+Cloudflare Worker can't render images at runtime).
 
 **Needs org action (not code):** label "good first issue" across repos; keep
 Discussions seeded. P2 #14 blog cadence and #15 real testimonials are
@@ -113,6 +120,9 @@ searchable docs, trust/social proof, community scaffolding, per-page OG.
 
 - Revert `output:"server"` → `"static"`, restore blog `getStaticPaths`, remove
   `src/middleware.ts` + `run_worker_first`.
+- Prerender the docs (add `prerender = true` + `getStaticPaths` to
+  `src/pages/docs/[...slug].astro`) so `npm run build:static`'s Pagefind step
+  indexes them and docs search goes live. Make `build:static` the CI build.
 - Real OG default image (1200×630); verify cards.
 - `sitemap` + `robots.txt`; submit to search console.
 - Lighthouse pass (perf/a11y/SEO); check both themes.

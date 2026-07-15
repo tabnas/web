@@ -1,0 +1,165 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import DocsSearch from "../components/DocsSearch.astro";
+import { getCollection } from "astro:content";
+import { SITE_TITLE } from "../consts";
+
+interface Props {
+  title: string;
+  description: string;
+  slug: string;
+  headings: { depth: number; slug: string; text: string }[];
+}
+const { title, description, slug, headings } = Astro.props;
+
+const SECTIONS = ["Start", "Guides", "Concepts", "Reference"] as const;
+const all = (await getCollection("docs")).sort(
+  (a, b) =>
+    SECTIONS.indexOf(a.data.section) - SECTIONS.indexOf(b.data.section) ||
+    a.data.order - b.data.order,
+);
+const groups = SECTIONS.map((section) => ({
+  section,
+  items: all.filter((d) => d.data.section === section),
+})).filter((g) => g.items.length);
+
+const flat = all.map((d) => ({ id: d.id, title: d.data.title }));
+const idx = flat.findIndex((d) => d.id === slug);
+const prev = idx > 0 ? flat[idx - 1] : null;
+const next = idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null;
+
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={`${title} · Docs · ${SITE_TITLE}`} description={description} />
+    <script is:inline>
+      (() => {
+        const saved = localStorage.getItem("theme");
+        const dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      })();
+    </script>
+  </head>
+  <body>
+    <Header />
+    <div class="docs-shell">
+      <aside class="sidebar" aria-label="Docs navigation">
+        <DocsSearch />
+        <nav>
+          {groups.map((g) => (
+            <div class="group">
+              <h2>{g.section}</h2>
+              <ul>
+                {g.items.map((d) => (
+                  <li>
+                    <a href={`/docs/${d.id}`} class:list={["side-link", { active: d.id === slug }]}>
+                      {d.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </aside>
+
+      <main class="doc-main">
+        <article class="prose">
+          <h1>{title}</h1>
+          <slot />
+        </article>
+
+        <nav class="pager">
+          {prev ? (
+            <a class="pg prev" href={`/docs/${prev.id}`}><span>← Previous</span>{prev.title}</a>
+          ) : <span />}
+          {next ? (
+            <a class="pg next" href={`/docs/${next.id}`}><span>Next →</span>{next.title}</a>
+          ) : <span />}
+        </nav>
+      </main>
+
+      {toc.length > 0 && (
+        <aside class="toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>
+            {toc.map((h) => (
+              <li class={h.depth === 3 ? "sub" : ""}><a href={`#${h.slug}`}>{h.text}</a></li>
+            ))}
+          </ul>
+        </aside>
+      )}
+    </div>
+    <Footer />
+
+    <style>
+      .docs-shell {
+        display: grid;
+        grid-template-columns: 16rem minmax(0, 1fr) 14rem;
+        gap: 2.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 1rem;
+        align-items: start;
+      }
+      .sidebar { position: sticky; top: 4.5rem; }
+      .sidebar .group { margin-bottom: 1.25rem; }
+      .sidebar h2 {
+        font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase;
+        letter-spacing: 0.12em; color: var(--ink-mute); margin: 0 0 0.5rem;
+      }
+      .sidebar ul { list-style: none; margin: 0; padding: 0; }
+      .side-link {
+        display: block; padding: 0.3rem 0.6rem; border-radius: 7px;
+        color: var(--ink-soft); text-decoration: none; font-size: 0.95rem;
+        border-left: 2px solid transparent;
+      }
+      .side-link:hover { color: var(--ink); background: color-mix(in srgb, var(--accent-strong) 10%, transparent); }
+      .side-link.active { color: var(--primary); border-left-color: var(--accent-strong); font-weight: 600; }
+
+      .doc-main { min-width: 0; }
+      .prose h1 { margin-bottom: 1rem; }
+      .prose :global(h2) { margin-top: 2.25rem; scroll-margin-top: 5rem; }
+      .prose :global(h3) { margin-top: 1.5rem; scroll-margin-top: 5rem; }
+      .prose :global(pre) {
+        background: var(--code-bg); border: 1px solid var(--border);
+        border-radius: 10px; padding: 1rem 1.15rem; overflow-x: auto;
+      }
+      .prose :global(table) { display: block; overflow-x: auto; border-collapse: collapse; }
+      .prose :global(th), .prose :global(td) { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+      .prose :global(th) { background: var(--surface-2); }
+
+      .pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+      .pg {
+        display: flex; flex-direction: column; gap: 0.15rem; text-decoration: none;
+        border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem;
+        color: var(--ink); background: var(--surface); max-width: 48%;
+      }
+      .pg span { font-size: 0.75rem; color: var(--ink-mute); }
+      .pg.next { text-align: right; margin-left: auto; }
+      .pg:hover { border-color: var(--border-strong); }
+
+      .toc { position: sticky; top: 4.5rem; }
+      .toc h2 { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); margin: 0 0 0.5rem; }
+      .toc ul { list-style: none; margin: 0; padding: 0; }
+      .toc li { margin: 0.2rem 0; }
+      .toc li.sub { padding-left: 0.9rem; }
+      .toc a { color: var(--ink-soft); text-decoration: none; font-size: 0.88rem; }
+      .toc a:hover { color: var(--primary); }
+
+      @media (max-width: 1080px) {
+        .docs-shell { grid-template-columns: 14rem minmax(0, 1fr); }
+        .toc { display: none; }
+      }
+      @media (max-width: 760px) {
+        .docs-shell { grid-template-columns: 1fr; }
+        .sidebar { position: static; }
+      }
+    </style>
+  </body>
+</html>
