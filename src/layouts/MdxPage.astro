@@ -1,0 +1,16 @@
+---
+import Base from "./Base.astro";
+
+// Layout for standalone .mdx pages under src/pages/. Frontmatter
+// (title, description, image, wide) maps straight onto Base's props.
+const { frontmatter } = Astro.props;
+---
+
+<Base
+  title={frontmatter.title}
+  description={frontmatter.description}
+  image={frontmatter.image}
+  wide={frontmatter.wide}
+>
+  <slot />
+</Base>

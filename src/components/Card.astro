@@ -1,0 +1,41 @@
+---
+// One cell of a <CardGrid>. The body is the slot — in MDX, write plain
+// markdown between the tags. With `href` the whole card is a link.
+interface Props {
+  title: string;
+  href?: string;
+  /** Heading level for the title; pick to fit the page outline. */
+  level?: "h2" | "h3";
+}
+const { title, href, level = "h3" } = Astro.props;
+const Tag = href ? "a" : "article";
+const external = href?.startsWith("http");
+const Heading = level;
+---
+
+<Tag
+  class="card"
+  href={href}
+  target={external ? "_blank" : undefined}
+  rel={external ? "noopener" : undefined}
+>
+  <Heading>{title}</Heading>
+  <slot />
+</Tag>
+
+<style>
+  .card {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    background: var(--surface);
+    text-decoration: none;
+    color: inherit;
+  }
+  a.card:hover { border-color: var(--border-strong); }
+  .card h2, .card h3 { font-size: 1.2rem; margin: 0 0 0.4rem; color: var(--ink); }
+  /* Slotted markdown paragraphs (rendered outside this component's scope). */
+  .card :global(p) { margin: 0; color: var(--ink-soft); font-size: 0.95rem; }
+  .card :global(p + p) { margin-top: 0.6rem; }
+</style>

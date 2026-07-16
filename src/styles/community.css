@@ -1,0 +1,7 @@
+/* Styles for src/pages/community.mdx. Imported by that page only, but
+   prefixed with .community since the import is not Astro-scoped.
+   (Signals widget styling lives in components/CommunitySignals.astro;
+   card styling in components/Card.astro / CardGrid.astro.) */
+
+.community .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 60ch; }
+.community .conduct { color: var(--ink-soft); }

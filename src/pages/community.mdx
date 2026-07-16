@@ -1,0 +1,48 @@
+---
+layout: ../layouts/MdxPage.astro
+title: Community
+description: "Get help, share ideas, and contribute to tabnas."
+---
+
+import { GITHUB_ORG, REPO, SPONSOR } from "../consts";
+import CommunitySignals from "../components/CommunitySignals.astro";
+import CardGrid from "../components/CardGrid.astro";
+import Card from "../components/Card.astro";
+import "../styles/community.css";
+
+<article class="community">
+
+# Community & contributing
+
+<p class="lede">
+  tabnas is open source and built in the open. Whether you're adopting it,
+  reporting a bug, or adding a grammar, there's a place for you.
+</p>
+
+<CommunitySignals />
+
+<CardGrid>
+  <Card title="Discuss" level="h2" href={`${GITHUB_ORG}/parser/discussions`}>
+    Ask questions and share what you're building in GitHub Discussions.
+  </Card>
+  <Card title="Report" level="h2" href={`${REPO("parser")}/issues`}>
+    File issues and feature requests on the relevant repository.
+  </Card>
+  <Card title="Contribute" level="h2" href="https://github.com/tabnas/web/blob/main/CONTRIBUTING.md">
+    Read the contributing guide, then pick a “good first issue”.
+  </Card>
+</CardGrid>
+
+## How the project works
+
+- **TypeScript is canonical; Go tracks it.** Changes land in TS first, then Go to match.
+- **One grammar, shared fixtures.** Both implementations parse the same test grammars and must agree.
+- **Small, focused packages.** The engine stays lean; languages live in their own repos.
+
+<p class="conduct">
+  We give every first contribution a prompt, welcoming response, and we hold to
+  a <a href="https://github.com/tabnas/web/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener">Code of Conduct</a>.
+  {SPONSOR.blurb} — see the <a href="/sponsors">sponsors</a> page.
+</p>
+
+</article>

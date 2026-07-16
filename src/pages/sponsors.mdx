@@ -1,0 +1,33 @@
+---
+layout: ../layouts/MdxPage.astro
+title: Sponsors
+description: "tabnas is open source, sponsored by Voxgig."
+---
+
+import { SPONSOR } from "../consts";
+import "../styles/sponsors.css";
+
+<article class="sponsors">
+
+# Sponsors
+
+<p class="lede">
+  tabnas is free and open source. Its development is sponsored by
+  <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a>,
+  who back open-source infrastructure for developers.
+</p>
+
+<a class="sponsor-card" href={SPONSOR.url} target="_blank" rel="noopener">
+  <span class="kicker">Lead sponsor</span>
+  <span class="name">{SPONSOR.name}</span>
+  <span class="go">voxgig.com →</span>
+</a>
+
+## Why it matters
+
+Sponsorship keeps the engine, the grammar packages, and this documentation
+maintained and openly licensed (MIT) — with TypeScript and Go kept in
+lockstep. If your organisation relies on tabnas and would like to support
+it, we'd love to hear from you.
+
+</article>

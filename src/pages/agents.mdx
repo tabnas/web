@@ -1,0 +1,49 @@
+---
+layout: ../layouts/MdxPage.astro
+title: AI agents
+description: "Use tabnas to constrain LLM output, parse agent DSLs, and feed agent-consumable docs."
+---
+
+import { REPO } from "../consts";
+import CardGrid from "../components/CardGrid.astro";
+import Card from "../components/Card.astro";
+import "../styles/agents.css";
+
+<article class="agents">
+
+# tabnas for AI agents
+
+<p class="lede">
+  Agents live and die by structure. tabnas gives you grammars as a first-class
+  tool — to constrain what a model emits, to parse what it produces, and to
+  make this documentation legible to the agents reading it.
+</p>
+
+<CardGrid>
+  <Card title="Constrain output" level="h2">
+    Define the exact shape you expect back — a command, a query, a config —
+    as a grammar, then parse the model's response. Malformed output fails
+    loudly at a known position instead of silently corrupting downstream
+    state.
+  </Card>
+  <Card title="Parse agent DSLs" level="h2">
+    Tool-call syntaxes, planning notations, and mini-languages are just
+    grammars. Describe one once and parse it identically in your TypeScript
+    orchestrator and your Go runtime.
+  </Card>
+  <Card title="Agent-consumable docs" level="h2">
+    This site publishes an [`llms.txt`](/llms.txt) index and a full
+    [`llms-full.txt`](/llms-full.txt), plus raw-markdown endpoints (e.g.
+    `/blog/<slug>.md`), so coding agents can ingest tabnas directly — no
+    scraping guesswork.
+  </Card>
+</CardGrid>
+
+## Roadmap
+
+Coming next: machine-readable grammar catalogs and an MCP server so an agent
+can discover and use tabnas grammars as tools. Track progress on
+<a href={REPO("parser")} target="_blank" rel="noopener">GitHub</a> — and tell
+us what you'd want from an agent integration.
+
+</article>

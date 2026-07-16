@@ -1,0 +1,23 @@
+---
+// Responsive grid of <Card>s for MDX pages (why, agents, community).
+interface Props {
+  columns?: number;
+}
+const { columns = 3 } = Astro.props;
+---
+
+<div class="card-grid" style={`--card-grid-cols: ${columns}`}>
+  <slot />
+</div>
+
+<style>
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--card-grid-cols, 3), 1fr);
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  @media (max-width: 780px) {
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>

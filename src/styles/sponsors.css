@@ -1,0 +1,19 @@
+/* Styles for src/pages/sponsors.mdx. Imported by that page only, but
+   prefixed with .sponsors since the import is not Astro-scoped. */
+
+.sponsors .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 60ch; }
+.sponsors .sponsor-card {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  text-decoration: none; color: inherit;
+  border: 1px solid var(--border-strong); border-radius: 16px;
+  padding: 1.75rem 2rem; margin: 1.5rem 0;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--accent-strong) 14%, var(--surface)), var(--surface));
+  max-width: 28rem;
+}
+.sponsors .sponsor-card .kicker {
+  font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--ink-mute);
+}
+.sponsors .sponsor-card .name { font-family: var(--font-heading); font-weight: 700; font-size: 2.2rem; color: var(--primary); }
+.sponsors .sponsor-card .go { color: var(--accent); font-size: 0.95rem; }
+.sponsors .sponsor-card:hover { border-color: var(--accent); }

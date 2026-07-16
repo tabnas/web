@@ -1,0 +1,23 @@
+/* Styles for src/pages/why.mdx. Imported by that page only, but
+   prefixed with .why since the import is not Astro-scoped. */
+
+.why { max-width: 44rem; }
+.why .eyebrow {
+  font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 0.16em; color: var(--accent); margin: 0 0 0.5rem;
+}
+.why h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); text-wrap: balance; margin: 0 0 1rem; }
+.why .lede { font-size: 1.25rem; color: var(--ink-soft); }
+.why h2 { margin-top: 2.5rem; }
+.why .table-wrap { overflow-x: auto; margin: 1.25rem 0; }
+.why table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.why th, .why td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
+.why th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); }
+.why tr.hi td { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); font-weight: 600; color: var(--ink); }
+.why .fine { color: var(--ink-soft); }
+.why .cta-row { display: flex; gap: 0.75rem; margin-top: 2.5rem; flex-wrap: wrap; }
+.why .btn { display: inline-block; padding: 0.7rem 1.25rem; border-radius: 10px; font-weight: 600; text-decoration: none; }
+.why .btn.primary { background: var(--primary); color: var(--on-primary); }
+.why .btn.primary:hover { background: var(--primary-hover); }
+.why .btn.ghost { color: var(--primary); border: 1.5px solid var(--border-strong); }
+.why .btn.ghost:hover { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); }
