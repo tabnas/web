@@ -1,0 +1,51 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  /** Wider main column for docs/landing sections. */
+  wide?: boolean;
+}
+
+const {
+  title,
+  description = SITE_DESCRIPTION,
+  image,
+  wide = false,
+} = Astro.props;
+
+const fullTitle = title ? `${title} · ${SITE_TITLE}` : `${SITE_TITLE} — ${SITE_DESCRIPTION}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={fullTitle} description={description} image={image} />
+    <script is:inline>
+      // Set the theme before paint to avoid a flash. Honors a stored
+      // choice, else the OS preference; the header toggle updates both.
+      (() => {
+        const saved = localStorage.getItem("theme");
+        const dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      })();
+    </script>
+  </head>
+  <body>
+    <Header />
+    <main class={wide ? "wide" : ""}>
+      <slot />
+    </main>
+    <Footer />
+    <style>
+      main.wide {
+        width: 1080px;
+      }
+    </style>
+  </body>
+</html>

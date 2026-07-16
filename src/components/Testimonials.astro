@@ -1,0 +1,33 @@
+---
+import { TESTIMONIALS } from "../consts";
+// Renders nothing until there's at least one real quote (see consts.ts).
+const items = TESTIMONIALS;
+---
+
+{items.length > 0 && (
+  <section class="testimonials" aria-label="What people say">
+    <h2>From the community</h2>
+    <div class="grid">
+      {items.map((t) => (
+        <figure class="quote">
+          <blockquote>{t.quote}</blockquote>
+          <figcaption>
+            {t.url ? <a href={t.url} target="_blank" rel="noopener">{t.name}</a> : t.name}
+            {t.role && <span class="role">{t.role}</span>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .testimonials { margin: 3.5rem 0 0; }
+  .testimonials h2 { text-align: center; font-size: clamp(1.6rem, 3.5vw, 2.2rem); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .quote { margin: 0; border: 1px solid var(--border); border-radius: 14px; padding: 1.3rem 1.5rem; background: var(--surface); }
+  blockquote { margin: 0 0 0.75rem; font-family: var(--font-heading); font-size: 1.15rem; color: var(--ink); }
+  figcaption { font-size: 0.9rem; color: var(--ink-soft); display: flex; flex-direction: column; }
+  figcaption a { color: var(--primary); text-decoration: none; }
+  .role { color: var(--ink-mute); font-size: 0.82rem; }
+</style>

@@ -1,0 +1,202 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Playground" description="Write a grammar, type some input, and watch tabnas build the syntax tree — live in your browser." wide>
+  <div class="pg-head">
+    <h1>Playground</h1>
+    <p>Edit an ABNF grammar and some input; tabnas parses it in your browser and
+      shows the syntax tree. Powered by the real <code>@tabnas/parser</code> and
+      <code>@tabnas/abnf</code> builds.</p>
+    <div class="presets" id="presets">
+      <span class="lbl">Presets:</span>
+      <button data-preset="addition">Addition</button>
+      <button data-preset="greeting">Greeting</button>
+      <button data-preset="list">List</button>
+      <button class="share" id="share">Copy share link</button>
+    </div>
+  </div>
+
+  <div class="pg">
+    <section class="editor">
+      <label>Grammar <span class="hint">(ABNF)</span></label>
+      <textarea id="grammar" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+      <label>Input</label>
+      <textarea id="input" class="input" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+    </section>
+
+    <section class="result">
+      <label>Result</label>
+      <div id="status" class="status"></div>
+      <div id="tree" class="tree"></div>
+    </section>
+  </div>
+
+  <p class="foot">Grammars run entirely client-side — nothing is sent anywhere.
+    Share a grammar with the button above (it's encoded in the URL).</p>
+</Base>
+
+<script>
+  import { Tabnas } from "@tabnas/parser";
+  import { abnf } from "@tabnas/abnf";
+
+  const PRESETS = {
+    addition: { g: 'add = NR [ PL add ]\nPL  = "+"', i: "1+2+3" },
+    greeting: { g: 'greet = "hi" / "hello"', i: "hello" },
+    list: { g: 'list = "[" item *( "," item ) "]"\nitem = 1*ALPHA', i: "[a,bc,def]" },
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const grammarEl = $("grammar");
+  const inputEl = $("input");
+  const treeEl = $("tree");
+  const statusEl = $("status");
+
+  function setStatus(kind, msg) {
+    statusEl.className = "status " + kind;
+    statusEl.textContent = msg;
+  }
+
+  function renderTree(node) {
+    if (!node || typeof node !== "object") return "";
+    const kids = Array.isArray(node.kids) ? node.kids : [];
+    const src = node.src == null ? "" : String(node.src);
+    const val = node.value !== undefined ? ` <span class="v">value: ${escapeHtml(String(node.value))}</span>` : "";
+    const head = `<span class="rule">${escapeHtml(node.rule || "?")}</span>` +
+      (src ? ` <span class="src">${escapeHtml(src)}</span>` : "") + val;
+    if (!kids.length) return `<div class="node leaf">${head}</div>`;
+    return `<div class="node"><div class="nhead">${head}</div>` +
+      `<div class="kids">${kids.map(renderTree).join("")}</div></div>`;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
+  let timer;
+  function run() {
+    const gsrc = grammarEl.value;
+    const isrc = inputEl.value;
+    let tn;
+    try {
+      tn = new Tabnas({ plugins: [abnf] });
+      tn.abnf(gsrc);
+    } catch (e) {
+      setStatus("err", "Grammar error: " + firstLine(e));
+      treeEl.innerHTML = "";
+      return;
+    }
+    try {
+      const out = tn.parse(isrc);
+      setStatus("ok", "Parsed ✓");
+      treeEl.innerHTML = renderTree(out);
+    } catch (e) {
+      setStatus("err", "Parse error: " + firstLine(e));
+      treeEl.innerHTML = "";
+    }
+    syncUrl(gsrc, isrc);
+  }
+
+  function firstLine(e) {
+    return String((e && e.message) || e).split("\n")[0];
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    timer = setTimeout(run, 200);
+  }
+
+  function syncUrl(g, i) {
+    try {
+      const data = btoa(unescape(encodeURIComponent(JSON.stringify({ g, i }))));
+      history.replaceState(null, "", "#" + data);
+    } catch {}
+  }
+
+  function load() {
+    const hash = location.hash.slice(1);
+    if (hash) {
+      try {
+        const { g, i } = JSON.parse(decodeURIComponent(escape(atob(hash))));
+        grammarEl.value = g ?? "";
+        inputEl.value = i ?? "";
+        return;
+      } catch {}
+    }
+    grammarEl.value = PRESETS.addition.g;
+    inputEl.value = PRESETS.addition.i;
+  }
+
+  $("presets").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-preset]");
+    if (!btn) return;
+    const p = PRESETS[btn.dataset.preset];
+    grammarEl.value = p.g;
+    inputEl.value = p.i;
+    run();
+  });
+
+  $("share").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      $("share").textContent = "Copied!";
+      setTimeout(() => ($("share").textContent = "Copy share link"), 1500);
+    } catch {}
+  });
+
+  grammarEl.addEventListener("input", schedule);
+  inputEl.addEventListener("input", schedule);
+
+  load();
+  run();
+</script>
+
+<style>
+  .pg-head h1 { margin-bottom: 0.3rem; }
+  .pg-head p { color: var(--ink-soft); max-width: 62ch; }
+  .presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 1rem 0 0.5rem; }
+  .presets .lbl { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); }
+  .presets button {
+    font-family: var(--font-body); font-size: 0.88rem; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft);
+    border-radius: 999px; padding: 0.35rem 0.8rem;
+  }
+  .presets button:hover { color: var(--primary); border-color: var(--border-strong); }
+  .presets .share { margin-left: auto; color: var(--primary); border-style: dashed; }
+
+  .pg { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1rem 0; align-items: start; }
+  label {
+    display: block; font-family: var(--font-mono); font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
+    margin: 0.75rem 0 0.35rem;
+  }
+  label .hint { text-transform: none; letter-spacing: 0; color: var(--ink-mute); }
+  textarea {
+    width: 100%; box-sizing: border-box; resize: vertical;
+    font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.6;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem;
+  }
+  textarea:focus { outline: 2px solid var(--ring); outline-offset: 1px; border-color: var(--border-strong); }
+  #grammar { min-height: 9rem; }
+  #input { min-height: 4rem; }
+
+  .result label { margin-top: 0; }
+  .status {
+    font-family: var(--font-mono); font-size: 0.85rem; padding: 0.4rem 0.7rem;
+    border-radius: 8px; display: inline-block; margin-bottom: 0.75rem;
+  }
+  .status.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+  .status.err { color: var(--error); background: color-mix(in srgb, var(--error) 12%, transparent); }
+  .tree { font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; }
+  .node { }
+  .kids { margin-left: 1.1rem; border-left: 1px solid var(--border); padding-left: 0.9rem; }
+  .rule { color: var(--primary); font-weight: 600; }
+  .src { color: var(--accent); }
+  .v { color: var(--ink-mute); }
+  .leaf { color: var(--ink-soft); }
+
+  .foot { color: var(--ink-mute); font-size: 0.85rem; margin-top: 0.5rem; }
+
+  @media (max-width: 820px) { .pg { grid-template-columns: 1fr; } }
+</style>

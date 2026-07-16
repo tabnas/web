@@ -1,0 +1,16 @@
+---
+// Cloudflare Web Analytics (cookieless, no consent banner needed).
+// Active only when PUBLIC_CF_BEACON is set at build time — set it as a
+// build environment variable in Cloudflare Workers Builds:
+//   PUBLIC_CF_BEACON = <the beacon token from Analytics → Web Analytics>
+const token = import.meta.env.PUBLIC_CF_BEACON;
+---
+
+{token && (
+  <script
+    is:inline
+    defer
+    src="https://static.cloudflareinsights.com/beacon.min.js"
+    data-cf-beacon={`{"token": "${token}"}`}
+  ></script>
+)}

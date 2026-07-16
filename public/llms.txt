@@ -1,0 +1,30 @@
+# tabnas
+
+> tabnas is a polyglot parser engine: describe a language once as a grammar and
+> get a working parser that builds a small, uniform `{ rule, src, kids }` syntax
+> tree — the same grammar and the same tree in TypeScript and Go. TypeScript is
+> canonical; Go tracks it exactly, verified against shared fixtures. Grammars
+> can be hand-written or compiled from RFC 5234 ABNF. Open source (MIT),
+> sponsored by Voxgig.
+
+## Site
+
+- [Home](https://tabnas.dev/): overview and the ecosystem
+- [Docs](https://tabnas.dev/docs): documentation hub
+- [Playground](https://tabnas.dev/playground): try grammars in the browser
+- [AI agents](https://tabnas.dev/agents): using tabnas to constrain and parse LLM/agent output
+- [Community](https://tabnas.dev/community): discussion, issues, contributing
+
+## Core packages
+
+- [@tabnas/parser](https://github.com/tabnas/parser): the engine — define a grammar, get a parser and a uniform AST (npm + Go module)
+- [@tabnas/abnf](https://github.com/tabnas/abnf): compile RFC 5234 ABNF into a working grammar; supports left recursion and `@ref` actions
+- [@tabnas/debug](https://github.com/tabnas/debug): inspect a live grammar — describe it or render it back as ABNF
+- [@tabnas/json](https://github.com/tabnas/json): a complete JSON grammar built on the engine
+- [@tabnas/railroad](https://github.com/tabnas/railroad): draw railroad (syntax) diagrams from a grammar
+
+## Notes for agents
+
+- npm packages are published under the `@tabnas/*` scope; Go modules under `github.com/tabnas/<name>/go`.
+- Every package ships tested, runnable examples in its README (`// =>` assertions are executed in CI).
+- A minimal end-to-end example (ABNF): `add = NR [ PL add ]` / `PL = "+"` parses `1+2+3` to the value `6`.

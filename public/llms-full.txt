@@ -1,0 +1,90 @@
+# tabnas — full text for language models
+
+> tabnas is a polyglot parser engine. You describe a language once as a grammar
+> and get a working parser that builds a small, uniform `{ rule, src, kids }`
+> syntax tree — the same grammar and the same tree in TypeScript and Go.
+> TypeScript is canonical; Go tracks it exactly, verified against shared
+> fixtures. Grammars can be hand-written or compiled from RFC 5234 ABNF. Open
+> source (MIT), sponsored by Voxgig. Site: https://tabnas.dev
+
+## What tabnas is
+
+A grammar in tabnas is not turned into generated code — the grammar *is* the
+parser. Install a grammar package (or compile ABNF at runtime) and it parses
+input directly. You can inspect a live grammar, render it back to ABNF, or draw
+it as a railroad diagram.
+
+"tabnas" is Irish — *Tábla na nAistrithe*, "a table of translations." A grammar
+is exactly that: a table that turns one form into another.
+
+## Quickstart (TypeScript)
+
+Install:
+
+    npm install @tabnas/parser @tabnas/abnf
+
+Define a grammar in ABNF and parse:
+
+    import { Tabnas } from '@tabnas/parser'
+    import { abnf } from '@tabnas/abnf'
+
+    const tn = new Tabnas({ plugins: [abnf] })
+    tn.abnf(`
+      add = NR [ PL add ]
+      PL  = "+"
+    `)
+
+    tn.parse('1+2+3')
+    // => { rule: 'add', src: '1+2+3', kids: [ { rule: 'PL', src: '+', kids: [] }, ... ] }
+
+`NR` is the built-in number token; `[ ... ]` is optional; a rule may refer to
+itself. The Go path mirrors this via `github.com/tabnas/parser/go`.
+
+## The syntax tree
+
+Every parse yields the same shape:
+
+    { rule: string, src: string, kids: Node[] }
+
+so walkers, actions, and tooling written once apply to every grammar.
+
+## ABNF notes
+
+- RFC 5234 dialect: `=` and `/` (not `::=`).
+- Built-in tokens by bareword: `NR` (number), plus core rules like `ALPHA`,
+  `DIGIT`.
+- Left recursion is accepted and rewritten (Paull's algorithm): `P = P a / b`
+  becomes `P = b *(a)`. A purely left-recursive rule (no base branch) is an
+  error.
+- Actions attach via `@ref` references (e.g. `'@add:o:NR'`).
+
+## Packages
+
+Core (npm `@tabnas/<name>`, Go `github.com/tabnas/<name>/go`):
+
+- parser — the engine.
+- abnf — compile RFC 5234 ABNF into a working grammar.
+- debug — inspect a live grammar; describe it or render it back to ABNF.
+- json — a complete JSON grammar.
+- railroad — draw railroad (syntax) diagrams from a grammar.
+
+Plugins: jsonic, yaml, csv, and more — see https://github.com/tabnas.
+
+## For agents
+
+- Constrain LLM output to a grammar, then parse the response — malformed output
+  fails at a known position instead of corrupting downstream state.
+- Parse agent DSLs / tool-call syntaxes identically in TS and Go.
+- Every package ships tested, runnable README examples (`// =>` assertions are
+  executed in CI).
+- Machine-readable index: https://tabnas.dev/llms.txt
+
+## Links
+
+- Home: https://tabnas.dev/
+- Why: https://tabnas.dev/why
+- Quickstart: https://tabnas.dev/docs/quickstart
+- Playground: https://tabnas.dev/playground
+- Docs: https://tabnas.dev/docs
+- GitHub: https://github.com/tabnas
+- npm: https://www.npmjs.com/org/tabnas
