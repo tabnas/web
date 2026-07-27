@@ -4,7 +4,8 @@ title: Why tabnas
 description: "Why tabnas exists: one grammar, two runtimes, a parser you can trust."
 ---
 
-import { SITE_MOTTO } from "../consts";
+import { SITE_TITLE, SITE_MOTTO } from "../consts";
+import mark from "../assets/brand/mark.svg";
 import CardGrid from "../components/CardGrid.astro";
 import Card from "../components/Card.astro";
 import "../styles/why.css";
@@ -16,11 +17,46 @@ import "../styles/why.css";
 
 
 I wanted to build a general parser that could be extended by
-plugins. Say you have plain old JSON, but the values could be expressions, not just
-fixed values. Well, originally I wanted to build a better JSON parser
-(who doesn't) that could handle a more relaxed syntax. I'm lazy and
-don't want to quote everything.
+plugins. Say you have plain old JSON, but the values could be
+expressions, not just fixed values. For example: `{ "foo": 1+2+3 }`. 
+Well, originally I wanted to build a better JSON parser (who
+doesn't?) that could handle a more relaxed syntax. I'm lazy and don't
+want to quote everything. That accidentally became an extensible parser.
 
+
+> # The TLDR
+>
+> *"A deterministic top-down predictive rule machine with bounded lookahead."*
+>
+> You write a for-loop over parsing tokens. There's no
+> recursion. Instead you have a stack to keep track of rule depth.  Each
+> rule represents a semantic element of your language, and you move to
+> the next rule using a lookup table of token alternates. Rules are hit
+> twice, once on descent and once on ascent, and thus have two states,
+> open and close, and two token lookup tables.
+>
+> You [extend](https://github.com/tabnas/parser#how-extensibility-works)
+> by adding new rules, and modifying the lookup tables (mostly by
+> addition of new token alternates). Each rule and each alternate can
+> have a condition and an action - that's where you control wierd
+> stuff (left recusion, my old friend), and build your AST, or
+> whatever you want.  Defining a grammar this way is surprisingly "not
+> too hard" for humans, and really easy for agents. That's it. It's
+> fast, it's ugly, and it's a good compile target for
+> [BNF](https://github.com/tabnas/abnf).
+
+
+<br/><br/><br/><br/>
+
+# The Whole Story
+
+<figure class="story-logo">
+  <img src={mark.src} width="220" height="220" alt="The tabnas emblem" />
+  <figcaption>
+    <span class="story-title">{SITE_TITLE}</span>
+    <span class="story-motto">{SITE_MOTTO} — a table of translations</span>
+  </figcaption>
+</figure>
 
 How do you make a parser that can be extended? Most parsers take a
 grammar and turn it into generated (and yucky) code. Or you write
@@ -29,7 +65,8 @@ serious computer science mechanism, like
 [ANTLR](https://www.antlr.org) (which is pretty cool). Then I read a
 great article about how [most real language parsers are written by
 hand](https://notes.eatonphil.com/parser-generators-vs-handwritten-parsers-survey-2021.html). No,
-for real.
+for real. So can you make a hand-written parser *extensible*? We'll
+get back to that...
 
 The original version of my easy-going JSON parser was
 [jsonic](http://github.com/jsonicjs/jsonic), built with
@@ -39,6 +76,54 @@ start a land war in Asia? Well, never do an event management
 startup. Same thing), a little time on my hands, and permission from
 some random blog post, I decided, feck it, I'll just rewrite my JSON
 parser by hand!
+
+And the initial rewrite was just a manual recursive descent. But then
+I used some lookup tables to get better performance. And [JSON is very
+deterministic](https://www.json.org/), so only has a few rules. That
+make it easy-ish to convert recursive descent into a for-loop with a
+stack. Entering each child structure (object or array), you push a
+stack entry representing a rule instance, and then pop it again on the
+way out.
+
+My real goal was to go beyond JSON, and to parse
+*[jsonic](https://github.com/tabnas/jsonic)* - an extension to JSON
+that has comments, no quotes, and the usual conveniences similar to
+[jsonc](https://jsonc.org/) and other variants. I needed to parse this
+specific dialect because it was used as a convenience format in a
+message-based microservices framework I wrote and maintain -
+(Seneca)[https://senecajs.org]. And also, yes, not-invented-here
+syndrome, and just, *fun*.
+
+Also, the rewrite was my first serious TypeScript project. Thank
+goodness we don't have to hand port code anymore! But I learned a lot.
+During development it became increasingly clear that I could also
+provide a pure JSON parser just by removing entries from the lookup
+table. And if that was true, you could turn it around: start with
+JSON, and then *extend* the parser to handle *jsonic*. Hmm. That looks
+like a general purpose idea! Other formats like YAML and TOML are
+achievable in the same way!
+
+
+<p class="eyebrow">How tabnas works</p>
+
+Let's step back and look at how *tabnas* works. That way you can see
+how the extensibility falls out of the basic algorithm. Not by
+design. It was a happy accident. But here we are.
+
+To parse `{"foo":1}` you want to break the source into a stream of
+tokens. This is called lexing. *Tabnas* has a set of registered lexers
+that do this part (and you add you own). They are mostly pretty
+braindead (but you can write context driven lexers - if you like) and
+just attempt to match in order of registration.
+
+After lexing we end up with a token stream:
+
+
+
+
+
+
+
 
 
 
