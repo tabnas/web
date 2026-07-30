@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1450"
+     height="860"
+     viewBox="0 0 1450 860"
+     role="img"
+     aria-label="JSON object beside aligned stack states">
+
+  <rect width="100%" height="100%" fill="#ffffff"/>
+
+  <style>
+    .json,
+    .stack {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      fill: #111111;
+      dominant-baseline: alphabetic;
+    }
+
+    .json {
+      font-size: 48px;
+    }
+
+    .stack {
+      font-size: 42px;
+    }
+  </style>
+
+  <g class="json">
+    <text x="70"  y="105">{</text>
+    <text x="115" y="195">"foo":</text>
+    <text x="205" y="285">[</text>
+    <text x="250" y="375">11,</text>
+    <text x="250" y="465">22</text>
+    <text x="205" y="555">]</text>
+    <text x="70"  y="645">}</text>
+  </g>
+
+  <g class="stack">
+    <text x="610" y="105">(map)</text>
+    <text x="610" y="195">(map, pair)</text>
+    <text x="610" y="285">(map, pair, list)</text>
+    <text x="610" y="375">(map, pair, list, value)</text>
+    <text x="610" y="465">(map, pair, list, value)</text>
+    <text x="610" y="555">(map, pair, list)</text>
+    <text x="610" y="645">(map, pair)</text>
+    <text x="610" y="735">(map)</text>
+  </g>
+
+</svg>

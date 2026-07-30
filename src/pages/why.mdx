@@ -14,17 +14,23 @@ import "../styles/why.css";
 
 <p class="eyebrow">Why tabnas</p>
 
+*tabnas* is a parsing engine that can handle any language. It is a
+compilation target, a "parser VM", providing a simple state and lookup
+engine. That makes it fast, and an easy target for agents. Humans can
+use compiled grammars like ABNF.
+
+The state and lookup engine architecture means it is very easy to
+extend. You write a parser for JSONC by adding rules to the parser for
+JSON, and you can keeping going all the way to YAML. Every grammer is
+a plugin, building on other plugins.
+
+The architecture also means you can get nice debugging since the
+states and lookups are easy to represent in multiple ways including
+visually, so you can see what's going on.
 
 
-I wanted to build a general parser that could be extended by
-plugins. Say you have plain old JSON, but the values could be
-expressions, not just fixed values. For example: `{ "foo": 1+2+3 }`. 
-Well, originally I wanted to build a better JSON parser (who
-doesn't?) that could handle a more relaxed syntax. I'm lazy and don't
-want to quote everything. That accidentally became an extensible parser.
 
-
-> # The TLDR
+> # The Technical TLDR
 >
 > *"A deterministic top-down predictive rule machine with bounded lookahead."*
 >
@@ -49,6 +55,13 @@ want to quote everything. That accidentally became an extensible parser.
 <br/><br/><br/><br/>
 
 # The Whole Story
+
+I wanted to build a general parser that could be extended by
+plugins. Say you have plain old JSON, but the values could be
+expressions, not just fixed values. For example: `{ "foo": 1+2+3 }`. 
+Well, originally I wanted to build a better JSON parser (who
+doesn't?) that could handle a more relaxed syntax. I'm lazy and don't
+want to quote everything. That accidentally became an extensible parser.
 
 <figure class="story-logo">
   <img src={mark.src} width="220" height="220" alt="The tabnas emblem" />
@@ -78,12 +91,18 @@ some random blog post, I decided, feck it, I'll just rewrite my JSON
 parser by hand!
 
 And the initial rewrite was just a manual recursive descent. But then
-I used some lookup tables to get better performance. And [JSON is very
-deterministic](https://www.json.org/), so only has a few rules. That
-make it easy-ish to convert recursive descent into a for-loop with a
+I used some lookup tables to get better performance. And [JSON is
+well-structured](https://www.json.org/), so only has a few rules. That
+makes it easy-ish to convert recursive descent into a for-loop with a
 stack. Entering each child structure (object or array), you push a
 stack entry representing a rule instance, and then pop it again on the
 way out.
+
+<img
+  src="/diagrams/json-stack.svg"
+  alt="JSON object and its corresponding parser stack states"
+/>
+
 
 My real goal was to go beyond JSON, and to parse
 *[jsonic](https://github.com/tabnas/jsonic)* - an extension to JSON
@@ -91,7 +110,7 @@ that has comments, no quotes, and the usual conveniences similar to
 [jsonc](https://jsonc.org/) and other variants. I needed to parse this
 specific dialect because it was used as a convenience format in a
 message-based microservices framework I wrote and maintain -
-(Seneca)[https://senecajs.org]. And also, yes, not-invented-here
+[Seneca](https://senecajs.org). And also, yes, not-invented-here
 syndrome, and just, *fun*.
 
 Also, the rewrite was my first serious TypeScript project. Thank
@@ -118,46 +137,271 @@ just attempt to match in order of registration.
 
 After lexing we end up with a token stream:
 
+```json
+{"foo":1}
+```
+
+becomes:
+
+```
+{   foo  :   1    }
+OB  KEY  CN  VAL  CB
+```
+
+where we give each token a code name, such as OB, "Open Brace", for `{`.
+
+Many parsing systems mix lexing (clumps of characters) and parsing
+(semantic units), forcing both into the grammar with equal status. For
+example ABNF format, used in most Internet RFCs, often looks like:
+
+```
+   FWS             =   ([*WSP CRLF] 1*WSP) /  obs-FWS
+                                          ; Folding white space
+
+   ctext           =   %d33-39 /          ; Printable US-ASCII
+                       %d42-91 /          ;  characters not including
+                       %d93-126 /         ;  "(", ")", or "\"
+                       obs-ctext
+
+   ccontent        =   ctext / quoted-pair / comment
+
+   comment         =   "(" *([FWS] ccontent) [FWS] ")"
+
+   CFWS            =   (1*([FWS] comment) [FWS]) / FWS
+```
+
+This is from https://datatracker.ietf.org/doc/html/rfc5322#section-3.2.2
+
+*tabnas* has a hard division, and is really all about the parsing
+stage. Lexing, as far as *tabnas* is concerned, is something you
+mostly do yourself, with handwritten functions, or regular
+expressions. Now, *tabnas* does provide you with a lot of tools to do
+this, but fundamentally, you think in terms of rules over tokens, not
+tokens over characters. Because in general, lexing is the easy and boring part.
 
 
 
 
+# Your First Mini Lang
+
+Let's make a grammar for a miniature language! How about adding
+numbers?
+
+```
+1+2+3 # and the result should be 6
+```
+
+The builtin lexer already handles numbers and fixed strings, so we can
+assume our tokens are:
+
+```
+NR - number
+PL - plus character
+```
+
+That means we have to parse this series of tokens:
+
+```
+NR PL NR PL NR
+```
+
+Each time we see a number `NR` we want to add it to the running total.
+If we see a plus character after a number, then we keep going,
+otherwise we're done.
+
+If you're familar with
+[ABNF](https://en.wikipedia.org/wiki/Augmented_Backus%E2%80%93Naur_form)
+(Augmented Backus-Naur Form) from [Internet
+RFCs](https://www.ietf.org/process/rfcs/), here is our little grammar:
+
+```
+val = add
+add = NR [ PL add ]
+
+NR = <number>
+PL = "+"
+```
+
+Even if you're not familiar with ABNF, this probably looks reasonable.
+We have a rule called `val` that is built from a child rule called
+`add`. The `add` rule is built from a number token `NR`, and then an
+optional section - a plus token `PL` followed by the `add` rule again.
+
+Now you could stop here and use the
+[@tabnas/abnf](https://github.com/tabnas/abnf) plugin to just compile
+this ABNF grammar and call it a day, but let's do the hard work
+ourselves.
+
+We'll use Typescript but you could also write this in Golang.
+
+Let's create a *tabnas* parser and define it's grammar. You can do
+this with declarative JSON (apart from actions). First, we set some
+options. We want to have a special custom token `PL` that represents
+the `+` character.  And we want to start with the grammar rule
+`val`. That means the top level of the grammar tree is a `val`,
+representing the final value of the additions.
+
+```ts
+const { Tabnas } = require('@tabnas/parser')
+
+// Create a new parser.
+const tn = new Tabnas()
+
+// Define the grammar.
+tn.grammar({
+
+  options: {
+
+    // Define a new token named #PL, a "+" character.
+    fixed: { token: { '#PL': '+' } },
+
+    // Start parsing at the 'val' rule.
+    rule: { start: 'val' },
+  },
+  ...
+```
+
+Now we can define our rules. Let's start with `val`, which sets up our
+accumulator for the addition, and expects to had `add` as a child rule:
+
+```ts
+  ...
+  rule: {
+  
+    // The 'val' rule holds the running total.
+    // Each rule instance has a 'node' representing its value.
+    val: {
+    
+      // Define the "opening" phase of the rule.
+      open:  [
+      
+        // This is an "alternate", it matches any tokens.
+        { 
+          // "push" down into an 'add' rule.
+          p: 'add', 
+          
+          // An "action" - set the counter to 0.
+          a: (r) => { r.node = 0 } 
+        }
+       ],
+  ...     
+```
+
+The `open` array is a list of *alternates*. We try to match tokens and
+then perform associated actions. But in this case we are just
+starting, in the "open" state of the `val` rule, so we don't look at
+any tokens, we just immediately "push" the `add` rule onto the rule
+stack. That means the `add` rule is the next rule to run.
+
+Our action at this point is to set our result value to 0, since
+nothing has been added yet. Every rule gets an instance, and each rule
+instance has a `node` value, where you store the value of that rule.
+
+let's do some addition!
+
+```ts
+    ...
+    
+    // The 'add' rule performs the addition.
+    add: {
+      open:  [
+        { 
+          // Match a number - #NR is a built-in token for numbers.
+          s: '#NR',
+          
+          // Add the number to the total.
+          a: (r) => { 
+            r.parent.node +=  // The parent is the 'val'. 
+              r.o[0].val      // Get the value of the first opening token. 
+          } 
+        }
+      ],
+    ...
+```
+
+Most alternates try to match a sequence of tokens. In this case the
+first alternate of the `add` rule looks for `NR`, a number. Token
+names are prefixed with `#` to make them easier to see.
+
+If we do match a number, our action is to add it to the running total
+we set up in the `val` rule. We get our parent's node
+(`r.parent.node`) and add the value of the first token we matched
+(`r.o[0].val`).  We're in the "open" state, so `r.o` holds the
+sequence of tokens we matched.  The `val` field of a token holds it's
+evaluated value, which for numbers `NR`, is an actual numeric value
+(thanks lexer!).
+
+Now what?
+
+Well we can't go any deeper, there are no child rules. So the "open"
+state transitions to the "close" - we bounce off the bottom of the
+rule stack. Now we're going back up again.
+
+```ts
+  ...
+    add:
+      ...
+      close: [
+        // If there is a "+" following the number, keep going.
+        { 
+          s: '#PL', // This is our "+" token, #PL
+          r: 'add'  // 'Repeat" the 'add' rule
+        }, 
+        
+        // Else end the rule.
+        {}
+      ]
+  ...
+```
+
+In the first alternate, we try to match a plus token (`PL`). If it
+does match, we "repeat" the rule - run the `add` rule again. A new
+instance starts in the "open" state, looking for another number to add.
+
+If the first alternate does not match, then we hit the second
+alternate, and do nothing. This will close our rule, and head back up
+to the `val` rule. We do need this empty alternate, because when no
+alternate matches, that's a parse error.
+
+Now we're back up the stack, closing the `val` rule:
+
+```
+  ...
+  val:
+    ...
+    close: {
+      // Define the "closing" phase of the rule.
+      close: [
+        {} // Ending "alternate" - does nothing.
+      ]
+  ...
+```
+
+Again nothing to do, so we successfully complete the parse. The
+grammar has accepted the input, and we return the value of the top
+level `node`:
+
+```
+tn.parse('1+2+3')   // => 6
+```
+
+To recap, you have rules, they can have two states, open and close.
+Each rule state has a list of alternated, checked in turn. Each
+alternate can push a new rule onto the rule stack, or repeat a rule at
+the same stack position. Parsing ends when you've walked all the way
+back up the rule stack. Hence, *Tábla na nAistrithe*, a Table of
+Transitions.
+
+You can do this at three levels. You've seen the human friendly ANBF
+grammar, and you've seen the agent friendly JSON version. You can also
+build grammars at the lowest level - a programmatic API. This lets you
+create *parameterised* grammars. Many of the standard plugins use this
+method, so all you have to worry about is configuration. see for
+example [@tabnas/directive](https://github.com/tabnas/directive), or
+the monster [@tabnas/expr](https://github.com/tabnas/expr).
 
 
-
-
-
-
-
-
-
-----
-
-
-# A grammar is a table of translations.
-
-<p class="lede">
-  Parsing is a solved problem — and yet every team solves it again, badly,
-  once per language and once per runtime. tabnas exists to stop that.
-</p>
-
-## The problem
-
-Reach for a parser today and you pick a compromise:
-
-- **Hand-rolled parsers** are fast to start and slow to trust. Edge cases
-  pile up, the code becomes the spec, and no two are alike.
-- **Regex** works until the language nests — then it quietly gives wrong
-  answers instead of errors.
-- **Parser generators** (ANTLR, tree-sitter, PEG tools) give you a grammar,
-  but also a build step, generated code to keep in sync, and a runtime that
-  usually only speaks one language well.
-
-And when you need the _same_ language in more than one place — a Node service
-and a Go binary, an editor plugin and a CLI — you write it twice and watch the
-two drift apart.
-
-## The tabnas approach
+# The tabnas approach
 
 <CardGrid>
   <Card title="The grammar is the parser">
@@ -176,33 +420,6 @@ two drift apart.
   </Card>
 </CardGrid>
 
-## Where it fits
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr><th>Approach</th><th>Grammar as source of truth</th><th>Build step</th><th>Same in TS & Go</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Hand-written parser</td><td>No</td><td>No</td><td>Rewrite per language</td></tr>
-      <tr><td>Regex</td><td>No</td><td>No</td><td>Rewrite, and fragile</td></tr>
-      <tr><td>Parser generator</td><td>Yes</td><td>Yes (codegen)</td><td>Usually one runtime</td></tr>
-      <tr class="hi"><td>tabnas</td><td>Yes</td><td>No</td><td>Yes — canonical + tracked</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<p class="fine">
-  tabnas isn't the fastest parser for every workload, and it isn't trying to
-  be a full compiler toolchain. It's the shortest path from "I have a
-  grammar" to "I have a parser I can trust, everywhere I run."
-</p>
-
-## The name
-
-**tabnas** is Irish — _{SITE_MOTTO}_, "a table of translations." That's
-exactly what a grammar is: a table that turns one form into another. The
-emblem is that table, illuminated.
 
 <div class="cta-row">
   <a class="btn primary" href="/docs/quickstart">Start building</a>
