@@ -21,7 +21,7 @@ use compiled grammars like ABNF.
 
 The state and lookup engine architecture means it is very easy to
 extend. You write a parser for JSONC by adding rules to the parser for
-JSON, and you can keeping going all the way to YAML. Every grammer is
+JSON, and you can keep going all the way to YAML. Every grammar is
 a plugin, building on other plugins.
 
 The architecture also means you can get nice debugging since the
@@ -209,7 +209,7 @@ Each time we see a number `NR` we want to add it to the running total.
 If we see a plus character after a number, then we keep going,
 otherwise we're done.
 
-If you're familar with
+If you're familiar with
 [ABNF](https://en.wikipedia.org/wiki/Augmented_Backus%E2%80%93Naur_form)
 (Augmented Backus-Naur Form) from [Internet
 RFCs](https://www.ietf.org/process/rfcs/), here is our little grammar:
@@ -234,7 +234,7 @@ ourselves.
 
 We'll use Typescript but you could also write this in Golang.
 
-Let's create a *tabnas* parser and define it's grammar. You can do
+Let's create a *tabnas* parser and define its grammar. You can do
 this with declarative JSON (apart from actions). First, we set some
 options. We want to have a special custom token `PL` that represents
 the `+` character.  And we want to start with the grammar rule
@@ -262,7 +262,7 @@ tn.grammar({
 ```
 
 Now we can define our rules. Let's start with `val`, which sets up our
-accumulator for the addition, and expects to had `add` as a child rule:
+accumulator for the addition, and expects to have `add` as a child rule:
 
 ```ts
   ...
@@ -345,7 +345,7 @@ rule stack. Now we're going back up again.
         // If there is a "+" following the number, keep going.
         { 
           s: '#PL', // This is our "+" token, #PL
-          r: 'add'  // 'Repeat" the 'add' rule
+          r: 'add'  // "Repeat" the 'add' rule
         }, 
         
         // Else end the rule.
@@ -365,15 +365,14 @@ alternate matches, that's a parse error.
 
 Now we're back up the stack, closing the `val` rule:
 
-```
+```ts
   ...
   val:
     ...
-    close: {
-      // Define the "closing" phase of the rule.
-      close: [
-        {} // Ending "alternate" - does nothing.
-      ]
+    // Define the "closing" phase of the rule.
+    close: [
+      {} // Ending "alternate" - does nothing.
+    ]
   ...
 ```
 
@@ -386,17 +385,17 @@ tn.parse('1+2+3')   // => 6
 ```
 
 To recap, you have rules, they can have two states, open and close.
-Each rule state has a list of alternated, checked in turn. Each
+Each rule state has a list of alternates, checked in turn. Each
 alternate can push a new rule onto the rule stack, or repeat a rule at
 the same stack position. Parsing ends when you've walked all the way
 back up the rule stack. Hence, *Tábla na nAistrithe*, a Table of
 Transitions.
 
-You can do this at three levels. You've seen the human friendly ANBF
+You can do this at three levels. You've seen the human friendly ABNF
 grammar, and you've seen the agent friendly JSON version. You can also
 build grammars at the lowest level - a programmatic API. This lets you
 create *parameterised* grammars. Many of the standard plugins use this
-method, so all you have to worry about is configuration. see for
+method, so all you have to worry about is configuration. See for
 example [@tabnas/directive](https://github.com/tabnas/directive), or
 the monster [@tabnas/expr](https://github.com/tabnas/expr).
 
