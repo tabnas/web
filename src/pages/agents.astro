@@ -166,12 +166,11 @@ const groups = ORDER.map((tier) => ({
       <Heading level={3} id="named-refs">Named refs — code, bound out of band</Heading>
       <p>
         Keeps the grammar declarative while the code lives in the host
-        program. Two kinds of name: alternate marks, which fire as tokens are
-        matched, and rule-phase hooks (<code>bo</code>, <code>ao</code>,
+        program. Two kinds of name: alternate marks (open- or close-phase),
+        and rule-phase hooks (<code>bo</code>, <code>ao</code>,
         <code>bc</code>, <code>ac</code> — before/after open and close).
-        <code>ac</code> is where a rule's children are complete, so a fold
-        belongs there. Keep results on the node, not in a variable outside the
-        parse, so the grammar stays reusable.
+        Keep results on the node, not in a variable outside the parse, so
+        the grammar stays reusable.
       </p>
       <pre><code>{`tn.abnf(\`
   val = add
@@ -179,14 +178,11 @@ const groups = ORDER.map((tier) => ({
   PL  = "+"
 \`, {
   actions: {
-    // Each 'add' holds its own number...
-    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+    // 'val' holds the running total.
+    '@val:o:add': (r) => { r.node.value = 0 },
 
-    // ...plus whatever the nested 'add' came to.
-    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
-
-    // 'val' carries the result of the parse.
-    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
+    // Each number adds to it.
+    '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
   },
 })
 
@@ -248,12 +244,14 @@ add: {
           left-nested, and a purely left-recursive rule is an error.
         </li>
         <li>
-          <strong>ABNF desugars <code>[ … ]</code> and <code>( … )</code></strong>
-          into generated group rules, so at runtime a rule's
-          <code>parent</code> is often a synthetic rule rather than the one
-          above it in your source. Don't accumulate onto <code>r.parent</code>
-          in an ABNF-compiled grammar; use a rule-phase hook, or define the
-          grammar as data where you control the shape.
+          <strong>A tail self-reference compiles to a repeat.</strong>
+          <code>X = prefix [ sep X ]</code> becomes a same-depth
+          <code>r:</code> repeat, so <code>r.parent</code> is the wrapping
+          rule for every repetition and <code>r.parent.node</code> is the
+          accumulator idiom — identical to a hand-written table. Other sugar
+          (<code>( … )</code>, <code>*( … )</code>) still desugars into
+          generated group rules, where <code>parent</code> may be synthetic;
+          check with <code>tabnas-abnf --marks</code>.
         </li>
         <li>
           <strong>Empty alternates matter.</strong> A phase with no matching

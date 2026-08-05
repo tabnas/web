@@ -140,9 +140,11 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
   <section class="example">
     <Heading level={2} id="a-grammar-end-to-end">A grammar, end to end</Heading>
     <p class="sec-note">
-      Addition, four times: the grammar as a person writes it, the same grammar
-      as data, and then the two ways to attach behaviour — by reference, and
-      inline.
+      Addition, four times: the grammar as a person writes it, the same
+      grammar as data, and the same two actions attached two ways — by
+      reference to the ABNF, and inline on the rule table. Steps 3 and 4
+      compute the same total with the same logic, because the ABNF compiles
+      to the table.
     </p>
 
     <div class="code-cols">
@@ -197,14 +199,11 @@ tn.abnf(\`
   PL  = "+"
 \`, {
   actions: {
-    // Each 'add' holds its own number...
-    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+    // 'val' holds the running total.
+    '@val:o:add': (r) => { r.node.value = 0 },
 
-    // ...plus whatever the nested 'add' came to.
-    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
-
-    // 'val' carries the result of the parse.
-    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
+    // Each number adds to it.
+    '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
   },
 })
 
@@ -215,24 +214,20 @@ tn.parse('12+3+45').value   // => 60`}</code></pre>
           <p class="code-note wide">
             The grammar is exactly the ABNF from step 1 — valid RFC 5234,
             nothing added to it. Behaviour binds out of band, through names the
-            compiler already assigns.
+            compiler already assigns: <code>'@val:o:add'</code> is the
+            <code>val</code> rule's alternate that pushes <code>add</code>;
+            <code>'@add:o:NR'</code> is the <code>add</code> rule's alternate
+            on an <code>NR</code> token. Ask the compiler which marks a grammar
+            has with <code>tabnas-abnf --marks</code> rather than guessing.
           </p>
           <p class="code-note wide">
-            Two kinds of name. <code>'@add:o:NR'</code> is an <em>alternate
-            mark</em>: the <code>add</code> rule, its <b>o</b>pen phase, on an
-            <code>NR</code> token. <code>'@add:ac'</code> and
-            <code>'@val:ac'</code> are <em>rule-phase hooks</em> — <b>a</b>fter
-            <b>c</b>lose, on the way back up. There are <code>bo</code>,
-            <code>ao</code> and <code>bc</code> hooks too. Ask the compiler
-            which marks a grammar has with <code>tabnas-abnf --marks</code>
-            rather than guessing at names.
-          </p>
-          <p class="code-note wide">
-            The total lands on <code>val</code>'s node, not in a variable
-            outside the parse, so <code>parse</code> returns it and the same
-            instance can parse anything else without carrying state between
-            calls. Each <code>add</code> totals its own subtree on the way up;
-            <code>val</code> takes the result.
+            These are <strong>the same two actions, on the same two rules, as
+            step 4 below</strong> — because the compiler emits the same shape.
+            The tail self-reference <code>[ PL add ]</code> compiles to the
+            <code>r: 'add'</code> close-phase repeat that step 4 declares by
+            hand, so <code>r.parent</code> is <code>val</code> for every
+            repetition, and the total lands on <code>val</code>'s node, where
+            <code>parse</code> returns it.
           </p>
           <p class="code-note wide">
             This is what keeps the grammar a compile target: the text a person
