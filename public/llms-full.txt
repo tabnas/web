@@ -50,19 +50,24 @@ itself. The Go path mirrors this via `github.com/tabnas/parser/go`.
 
 Recognising is not computing. To get a value, attach actions by reference:
 
-    let total = 0
-
     tn.abnf(GRAMMAR, {
       actions: {
-        '@val:bo':   () => { total = 0 },
-        '@add:o:NR': (r) => { total += r.o[0].val },
+        // Each `add` holds its own number...
+        '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+        // ...plus whatever the nested `add` came to.
+        '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
+        // `val` carries the result of the parse.
+        '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
       },
     })
 
-    tn.parse('1+2+3')   // total === 6
+    tn.parse('1+2+3').value   // => 6
 
-`@val:bo` is a rule-phase hook (before-open, so once per parse); `@add:o:NR` is
-an alternate mark. Mark names are assigned by the compiler — list them with
+`@add:o:NR` is an alternate mark, firing as a token is matched. `@add:ac` and
+`@val:ac` are rule-phase hooks — after-close, on the way back up, which is when
+a rule's children are complete and can be folded in. Keep results on the node
+rather than in a variable outside the parse, so the grammar stays reusable.
+Mark names are assigned by the compiler — list them with
 `tabnas-abnf --marks -f grammar.abnf` rather than guessing.
 
 ## The rule table

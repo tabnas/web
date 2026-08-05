@@ -37,30 +37,37 @@ assigns. This is the form to use with ABNF, because it keeps the ABNF valid
 RFC 5234.
 
 ```ts
-let total = 0
-
 tn.abnf(`
   val = add
   add = NR [ PL add ]
   PL  = "+"
 `, {
   actions: {
-    '@val:bo':   () => { total = 0 },
-    '@add:o:NR': (r) => { total += r.o[0].val },
+    // Each `add` holds its own number...
+    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+
+    // ...plus whatever the nested `add` came to.
+    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
+
+    // `val` carries the result of the parse.
+    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
   },
 })
 
-tn.parse('1+2+3')     // total === 6
-tn.parse('12+3+45')   // total === 60
+tn.parse('1+2+3').value     // => 6
+tn.parse('12+3+45').value   // => 60
 ```
+
+The total lands on `val`'s node rather than in a variable outside the parse,
+so `parse` returns it and the instance carries no state between calls.
 
 Two kinds of name:
 
-- **Rule-phase hooks** — `@<rule>:bo`, `:ao`, `:bc`, `:ac` for before/after
-  open and close. `@val:bo` runs once at the start, which is why re-parsing
-  needs no cleanup here.
 - **Alternate marks** — `@<rule>:<phase>:<mark>`, where the mark comes from the
-  alternate's leading discriminator.
+  alternate's leading discriminator. These fire as tokens are matched.
+- **Rule-phase hooks** — `@<rule>:bo`, `:ao`, `:bc`, `:ac` for before/after
+  open and close. `ac` is where a rule's children are complete, so it's where
+  a fold belongs.
 
 ### Finding the mark names
 

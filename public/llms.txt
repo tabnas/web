@@ -47,5 +47,6 @@
 - Every package ships tested, runnable README examples (`// =>` assertions are
   executed in CI).
 - A minimal end-to-end example (ABNF): `val = add` / `add = NR [ PL add ]` /
-  `PL = "+"` parses `1+2+3`; with the actions `'@val:bo'` (zero a running
-  total) and `'@add:o:NR'` (`total += r.o[0].val`) it yields `6`.
+  `PL = "+"` parses `1+2+3`. Add `'@add:o:NR'` to record each number on its
+  node, `'@add:ac'` to fold in the nested `add`, and `'@val:ac'` to lift the
+  result, and `parse('1+2+3').value` is `6`.

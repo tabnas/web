@@ -50,20 +50,25 @@ by rule and phase. There are two forms:
 
 - `'@add:o:NR'` — an **alternate** action: runs when the `add` rule opens on an
   `NR` token. The trailing mark is the alternate's leading discriminator.
-- `'@val:bo'` — a **rule-phase** hook: before-open. Also `ao`, `bc`, `ac` for
-  after-open, before-close and after-close.
+- `'@add:ac'` — a **rule-phase** hook: after-close. Also `bo`, `ao` and `bc`
+  for before-open, after-open and before-close. `ac` is where a rule's
+  children are complete, so it's where a fold belongs.
 
 ```ts
-let total = 0
-
 tn.abnf(`
   val = add
   add = NR [ PL add ]
   PL  = "+"
 `, {
   actions: {
-    '@val:bo':   () => { total = 0 },
-    '@add:o:NR': (r) => { total += r.o[0].val },
+    // Each `add` holds its own number...
+    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+
+    // ...plus whatever the nested `add` came to.
+    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
+
+    // `val` carries the result of the parse.
+    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
   },
 })
 ```
