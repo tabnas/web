@@ -1,25 +1,32 @@
 # tabnas — full text for language models
 
-> tabnas is a polyglot parser engine. You describe a language once as a grammar
-> and get a working parser that builds a small, uniform `{ rule, src, kids }`
-> syntax tree — the same grammar and the same tree in TypeScript and Go.
-> TypeScript is canonical; Go tracks it exactly, verified against shared
-> fixtures. Grammars can be hand-written or compiled from RFC 5234 ABNF. Open
-> source (MIT), sponsored by Voxgig. Site: https://tabnas.dev
+> tabnas is an extensible parsing engine and a compile target for agents. A
+> grammar is data — a table of rules and token alternates the engine walks at
+> runtime — so a new language is usually rules added to one that already
+> parses, rather than a new parser. Because that data is flat and declarative,
+> a language model can emit a grammar directly, and you can check it before
+> running it. Implemented in TypeScript and Go. Open source (MIT), sponsored
+> by Voxgig. Site: https://tabnas.dev
 
 ## What tabnas is
 
-A grammar in tabnas is not turned into generated code — the grammar *is* the
-parser. Install a grammar package (or compile ABNF at runtime) and it parses
-input directly. You can inspect a live grammar, render it back to ABNF, or draw
-it as a railroad diagram.
+A grammar is not turned into generated code — the grammar *is* the parser, a
+table the engine walks. Install a grammar package, compile ABNF at runtime, or
+write the table directly. Because it stays data, you can inspect a live
+grammar, render it back to ABNF, or draw it as a railroad diagram.
 
-"tabnas" is Irish — *Tábla na nAistrithe*, "a table of translations." A grammar
-is exactly that: a table that turns one form into another.
+Two consequences, and they are why the project exists:
+
+1. **Extension is cheap.** JSONC is JSON with comments; jsonic is JSONC with
+   the quoting relaxed. You add rules to a grammar that already parses rather
+   than forking a parser.
+2. **The engine is a good compile target.** ABNF compiles into it, for humans.
+   And the rule table is flat declarative data with no control flow, which is a
+   shape a model can emit reliably.
+
+"tabnas" is Irish — *Tábla na nAistrithe*, "a table of translations."
 
 ## Quickstart (TypeScript)
-
-Install:
 
     npm install @tabnas/parser @tabnas/abnf
 
@@ -30,23 +37,90 @@ Define a grammar in ABNF and parse:
 
     const tn = new Tabnas({ plugins: [abnf] })
     tn.abnf(`
+      val = add
       add = NR [ PL add ]
       PL  = "+"
     `)
 
     tn.parse('1+2+3')
-    // => { rule: 'add', src: '1+2+3', kids: [ { rule: 'PL', src: '+', kids: [] }, ... ] }
+    // => { rule: 'val', src: '1+2+3', kids: [ ... ] }
 
 `NR` is the built-in number token; `[ ... ]` is optional; a rule may refer to
 itself. The Go path mirrors this via `github.com/tabnas/parser/go`.
 
+Recognising is not computing. To get a value, attach actions by reference:
+
+    let total = 0
+
+    tn.abnf(GRAMMAR, {
+      actions: {
+        '@val:bo':   () => { total = 0 },
+        '@add:o:NR': (r) => { total += r.o[0].val },
+      },
+    })
+
+    tn.parse('1+2+3')   // total === 6
+
+`@val:bo` is a rule-phase hook (before-open, so once per parse); `@add:o:NR` is
+an alternate mark. Mark names are assigned by the compiler — list them with
+`tabnas-abnf --marks -f grammar.abnf` rather than guessing.
+
+## The rule table
+
+The grammar format, which is what an agent should emit:
+
+    {
+      options: {
+        fixed: { token: { '#PL': '+' } },
+        rule:  { start: 'val' },
+      },
+      rule: {
+        val: { open: [ { p: 'add' } ], close: [ {} ] },
+        add: {
+          open:  [ { s: '#NR' } ],
+          close: [ { s: '#PL', r: 'add' }, {} ],
+        },
+      },
+    }
+
+Alternate fields: `s` matches a token sequence (its length sets this
+alternate's lookahead depth); `p` pushes a child rule; `r` repeats a rule at
+the same stack depth; `a` is an action; `c` a condition; `{}` is the empty
+alternate that ends a phase.
+
+`p` versus `r` matters: push nests, so the child's parent is the pushing rule;
+repeat stays flat, so every repetition shares one parent — which is what makes
+an accumulator a single value in one place.
+
+Engine `$`-builtin actions are referenced by name, so a grammar can be pure
+JSON with no functions in it: `@object$`, `@array$`, `@key$`, `@setval$`,
+`@push$`, `@value$`, `@reset$` (native values), and `@node$`, `@capture$`,
+`@bubble$` (tree building).
+
+    { "rule": { "val": {
+      "open":  [ { "s": "#NR", "a": "@value$" } ],
+      "close": [ {} ]
+    } } }
+    // tn.parse('42')  =>  42
+
 ## The syntax tree
 
-Every parse yields the same shape:
+Every parse through the ABNF compiler yields the same shape:
 
     { rule: string, src: string, kids: Node[] }
 
 so walkers, actions, and tooling written once apply to every grammar.
+
+## Constraints
+
+- Deterministic: alternates are tried in order, first match wins.
+- No backtracking, and no ambiguity — one parse per input, or an error.
+- Lookahead depth is declared by each alternate; there is no fixed ceiling.
+- You write the lexer. tabnas separates lexing from parsing and is mostly about
+  the parsing half; built-in tokens and fixed tokens cover a lot.
+- ABNF desugars `[ ... ]` and `( ... )` into generated group rules, so at
+  runtime a rule's `parent` is often synthetic rather than the rule above it in
+  your source.
 
 ## ABNF notes
 
@@ -54,37 +128,55 @@ so walkers, actions, and tooling written once apply to every grammar.
 - Built-in tokens by bareword: `NR` (number), plus core rules like `ALPHA`,
   `DIGIT`.
 - Left recursion is accepted and rewritten (Paull's algorithm): `P = P a / b`
-  becomes `P = b *(a)`. A purely left-recursive rule (no base branch) is an
-  error.
-- Actions attach via `@ref` references (e.g. `'@add:o:NR'`).
+  becomes `P = b *(a)`. The tree comes out flat rather than left-nested, and a
+  purely left-recursive rule (no base branch) is an error.
 
 ## Packages
 
-Core (npm `@tabnas/<name>`, Go `github.com/tabnas/<name>/go`):
+25 in total (npm `@tabnas/<name>`, Go `github.com/tabnas/<name>/go`). Full list
+with current versions: https://tabnas.dev/releases
 
-- parser — the engine.
-- abnf — compile RFC 5234 ABNF into a working grammar.
-- debug — inspect a live grammar; describe it or render it back to ABNF.
-- json — a complete JSON grammar.
-- railroad — draw railroad (syntax) diagrams from a grammar.
+- Engine: parser
+- Grammar tooling: abnf, debug, railroad
+- Languages and formats: json, jsonc, json5, jsonic, yaml, toml, ini, csv, xml,
+  markdown, css, c, proto, zon, feed
+- Syntax plugins: expr, directive, hoover, path, multisource
+- Command line: jsonic-cli
 
-Plugins: jsonic, yaml, csv, and more — see https://github.com/tabnas.
+Everything is pre-1.0 — pin exact versions.
 
 ## For agents
 
-- Constrain LLM output to a grammar, then parse the response — malformed output
-  fails at a known position instead of corrupting downstream state.
-- Parse agent DSLs / tool-call syntaxes identically in TS and Go.
+- Check whether an existing grammar parses something close to your format and
+  extend it before writing anything. That is the mechanism the engine exists
+  for, and the cheapest path.
+- Prefer emitting a rule table with `$`-builtin actions: it stays pure JSON,
+  which is checkable and serialisable.
+- Every package repository ships an `AGENTS.md`.
 - Every package ships tested, runnable README examples (`// =>` assertions are
   executed in CI).
+- Build guide for agents: https://tabnas.dev/agents
 - Machine-readable index: https://tabnas.dev/llms.txt
+
+## Real languages built on tabnas
+
+- aontu (TypeScript) — a CUE-like JSON structure unifier, assembled from the
+  jsonic, expr, directive, multisource, path and debug plugins with no parser
+  of its own. https://github.com/rjrodger/aontu
+- boru (Go) — a typed, word-based query language with parser, type checker,
+  formatter and LSP, built on parser, jsonic, abnf, csv and expr.
+  https://github.com/boru-lang/boru
 
 ## Links
 
 - Home: https://tabnas.dev/
 - Why: https://tabnas.dev/why
-- Quickstart: https://tabnas.dev/docs/quickstart
-- Playground: https://tabnas.dev/playground
+- Agents: https://tabnas.dev/agents
 - Docs: https://tabnas.dev/docs
+- Quickstart: https://tabnas.dev/docs/quickstart
+- Rule table reference: https://tabnas.dev/docs/rule-table
+- Playground: https://tabnas.dev/playground
+- Examples: https://tabnas.dev/examples
+- FAQ: https://tabnas.dev/faq
 - GitHub: https://github.com/tabnas
 - npm: https://www.npmjs.com/org/tabnas
