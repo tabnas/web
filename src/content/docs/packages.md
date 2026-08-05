@@ -2,7 +2,7 @@
 title: Packages
 description: The core engine and the ready-made grammar packages.
 section: Reference
-order: 1
+order: 2
 ---
 
 Every package is published to npm under the `@tabnas/*` scope and, where

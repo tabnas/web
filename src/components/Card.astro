@@ -1,16 +1,21 @@
 ---
 // One cell of a <CardGrid>. The body is the slot — in MDX, write plain
 // markdown between the tags. With `href` the whole card is a link.
+import { slugify } from "../utils/slug";
+
 interface Props {
   title: string;
   href?: string;
   /** Heading level for the title; pick to fit the page outline. */
   level?: "h2" | "h3";
+  /** Override the derived fragment id. */
+  id?: string;
 }
-const { title, href, level = "h3" } = Astro.props;
+const { title, href, level = "h3", id } = Astro.props;
 const Tag = href ? "a" : "article";
 const external = href?.startsWith("http");
 const Heading = level;
+const slug = id ?? slugify(title);
 ---
 
 <Tag
@@ -19,7 +24,14 @@ const Heading = level;
   target={external ? "_blank" : undefined}
   rel={external ? "noopener" : undefined}
 >
-  <Heading>{title}</Heading>
+  <Heading id={slug}>
+    {title}
+    {/* A whole-card link would swallow a nested anchor, so only plain
+        (non-href) cards get one. */}
+    {!href && (
+      <a class="heading-anchor" href={`#${slug}`} aria-hidden="true" tabindex="-1">#</a>
+    )}
+  </Heading>
   <slot />
 </Tag>
 

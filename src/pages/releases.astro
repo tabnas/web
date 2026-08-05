@@ -1,0 +1,159 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { PACKAGES, TIER_LABEL, NPM, REPO, GODOC, STATUS_URL, GITHUB_ORG } from "../consts";
+import type { Tier } from "../consts";
+
+const ORDER: Tier[] = ["engine", "tooling", "grammar", "plugin", "cli"];
+const groups = ORDER.map((tier) => ({
+  tier,
+  label: TIER_LABEL[tier],
+  items: PACKAGES.filter((p) => p.tier === tier),
+})).filter((g) => g.items.length);
+---
+
+<Base
+  wide
+  title="Releases"
+  description="Every tabnas package, its current version, and where to find its source, npm package, and Go module."
+>
+  <article class="releases">
+    <Heading level={1} id="releases">Releases</Heading>
+    <p class="lede">
+      {PACKAGES.length} packages, most of them a grammar extending another
+      grammar in this list. Each is released from its own repository, and
+      publishes to npm as <code>@tabnas/&lt;name&gt;</code> and to Go as
+      <code>github.com/tabnas/&lt;name&gt;/go</code>.
+    </p>
+
+    <p class="note">
+      Everything is pre-1.0. Minor versions can break things, and the engine
+      version leads — grammar packages track the engine release they were built
+      against. Per-repository CI and publish state is on the
+      <a href={STATUS_URL} target="_blank" rel="noopener">org status page</a>;
+      release notes live on each repository's GitHub releases tab.
+    </p>
+
+    {groups.map((g) => (
+      <section class="group">
+        <Heading level={2} id={g.tier}>{g.label}</Heading>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Version</th>
+                <th>What it does</th>
+                <th>Links</th>
+              </tr>
+            </thead>
+            <tbody>
+              {g.items.map((p) => (
+                <tr>
+                  <th scope="row"><code>@tabnas/{p.name}</code></th>
+                  <td>
+                    <span class="ver" data-pkg={p.name}>{p.version}</span>
+                  </td>
+                  <td class="what">{p.blurb}</td>
+                  <td class="links">
+                    <a href={REPO(p.name)} target="_blank" rel="noopener">source</a>
+                    <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>
+                    <a href={GODOC(p.name)} target="_blank" rel="noopener">go</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+
+    <section class="group">
+      <Heading level={2} id="following-along">Following along</Heading>
+      <ul>
+        <li>
+          Watch or star a repository in the
+          <a href={GITHUB_ORG} target="_blank" rel="noopener">tabnas org</a> to get
+          its release notifications.
+        </li>
+        <li>
+          What the project will and won't take on is on the
+          <a href="/faq#scope">FAQ</a>.
+        </li>
+        <li>
+          Languages built on the engine are on <a href="/examples">examples</a>.
+        </li>
+      </ul>
+    </section>
+  </article>
+</Base>
+
+<script is:inline>
+  // Replace the checked-in versions with what's actually on npm. The registry
+  // is CORS-enabled and unmetered, unlike the GitHub API (60 req/hr per IP),
+  // so one small request per package is fine. Best-effort: if a call fails,
+  // the server-rendered version stands.
+  (async () => {
+    const cells = document.querySelectorAll(".ver[data-pkg]");
+    if (!cells.length) return;
+    await Promise.all(
+      [...cells].map(async (cell) => {
+        try {
+          const res = await fetch(
+            `https://registry.npmjs.org/@tabnas%2F${cell.dataset.pkg}/latest`,
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data.version) return;
+          if (data.version !== cell.textContent.trim()) cell.classList.add("moved");
+          cell.textContent = data.version;
+          cell.classList.add("live");
+          cell.title = "Latest version on npm";
+        } catch {
+          /* keep the server-rendered version */
+        }
+      }),
+    );
+  })();
+</script>
+
+<style>
+  .releases { max-width: 60rem; }
+  .releases :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+  .note { color: var(--ink-soft); font-size: 0.95rem; max-width: 68ch; }
+
+  .group { margin-top: 3rem; }
+  .releases :global(h2) { font-size: 1.5rem; margin: 0 0 0.85rem; }
+
+  /* Fixed widths so the column positions line up across the group tables. */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: 0.95rem; }
+  th:nth-child(1), td:nth-child(1) { width: 12rem; }
+  th:nth-child(2), td:nth-child(2) { width: 5rem; }
+  th:nth-child(4), td:nth-child(4) { width: 10rem; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
+    font-weight: 400; white-space: nowrap;
+  }
+  tbody th { font-weight: 400; white-space: nowrap; }
+  tbody th code { font-size: 0.85rem; }
+  .ver {
+    font-family: var(--font-mono); font-size: 0.85rem;
+    color: var(--ink-soft); font-variant-numeric: tabular-nums;
+  }
+  .ver.live { color: var(--primary); }
+  .what { color: var(--ink-soft); }
+  .links { white-space: nowrap; }
+  .links a { margin-right: 0.75rem; font-size: 0.85rem; }
+
+  ul { color: var(--ink-soft); padding-left: 1.2rem; }
+  li { margin-bottom: 0.5rem; }
+
+  @media (max-width: 720px) {
+    .what { display: none; }
+    thead th:nth-child(3) { display: none; }
+  }
+</style>

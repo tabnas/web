@@ -16,13 +16,15 @@
 		"@astrojs/mdx": "4.3.13",
 		"@astrojs/rss": "4.0.14",
 		"@astrojs/sitemap": "3.6.1",
-		"@tabnas/abnf": "^0.2.3",
-		"@tabnas/parser": "^0.3.2",
+		"@tabnas/abnf": "0.2.4",
+		"@tabnas/parser": "0.4.1",
 		"astro": "5.16.9",
 		"typescript": "5.9.3"
 	},
 	"devDependencies": {
 		"pagefind": "^1.5.2",
+		"rehype-autolink-headings": "7.1.0",
+		"rehype-slug": "6.0.0",
 		"wrangler": "4.88.0"
 	},
 	"engines": {
@@ -31,13 +33,12 @@
 	"private": true,
 	"scripts": {
 		"astro": "astro",
-		"build": "astro build && (pagefind --site dist || echo \"pagefind: no static HTML yet (SSR gate) — index will build at static launch\")",
+		"build": "astro build && pagefind --site dist",
 		"cf-typegen": "wrangler types",
 		"check": "astro build && tsc && wrangler deploy --dry-run",
 		"deploy": "wrangler deploy",
 		"dev": "astro dev",
-		"preview": "astro build && wrangler dev",
-		"build:static": "astro build && pagefind --site dist"
+		"preview": "astro build && wrangler dev"
 	},
 	"type": "module"
 }

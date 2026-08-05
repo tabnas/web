@@ -1,0 +1,156 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { REPO, GITHUB_ORG } from "../consts";
+
+// Real languages built on the engine. Package lists are read from each
+// project's own manifests — keep them accurate, or drop them.
+const PROJECTS = [
+  {
+    id: "aontu",
+    name: "aontu",
+    url: "https://github.com/rjrodger/aontu",
+    tagline: "A JSON structure unifier, in TypeScript",
+    runtime: "TypeScript · also ported to Go",
+    uses: ["jsonic", "expr", "directive", "multisource", "path", "debug"],
+    body: [
+      `Aontu unifies JSON structures: you write schemas and unification rules,
+       and it folds many partial configurations into one consistent result. The
+       language is a purpose-specific dialect of CUE — compact enough to write
+       inline (\`a:1 b:$.a\`), with file evaluation and a REPL.`,
+      `It is the clearest example of what the plugin model is for. Aontu defines
+       no parser of its own. It starts from the jsonic grammar and layers on the
+       pieces it needs: expressions for computed values, directives for
+       \`@\`-forms, multisource so one document can pull in others, and path
+       tracking so a reference like \`$.a\` knows where it is. The language is
+       assembled out of grammar plugins rather than written from scratch.`,
+    ],
+  },
+  {
+    id: "boru",
+    name: "boru",
+    url: "https://github.com/boru-lang/boru",
+    tagline: "A typed, word-based query language, in Go",
+    runtime: "Go",
+    uses: ["parser", "jsonic", "abnf", "csv", "expr"],
+    body: [
+      `A boru program is a sequence of words, and a word takes its arguments
+       where you write them: \`add 1 2\` reads left to right like an ordinary
+       call, while binary operations also read naturally infix (\`10 sub 3\`).
+       It aims to keep the composability of concatenative, stack-based languages
+       without making you track the stack in your head.`,
+      `The language is substantial — hierarchical types with typed signatures
+       driving dispatch, lists and maps and records, hygienic macros,
+       concurrency — and the toolchain around it is too: parser, type checker,
+       formatter and LSP server all ship in one CLI. That whole front end is
+       built on the tabnas engine in Go, which makes boru the answer to whether
+       this scales past config formats.`,
+    ],
+  },
+];
+---
+
+<Base
+  wide
+  title="Examples"
+  description="Real languages built on the tabnas engine — aontu in TypeScript, boru in Go."
+>
+  <article class="ex">
+    <Heading level={1} id="examples">Examples</Heading>
+    <p class="lede">
+      Two languages built on the engine, by way of showing what it is actually
+      for. One composes existing grammar plugins into a configuration language;
+      the other builds a full programming language and its toolchain.
+    </p>
+
+    {PROJECTS.map((p) => (
+      <section class="proj">
+        <Heading level={2} id={p.id}>{p.name}</Heading>
+        <p class="tagline">{p.tagline}</p>
+
+        <dl class="meta">
+          <div><dt>Runtime</dt><dd>{p.runtime}</dd></div>
+          <div>
+            <dt>Built with</dt>
+            <dd class="pkgs">
+              {p.uses.map((u) => (
+                <a class="chip" href={REPO(u)} target="_blank" rel="noopener">@tabnas/{u}</a>
+              ))}
+            </dd>
+          </div>
+          <div>
+            <dt>Source</dt>
+            <dd><a href={p.url} target="_blank" rel="noopener">{p.url.replace("https://github.com/", "github.com/")}</a></dd>
+          </div>
+        </dl>
+
+        {p.body.map((para) => <p>{para}</p>)}
+      </section>
+    ))}
+
+    <section class="proj">
+      <Heading level={2} id="the-grammars-themselves">The grammars themselves</Heading>
+      <p>
+        The grammar packages are worth reading as examples in their own right,
+        because most of them are short and each one extends another. The
+        clearest chain is JSON: <a href={REPO("json")} target="_blank" rel="noopener">json</a>
+        is a handful of rules, <a href={REPO("jsonc")} target="_blank" rel="noopener">jsonc</a>
+        adds comments to them, and <a href={REPO("jsonic")} target="_blank" rel="noopener">jsonic</a>
+        relaxes the quoting from there. For a grammar compiled from a
+        specification rather than hand-written, see
+        <a href={REPO("proto")} target="_blank" rel="noopener">proto</a>, which
+        parses the Protocol Buffers IDL from an ABNF grammar.
+      </p>
+      <p>
+        The full list is on the <a href="/releases">releases</a> page, and the
+        <a href="/docs">docs</a> build two grammars from nothing — one
+        standalone, one on top of an existing plugin.
+      </p>
+    </section>
+
+    <section class="proj">
+      <Heading level={2} id="built-something">Built something?</Heading>
+      <p>
+        If you've used tabnas for anything — a config dialect, a log format, a
+        query language, an experiment that didn't work — it's worth saying so in
+        <a href={`${GITHUB_ORG}/parser/discussions`} target="_blank" rel="noopener">Discussions</a>.
+        Real usage is the most useful thing a project this early can get, and
+        this page is short precisely because there isn't much of it yet.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .ex { max-width: 52rem; }
+  .ex :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+
+  .proj { margin-top: 3.5rem; }
+  .ex :global(h2) { font-size: 1.8rem; margin: 0 0 0.2rem; font-family: var(--font-mono); }
+  .tagline { color: var(--accent); font-family: var(--font-heading); font-style: italic; font-size: 1.1rem; margin: 0 0 1rem; }
+  .proj p { color: var(--ink-soft); max-width: 66ch; }
+
+  .meta {
+    display: grid; gap: 0.5rem 1.25rem; margin: 0 0 1.25rem;
+    padding: 0.9rem 1.1rem; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .meta > div { display: grid; grid-template-columns: 7rem 1fr; gap: 0.75rem; align-items: baseline; }
+  .meta dt {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-mute);
+  }
+  .meta dd { margin: 0; color: var(--ink-soft); font-size: 0.92rem; }
+  .pkgs { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .chip {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    color: var(--ink-soft); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.15rem 0.6rem;
+  }
+  .chip:hover { color: var(--primary); border-color: var(--border-strong); }
+
+  @media (max-width: 640px) {
+    .meta > div { grid-template-columns: 1fr; gap: 0.2rem; }
+  }
+</style>

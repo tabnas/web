@@ -15,8 +15,8 @@ import "../styles/community.css";
 # Community & contributing
 
 <p class="lede">
-  tabnas is open source and built in the open. Whether you're adopting it,
-  reporting a bug, or adding a grammar, there's a place for you.
+  tabnas is developed in the open, under the MIT licence. Bug reports,
+  questions, and new grammars all arrive the same way — through GitHub.
 </p>
 
 <CommunitySignals />
@@ -35,14 +35,31 @@ import "../styles/community.css";
 
 ## How the project works
 
-- **TypeScript is canonical; Go tracks it.** Changes land in TS first, then Go to match.
-- **One grammar, shared fixtures.** Both implementations parse the same test grammars and must agree.
+- **Extension over addition.** A new language is usually rules added to a grammar that already parses something similar. That's the cheapest kind of contribution, and the one the engine is designed for.
 - **Small, focused packages.** The engine stays lean; languages live in their own repos.
+- **TypeScript is canonical; Go tracks it.** Changes land in TS first, then Go to match. Both implementations parse the same test grammars and must agree.
+
+## This project is AI-friendly
+
+Contributions written with an AI agent are welcome here. No disclosure ritual,
+no separate review queue, no apology required — a good patch is a good patch,
+and the same standard applies either way: it has to pass the fixtures, and you
+have to understand what you're submitting.
+
+Every package repository ships an `AGENTS.md` describing its layout,
+conventions, and how to run the tests, so an agent can get oriented without
+guessing. The parser itself is built to be
+[written by agents](/agents), so it would be strange to draw the line at the
+contributions.
+
+The fixtures are what make this safe. Both runtimes parse the same test
+grammars and must agree, so a plausible-looking change that doesn't actually
+work fails loudly rather than landing quietly.
 
 <p class="conduct">
-  We give every first contribution a prompt, welcoming response, and we hold to
-  a <a href="https://github.com/tabnas/web/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener">Code of Conduct</a>.
-  {SPONSOR.blurb} — see the <a href="/sponsors">sponsors</a> page.
+  First contributions get a prompt reply, and the project holds to a
+  <a href="https://github.com/tabnas/web/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener">Code of Conduct</a>.
+  {SPONSOR.blurb} — see <a href="/sponsors">sponsors</a>.
 </p>
 
 </article>

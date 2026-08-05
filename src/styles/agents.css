@@ -1,5 +1,0 @@
-/* Styles for src/pages/agents.mdx. Imported by that page only, but
-   prefixed with .agents since the import is not Astro-scoped.
-   (Card styling lives in components/Card.astro / CardGrid.astro.) */
-
-.agents .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }

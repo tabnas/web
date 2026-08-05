@@ -14,7 +14,7 @@ interface Props {
 }
 const { title, description, slug, headings } = Astro.props;
 
-const SECTIONS = ["Start", "Guides", "Concepts", "Reference"] as const;
+const SECTIONS = ["Start", "Tutorials", "How-to", "Reference", "Explanation"] as const;
 const all = (await getCollection("docs")).sort(
   (a, b) =>
     SECTIONS.indexOf(a.data.section) - SECTIONS.indexOf(b.data.section) ||
@@ -53,7 +53,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
         <nav>
           {groups.map((g) => (
             <div class="group">
-              <h2>{g.section}</h2>
+              <p class="group-head">{g.section}</p>
               <ul>
                 {g.items.map((d) => (
                   <li>
@@ -69,8 +69,11 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
       </aside>
 
       <main class="doc-main">
-        <article class="prose">
-          <h1>{title}</h1>
+        {/* data-pagefind-body scopes the search index to the doc text —
+            without it Pagefind indexes the sidebar and footer on every page,
+            so every result matches every nav label. */}
+        <article class="prose" data-pagefind-body>
+          <h1 id={slug}>{title}<a class="heading-anchor" href={`#${slug}`} aria-hidden="true" tabindex="-1">#</a></h1>
           <slot />
         </article>
 
@@ -86,7 +89,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
       {toc.length > 0 && (
         <aside class="toc" aria-label="On this page">
-          <h2>On this page</h2>
+          <p class="toc-head">On this page</p>
           <ul>
             {toc.map((h) => (
               <li class={h.depth === 3 ? "sub" : ""}><a href={`#${h.slug}`}>{h.text}</a></li>
@@ -109,7 +112,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
       }
       .sidebar { position: sticky; top: 4.5rem; }
       .sidebar .group { margin-bottom: 1.25rem; }
-      .sidebar h2 {
+      .sidebar .group-head {
         font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase;
         letter-spacing: 0.12em; color: var(--ink-mute); margin: 0 0 0.5rem;
       }
@@ -145,7 +148,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
       .pg:hover { border-color: var(--border-strong); }
 
       .toc { position: sticky; top: 4.5rem; }
-      .toc h2 { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); margin: 0 0 0.5rem; }
+      .toc .toc-head { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); margin: 0 0 0.5rem; }
       .toc ul { list-style: none; margin: 0; padding: 0; }
       .toc li { margin: 0.2rem 0; }
       .toc li.sub { padding-left: 0.9rem; }

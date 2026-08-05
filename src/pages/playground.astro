@@ -2,103 +2,342 @@
 import Base from "../layouts/Base.astro";
 ---
 
-<Base title="Playground" description="Write a grammar, type some input, and watch tabnas build the syntax tree — live in your browser." wide>
+<Base title="Playground" description="Write a grammar — as ABNF or as a rule table — type some input, and watch tabnas build the tree and the value, live in your browser." wide>
   <div class="pg-head">
-    <h1>Playground</h1>
-    <p>Edit an ABNF grammar and some input; tabnas parses it in your browser and
-      shows the syntax tree. Powered by the real <code>@tabnas/parser</code> and
-      <code>@tabnas/abnf</code> builds.</p>
+    <h1 id="playground">Playground<a class="heading-anchor" href="#playground" aria-hidden="true" tabindex="-1">#</a></h1>
+    <p>Write a grammar, type some input, and see what tabnas makes of it — the
+      syntax tree and the value your actions build. Runs the real
+      <code>@tabnas/parser</code> and <code>@tabnas/abnf</code> in your browser.</p>
+
+    <div class="modes" role="group" aria-label="Grammar format">
+      <button id="mode-abnf" class="mode on" data-mode="abnf" aria-pressed="true">ABNF</button>
+      <button id="mode-spec" class="mode" data-mode="spec" aria-pressed="false">Rule table (JS)</button>
+    </div>
+
     <div class="presets" id="presets">
       <span class="lbl">Presets:</span>
-      <button data-preset="addition">Addition</button>
-      <button data-preset="greeting">Greeting</button>
-      <button data-preset="list">List</button>
+      <span id="preset-buttons"></span>
       <button class="share" id="share">Copy share link</button>
     </div>
   </div>
 
   <div class="pg">
     <section class="editor">
-      <label>Grammar <span class="hint">(ABNF)</span></label>
+      <label for="grammar">Grammar <span class="hint" id="ghint">(ABNF)</span></label>
       <textarea id="grammar" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
-      <label>Input</label>
+      <label for="input">Input</label>
       <textarea id="input" class="input" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
     </section>
 
     <section class="result">
       <label>Result</label>
       <div id="status" class="status"></div>
-      <div id="tree" class="tree"></div>
+
+      <div id="confirm" class="confirm" hidden>
+        <p><strong>This shared link contains a JS rule table.</strong> Running it
+          executes its action functions in your browser. Read the grammar on the
+          left first.</p>
+        <button id="confirm-run">Run it</button>
+      </div>
+
+      <div id="error-wrap" class="panel" hidden>
+        <p class="panel-head">What went wrong</p>
+        <pre id="error" class="errmsg"></pre>
+      </div>
+
+      <div id="value-wrap" class="panel" hidden>
+        <p class="panel-head">Value <span class="ptype" id="value-type"></span></p>
+        <pre id="value" class="value"></pre>
+      </div>
+
+      <div id="tree-wrap" class="panel" hidden>
+        <p class="panel-head">Syntax tree</p>
+        <div id="tree" class="tree"></div>
+      </div>
     </section>
   </div>
 
-  <p class="foot">Grammars run entirely client-side — nothing is sent anywhere.
-    Share a grammar with the button above (it's encoded in the URL).</p>
+  <p class="foot">Everything runs client-side — nothing is sent anywhere. The
+    share button encodes the grammar and input in the URL.</p>
 </Base>
 
 <script>
   import { Tabnas } from "@tabnas/parser";
   import { abnf } from "@tabnas/abnf";
 
-  const PRESETS = {
-    addition: { g: 'add = NR [ PL add ]\nPL  = "+"', i: "1+2+3" },
-    greeting: { g: 'greet = "hi" / "hello"', i: "hello" },
-    list: { g: 'list = "[" item *( "," item ) "]"\nitem = 1*ALPHA', i: "[a,bc,def]" },
+  type Mode = "abnf" | "spec";
+
+  type Src = { g: string; i: string };
+  type Preset = { label: string; abnf: Src; spec: Src };
+
+  // Every preset exists in both forms: the ABNF a person writes, and the
+  // rule table the engine walks. Switching mode keeps the same example.
+  const PRESETS: Record<string, Preset> = {
+    addition: {
+      label: "Addition",
+      abnf: {
+        g: 'val = add\nadd = NR [ PL add ]\nPL  = "+"',
+        i: "1+2+3",
+      },
+      spec: {
+        g: `{
+  options: {
+    fixed: { token: { '#PL': '+' } },
+    rule: { start: 'val' },
+  },
+  rule: {
+    val: {
+      // Start the accumulator at zero.
+      open:  [ { p: 'add', a: (r) => { r.node = 0 } } ],
+      close: [ {} ],
+    },
+    add: {
+      // Add each number to it.
+      open:  [ { s: '#NR', a: (r) => { r.parent.node += r.o[0].val } } ],
+      close: [ { s: '#PL', r: 'add' }, {} ],
+    },
+  },
+}`,
+        i: "1+2+3",
+      },
+    },
+
+    greeting: {
+      label: "Greeting",
+      abnf: { g: 'greet = "hi" / "hello"', i: "hello" },
+      spec: {
+        g: `{
+  options: {
+    fixed: { token: { '#HI': 'hi', '#HE': 'hello' } },
+    rule: { start: 'greet' },
+  },
+  rule: {
+    greet: {
+      // Two alternates, tried in order.
+      open: [
+        { s: '#HI', a: (r) => { r.node = r.o[0].src } },
+        { s: '#HE', a: (r) => { r.node = r.o[0].src } },
+      ],
+      close: [ {} ],
+    },
+  },
+}`,
+        i: "hello",
+      },
+    },
+
+    list: {
+      label: "List",
+      abnf: {
+        g: 'list  = item *( COMMA item )\nitem  = 1*ALPHA\nCOMMA = ","',
+        i: "a,bc,def",
+      },
+      spec: {
+        g: `{
+  // #CA (comma) and #TX (text) are built-in tokens.
+  options: { rule: { start: 'list' } },
+  rule: {
+    list: {
+      open:  [ { p: 'item', a: (r) => { r.node = [] } } ],
+      close: [ {} ],
+    },
+    item: {
+      open:  [ { s: '#TX', a: (r) => { r.parent.node.push(r.o[0].src) } } ],
+      // Repeat at the same depth, so every item shares one parent.
+      close: [ { s: '#CA', r: 'item' }, {} ],
+    },
+  },
+}`,
+        i: "a,bc,def",
+      },
+    },
   };
 
-  const $ = (id) => document.getElementById(id);
-  const grammarEl = $("grammar");
-  const inputEl = $("input");
+  const $ = (id: string) => document.getElementById(id)!;
+  const grammarEl = $("grammar") as HTMLTextAreaElement;
+  const inputEl = $("input") as HTMLTextAreaElement;
   const treeEl = $("tree");
+  const treeWrap = $("tree-wrap");
+  const valueEl = $("value");
+  const valueWrap = $("value-wrap");
+  const valueType = $("value-type");
   const statusEl = $("status");
+  const confirmEl = $("confirm");
+  const errorEl = $("error");
+  const errorWrap = $("error-wrap");
+  const ghint = $("ghint");
 
-  function setStatus(kind, msg) {
+  let mode: Mode = "abnf";
+  // A JS rule table from a shared link is code, so it is never run until the
+  // reader asks for it. Grammars they type themselves run freely.
+  let blocked = false;
+
+  // Each mode keeps its own grammar and input. Switching mode parks what you
+  // wrote and brings back what you wrote last time — editing is never lost.
+  const sources: Record<Mode, Src> = {
+    abnf: { g: "", i: "" },
+    spec: { g: "", i: "" },
+  };
+
+  function stash() {
+    sources[mode] = { g: grammarEl.value, i: inputEl.value };
+  }
+
+  function restore() {
+    grammarEl.value = sources[mode].g;
+    inputEl.value = sources[mode].i;
+  }
+
+  function setStatus(kind: string, msg: string) {
     statusEl.className = "status " + kind;
     statusEl.textContent = msg;
   }
 
-  function renderTree(node) {
+  function setMode(next: Mode, rerun = true) {
+    if (next === mode && rerun) return;
+    stash();
+    mode = next;
+    restore();
+    for (const b of document.querySelectorAll<HTMLButtonElement>(".mode")) {
+      const on = b.dataset.mode === next;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-pressed", String(on));
+    }
+    ghint.textContent = next === "abnf" ? "(ABNF)" : "(JS object — passed to tn.grammar)";
+    if (rerun) run();
+  }
+
+  // --- rendering ---------------------------------------------------------
+
+  function isTreeNode(v: any): boolean {
+    return !!v && typeof v === "object" && typeof v.rule === "string" && Array.isArray(v.kids);
+  }
+
+  function renderTree(node: any): string {
     if (!node || typeof node !== "object") return "";
     const kids = Array.isArray(node.kids) ? node.kids : [];
     const src = node.src == null ? "" : String(node.src);
-    const val = node.value !== undefined ? ` <span class="v">value: ${escapeHtml(String(node.value))}</span>` : "";
-    const head = `<span class="rule">${escapeHtml(node.rule || "?")}</span>` +
-      (src ? ` <span class="src">${escapeHtml(src)}</span>` : "") + val;
+    const head =
+      `<span class="rule">${escapeHtml(node.rule || "?")}</span>` +
+      (src ? ` <span class="src">${escapeHtml(src)}</span>` : "");
     if (!kids.length) return `<div class="node leaf">${head}</div>`;
-    return `<div class="node"><div class="nhead">${head}</div>` +
-      `<div class="kids">${kids.map(renderTree).join("")}</div></div>`;
+    return (
+      `<div class="node"><div class="nhead">${head}</div>` +
+      `<div class="kids">${kids.map(renderTree).join("")}</div></div>`
+    );
   }
 
-  function escapeHtml(s) {
-    return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // Show what parse() actually returned, including the awkward cases: it is
+  // undefined for a grammar with no actions, and may be a plain scalar.
+  function show(out: any) {
+    const t = out === null ? "null" : Array.isArray(out) ? "array" : typeof out;
+    valueType.textContent = t;
+    valueEl.textContent = describe(out);
+    valueWrap.hidden = false;
+
+    if (isTreeNode(out)) {
+      treeEl.innerHTML = renderTree(out);
+      treeWrap.hidden = false;
+    } else {
+      treeEl.innerHTML = "";
+      treeWrap.hidden = true;
+    }
   }
 
-  let timer;
+  function describe(v: any): string {
+    if (v === undefined) {
+      return "undefined\n\n// The grammar recognised the input but no action\n// set a value. Structure-only grammars do this.";
+    }
+    try {
+      const seen = new WeakSet();
+      const json = JSON.stringify(
+        v,
+        (_k, val) => {
+          if (typeof val === "function") return "[function]";
+          if (val && typeof val === "object") {
+            if (seen.has(val)) return "[circular]";
+            seen.add(val);
+          }
+          return val;
+        },
+        2,
+      );
+      return json === undefined ? String(v) : json;
+    } catch {
+      return String(v);
+    }
+  }
+
+  function clearResult() {
+    errorWrap.hidden = true;
+    valueWrap.hidden = true;
+    treeWrap.hidden = true;
+    treeEl.innerHTML = "";
+    valueEl.textContent = "";
+  }
+
+  function escapeHtml(s: string) {
+    return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  }
+
+  // --- running -----------------------------------------------------------
+
+  function buildSpec(src: string): any {
+    // Evaluated, not JSON.parse'd, so actions can be real functions.
+    const spec = new Function(`"use strict"; return (${src});`)();
+    if (!spec || typeof spec !== "object") throw new Error("grammar must be an object");
+    return spec;
+  }
+
+  let timer: any;
+
   function run() {
     const gsrc = grammarEl.value;
     const isrc = inputEl.value;
-    let tn;
-    try {
-      tn = new Tabnas({ plugins: [abnf] });
-      tn.abnf(gsrc);
-    } catch (e) {
-      setStatus("err", "Grammar error: " + firstLine(e));
-      treeEl.innerHTML = "";
+    syncUrl();
+
+    if (blocked) {
+      setStatus("warn", "Not run — shared JS grammar");
+      clearResult();
       return;
     }
+
+    let tn: any;
+    try {
+      if (mode === "abnf") {
+        tn = new Tabnas({ plugins: [abnf] });
+        tn.abnf(gsrc);
+      } else {
+        tn = new Tabnas();
+        tn.grammar(buildSpec(gsrc));
+      }
+    } catch (e) {
+      showError("err", "Grammar error", e);
+      return;
+    }
+
     try {
       const out = tn.parse(isrc);
       setStatus("ok", "Parsed ✓");
-      treeEl.innerHTML = renderTree(out);
+      show(out);
     } catch (e) {
-      setStatus("err", "Parse error: " + firstLine(e));
-      treeEl.innerHTML = "";
+      showError("err", "Parse error", e);
     }
-    syncUrl(gsrc, isrc);
   }
 
-  function firstLine(e) {
-    return String((e && e.message) || e).split("\n")[0];
+  // The engine's errors carry a source location, a caret, and an explanation.
+  // That detail is the point — show all of it, minus the terminal colours.
+  const ANSI = /\u001b\[[0-9;]*m/g;
+
+  function fullError(e: any): string {
+    return String((e && e.message) || e).replace(ANSI, "").trimEnd();
+  }
+
+  function showError(kind: string, label: string, e: any) {
+    setStatus("err", label);
+    clearResult();
+    errorEl.textContent = fullError(e);
+    errorWrap.hidden = false;
   }
 
   function schedule() {
@@ -106,9 +345,14 @@ import Base from "../layouts/Base.astro";
     timer = setTimeout(run, 200);
   }
 
-  function syncUrl(g, i) {
+  // --- share links -------------------------------------------------------
+
+  function syncUrl() {
     try {
-      const data = btoa(unescape(encodeURIComponent(JSON.stringify({ g, i }))));
+      stash();
+      const data = btoa(
+        unescape(encodeURIComponent(JSON.stringify({ m: mode, s: sources }))),
+      );
       history.replaceState(null, "", "#" + data);
     } catch {}
   }
@@ -117,22 +361,59 @@ import Base from "../layouts/Base.astro";
     const hash = location.hash.slice(1);
     if (hash) {
       try {
-        const { g, i } = JSON.parse(decodeURIComponent(escape(atob(hash))));
-        grammarEl.value = g ?? "";
-        inputEl.value = i ?? "";
+        const saved = JSON.parse(decodeURIComponent(escape(atob(hash))));
+        const m: Mode = saved.m === "spec" ? "spec" : "abnf";
+        if (saved.s) {
+          // Current format: both modes travel together.
+          if (saved.s.abnf) sources.abnf = { g: saved.s.abnf.g ?? "", i: saved.s.abnf.i ?? "" };
+          if (saved.s.spec) sources.spec = { g: saved.s.spec.g ?? "", i: saved.s.spec.i ?? "" };
+        } else {
+          // Older links carried one mode's source at the top level.
+          sources[m] = { g: saved.g ?? "", i: saved.i ?? "" };
+        }
+        mode = m;
+        restore();
+        setMode(m, false);
+        // Someone else's JS waits for a click; their ABNF is just data.
+        if (m === "spec") {
+          blocked = true;
+          confirmEl.hidden = false;
+        }
         return;
       } catch {}
     }
-    grammarEl.value = PRESETS.addition.g;
-    inputEl.value = PRESETS.addition.i;
+    sources.abnf = { ...PRESETS.addition.abnf };
+    sources.spec = { ...PRESETS.addition.spec };
+    restore();
   }
 
+  // --- wiring ------------------------------------------------------------
+
+  $("preset-buttons").innerHTML = Object.entries(PRESETS)
+    .map(([k, p]) => `<button data-preset="${k}">${p.label}</button>`)
+    .join("");
+
   $("presets").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-preset]");
+    const btn = (e.target as Element).closest<HTMLButtonElement>("button[data-preset]");
     if (!btn) return;
-    const p = PRESETS[btn.dataset.preset];
-    grammarEl.value = p.g;
-    inputEl.value = p.i;
+    const p = PRESETS[btn.dataset.preset!];
+    // Load both forms, so toggling mode shows the same example either way.
+    sources.abnf = { ...p.abnf };
+    sources.spec = { ...p.spec };
+    restore();
+    // The reader chose this, so it is theirs to run.
+    blocked = false;
+    confirmEl.hidden = true;
+    run();
+  });
+
+  for (const b of document.querySelectorAll<HTMLButtonElement>(".mode")) {
+    b.addEventListener("click", () => setMode(b.dataset.mode as Mode));
+  }
+
+  $("confirm-run").addEventListener("click", () => {
+    blocked = false;
+    confirmEl.hidden = true;
     run();
   });
 
@@ -144,7 +425,14 @@ import Base from "../layouts/Base.astro";
     } catch {}
   });
 
-  grammarEl.addEventListener("input", schedule);
+  grammarEl.addEventListener("input", () => {
+    // Editing a blocked grammar makes it the reader's own.
+    if (blocked) {
+      blocked = false;
+      confirmEl.hidden = true;
+    }
+    schedule();
+  });
   inputEl.addEventListener("input", schedule);
 
   load();
@@ -154,8 +442,19 @@ import Base from "../layouts/Base.astro";
 <style>
   .pg-head h1 { margin-bottom: 0.3rem; }
   .pg-head p { color: var(--ink-soft); max-width: 62ch; }
-  .presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 1rem 0 0.5rem; }
+
+  .modes { display: inline-flex; gap: 0; margin: 1rem 0 0; border: 1px solid var(--border); border-radius: 999px; padding: 0.2rem; }
+  .mode {
+    font-family: var(--font-body); font-size: 0.85rem; cursor: pointer;
+    border: none; background: none; color: var(--ink-soft);
+    border-radius: 999px; padding: 0.3rem 0.9rem;
+  }
+  .mode:hover { color: var(--ink); }
+  .mode.on { background: var(--primary); color: var(--on-primary); }
+
+  .presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.75rem 0 0.5rem; }
   .presets .lbl { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); }
+  #preset-buttons { display: inline-flex; flex-wrap: wrap; gap: 0.5rem; }
   .presets button {
     font-family: var(--font-body); font-size: 0.88rem; cursor: pointer;
     border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft);
@@ -178,7 +477,7 @@ import Base from "../layouts/Base.astro";
     border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem;
   }
   textarea:focus { outline: 2px solid var(--ring); outline-offset: 1px; border-color: var(--border-strong); }
-  #grammar { min-height: 9rem; }
+  #grammar { min-height: 16rem; }
   #input { min-height: 4rem; }
 
   .result label { margin-top: 0; }
@@ -188,12 +487,45 @@ import Base from "../layouts/Base.astro";
   }
   .status.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
   .status.err { color: var(--error); background: color-mix(in srgb, var(--error) 12%, transparent); }
+  .status.warn { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+  .confirm {
+    border: 1px solid var(--border-strong); border-radius: 10px;
+    padding: 0.9rem 1rem; margin-bottom: 1rem;
+    background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  }
+  .confirm p { margin: 0 0 0.7rem; font-size: 0.9rem; color: var(--ink-soft); }
+  .confirm strong { color: var(--ink); }
+  .confirm button {
+    font-family: var(--font-body); font-size: 0.88rem; cursor: pointer;
+    border: 1px solid var(--border-strong); background: var(--surface);
+    color: var(--primary); border-radius: 999px; padding: 0.35rem 0.9rem;
+  }
+
+  .panel { margin-bottom: 1.25rem; }
+  .panel-head {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-mute); margin: 0 0 0.4rem;
+  }
+  .ptype { text-transform: none; letter-spacing: 0; color: var(--accent); }
+  .value {
+    margin: 0; padding: 0.8rem 1rem; overflow-x: auto;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; color: var(--ink);
+  }
+
+  .errmsg {
+    margin: 0; padding: 0.8rem 1rem; overflow-x: auto; white-space: pre;
+    background: color-mix(in srgb, var(--error) 8%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--error) 35%, var(--border));
+    border-radius: 10px; color: var(--ink);
+    font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55;
+  }
+
   .tree { font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; }
-  .node { }
   .kids { margin-left: 1.1rem; border-left: 1px solid var(--border); padding-left: 0.9rem; }
   .rule { color: var(--primary); font-weight: 600; }
   .src { color: var(--accent); }
-  .v { color: var(--ink-mute); }
   .leaf { color: var(--ink-soft); }
 
   .foot { color: var(--ink-mute); font-size: 0.85rem; margin-top: 0.5rem; }

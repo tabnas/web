@@ -1,11 +1,17 @@
 ---
-import { NAV, GITHUB_ORG, NPM_ORG, STATUS_URL, SPONSOR, SITE_MOTTO } from "../consts";
+import { NAV, PROJECT_NAV, GITHUB_ORG, NPM_ORG, STATUS_URL, SPONSOR, SITE_MOTTO, AUTHOR } from "../consts";
 const year = new Date().getFullYear();
 
 const resources = [
   { href: GITHUB_ORG, label: "GitHub org" },
   { href: NPM_ORG, label: "npm packages" },
   { href: STATUS_URL, label: "Org status" },
+];
+
+const project = [
+  ...PROJECT_NAV,
+  { href: "https://github.com/tabnas/web/blob/main/CONTRIBUTING.md", label: "Contributing" },
+  { href: "https://github.com/tabnas/web/blob/main/CODE_OF_CONDUCT.md", label: "Code of Conduct" },
 ];
 ---
 
@@ -15,27 +21,43 @@ const resources = [
       <div class="about">
         <span class="word">tabnas</span>
         <p class="motto">{SITE_MOTTO} — a table of translations.</p>
+        <p class="byline">
+          Written by <a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>.
+        </p>
         <a class="sponsor" href={SPONSOR.url} target="_blank" rel="noopener">
           <span>Sponsored by</span> <strong>{SPONSOR.name}</strong>
         </a>
       </div>
 
       <nav class="col" aria-label="Site">
-        <h2>Site</h2>
+        <p class="col-head">Site</p>
         {NAV.map((i) => <a href={i.href}>{i.label}</a>)}
       </nav>
 
+      <nav class="col" aria-label="Project">
+        <p class="col-head">Project</p>
+        {project.map((i) => (
+          <a href={i.href} {...(i.href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}>
+            {i.label}
+          </a>
+        ))}
+      </nav>
+
       <nav class="col" aria-label="Resources">
-        <h2>Resources</h2>
+        <p class="col-head">Resources</p>
         {resources.map((i) => (
-          <a href={i.href} target="_blank" rel="noopener">{i.label}</a>
+          <a href={i.href} {...(i.href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}>
+            {i.label}
+          </a>
         ))}
       </nav>
     </div>
 
     <div class="legal">
-      <span>© {year} {SPONSOR.name}. Open source under the MIT License.</span>
-      <span class="build">Built with Astro on Cloudflare.</span>
+      <span>
+        © {year} <a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>.
+        Open source under the MIT Licence.
+      </span>
     </div>
   </div>
 </footer>
@@ -51,7 +73,7 @@ const resources = [
   .inner { max-width: 1120px; margin: 0 auto; padding: 3rem 1.25rem 3.5rem; }
   .cols {
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
     gap: 2rem;
   }
   .about .word {
@@ -64,9 +86,14 @@ const resources = [
     font-family: var(--font-heading);
     font-style: italic;
     color: var(--ink-mute);
-    margin: 0.4rem 0 1rem;
+    margin: 0.4rem 0 0.5rem;
     max-width: 34ch;
   }
+  .byline { font-size: 0.9rem; color: var(--ink-soft); margin: 0 0 1rem; }
+  .byline a { color: var(--ink-soft); }
+  .byline a:hover { color: var(--primary); }
+  .legal a { color: var(--ink-mute); }
+  .legal a:hover { color: var(--primary); }
   .sponsor {
     display: inline-flex; align-items: baseline; gap: 0.35rem;
     text-decoration: none; color: var(--ink-soft);
@@ -78,7 +105,7 @@ const resources = [
   .sponsor:hover { border-color: var(--accent); }
 
   .col { display: flex; flex-direction: column; gap: 0.5rem; }
-  .col h2 {
+  .col .col-head {
     font-family: var(--font-mono);
     font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em;
     color: var(--ink-mute); margin: 0 0 0.35rem;
@@ -93,6 +120,9 @@ const resources = [
     font-size: 0.85rem; color: var(--ink-mute);
   }
 
+  @media (max-width: 900px) {
+    .cols { grid-template-columns: 1fr 1fr; gap: 1.75rem; }
+  }
   @media (max-width: 680px) {
     .cols { grid-template-columns: 1fr; gap: 1.75rem; }
   }

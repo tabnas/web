@@ -53,6 +53,50 @@ h6 {
 	font-family: var(--font-heading);
 	font-weight: 700;
 	line-height: 1.2;
+	/* Clear the sticky header when jumped to via an anchor. */
+	scroll-margin-top: 5rem;
+}
+
+/*
+  Heading anchors. Generated for markdown/MDX by rehype-autolink-headings
+  (see astro.config.mjs) and written by hand in .astro pages via
+  components/Heading.astro — both emit the same markup.
+
+  Kept faint until the heading is hovered or the anchor is focused, so the
+  page reads clean but every heading is still linkable. Always visible to
+  keyboard users on focus, and never announced by screen readers.
+*/
+.heading-anchor {
+	margin-left: 0.4em;
+	font-family: var(--font-mono);
+	font-size: 0.7em;
+	font-weight: 400;
+	color: var(--accent);
+	text-decoration: none;
+	opacity: 0;
+	transition: opacity 0.15s ease-in-out;
+}
+:is(h1, h2, h3, h4, h5, h6):hover > .heading-anchor,
+.heading-anchor:focus-visible {
+	opacity: 1;
+}
+.heading-anchor:hover {
+	text-decoration: underline;
+}
+:target {
+	/* Brief highlight so a deep link lands somewhere obvious. */
+	scroll-margin-top: 5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+	.heading-anchor {
+		transition: none;
+	}
+}
+/* Touch devices have no hover — show the anchors permanently but faint. */
+@media (hover: none) {
+	.heading-anchor {
+		opacity: 0.45;
+	}
 }
 h1 {
 	font-size: 3.052em;

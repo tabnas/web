@@ -1,296 +1,481 @@
 ---
 import Base from "../layouts/Base.astro";
-import { PACKAGES, NPM, REPO, GODOC, SITE_TAGLINE, SPONSOR } from "../consts";
-import Testimonials from "../components/Testimonials.astro";
+import Heading from "../components/Heading.astro";
+import { PACKAGES, NPM, REPO, GODOC, GITHUB_ORG, SITE_TAGLINE, SPONSOR, AUTHOR } from "../consts";
 import emblem from "../assets/brand/mark.svg";
 
-const core = PACKAGES.filter((p) => p.tier === "core");
-const plugins = PACKAGES.filter((p) => p.tier === "plugin");
+const core = PACKAGES.filter((p) => p.tier === "engine" || p.tier === "tooling");
+const grammars = PACKAGES.filter((p) => p.tier === "grammar");
 ---
 
 <Base wide>
-  <!-- Hero: the thesis — a grammar becomes a parser. -->
-  <section class="hero">
-    <div class="hero-copy">
-      <p class="eyebrow">Polyglot parser engine · TypeScript + Go</p>
-      <h1>{SITE_TAGLINE}</h1>
-      <p class="lede">
-        Describe a language once. tabnas turns that grammar into a working
-        parser that builds a small, uniform syntax tree — the
-        <strong>same grammar</strong> and the <strong>same tree</strong> in
-        TypeScript and Go.
+  <!-- What it is, in one sentence. -->
+  <section class="intro">
+    <img class="emblem" src={emblem.src} width="128" height="128" alt="" aria-hidden="true" />
+    <Heading level={1} id="tabnas">{SITE_TAGLINE}</Heading>
+    <p class="lede">
+      tabnas is a parser VM: a simple state and lookup engine that grammars
+      compile down to. Because a grammar is just data, you extend one that
+      already works rather than starting over — and because the data is flat
+      and regular, an agent can write one. Between those two things, parsing
+      something new stops being a project.
+    </p>
+    <p class="meta">
+      MIT licensed ·
+      <a href={GITHUB_ORG} target="_blank" rel="noopener">github.com/tabnas</a>
+    </p>
+  </section>
+
+  <!-- The motivation, condensed from /why. -->
+  <section class="why">
+    <Heading level={2} id="why-tabnas">Why tabnas</Heading>
+    <div class="why-body">
+      <p>
+        Writing a parser is expensive, so most languages get one and that's
+        that. Parser toolkits hand you generated code from a grammar file, or
+        you write recursive descent by hand — and either way, extending
+        someone else's language means forking their parser and owning the
+        fork.
       </p>
-      <div class="cta">
-        <a class="btn primary" href="/docs/quickstart">Start building</a>
-        <a class="btn ghost" href="/playground">Try in the browser</a>
+      <p>
+        tabnas started as an attempt to write a more forgiving JSON parser and
+        turned into an extensible one by accident. The engine is a for-loop
+        over tokens with a rule stack, and the grammar is the lookup table it
+        walks. So adding a language feature means adding rules and token
+        alternates to a table. That is the whole extension mechanism: JSON is a
+        handful of rules, JSONC adds comments to them, jsonic relaxes the
+        quoting, YAML keeps going. Every grammar is a plugin over another
+        plugin.
+      </p>
+      <p>
+        The second consequence took longer to notice. A machine this plain is a
+        good <em>compile target</em>. ABNF compiles into it, so a human can
+        write a grammar in the notation the RFCs already use. And the grammar
+        itself is flat, regular, declarative data — which is exactly the kind
+        of thing a language model is good at emitting, and which you can check
+        before you run it. Defining a grammar this way is surprisingly not too
+        hard for humans, and really easy for agents.
+      </p>
+      <p>
+        Put those together and the cost of parsing something new drops a long
+        way. That is the whole point of the project.
+      </p>
+      <p class="more">
+        <a href="/why">Read the whole story — how the algorithm works, and where it came from</a>
+      </p>
+    </div>
+
+    <blockquote class="tldr">
+      <p class="tldr-head">The technical TLDR</p>
+      <p>
+        You write a for-loop over parsing tokens. There's no recursion — a
+        stack keeps track of rule depth. Each rule represents a semantic
+        element of your language, and you move to the next rule using a lookup
+        table of token alternates. Rules are hit twice, once on descent and
+        once on ascent, so they have two states, open and close, and two token
+        lookup tables.
+      </p>
+    </blockquote>
+  </section>
+
+  <!-- What the engine actually gives you. -->
+  <section class="features">
+    <Heading level={2} id="core-features">Core features</Heading>
+    <div class="grid feat">
+      <article>
+        <Heading level={3} id="extend-dont-fork">Extend, don't fork</Heading>
+        <p>
+          Every grammar is a plugin over another. Add rules and token
+          alternates to a language that already parses, instead of taking
+          ownership of someone else's parser.
+        </p>
+      </article>
+      <article>
+        <Heading level={3} id="a-target-agents-can-hit">A target agents can hit</Heading>
+        <p>
+          A grammar is flat declarative data — rules, token alternates,
+          actions. That's a shape a model can emit reliably and you can check
+          before running. See <a href="/agents">agents</a>.
+        </p>
+      </article>
+      <article>
+        <Heading level={3} id="a-target-compilers-can-hit">A target compilers can hit</Heading>
+        <p>
+          <a href={REPO("abnf")} target="_blank" rel="noopener">@tabnas/abnf</a>
+          compiles RFC 5234 ABNF into a working grammar, left recursion
+          included — so an RFC's own notation is runnable.
+        </p>
+      </article>
+      <article>
+        <Heading level={3} id="three-levels">Three levels</Heading>
+        <p>
+          ABNF when a human is writing, declarative JSON when an agent is, and
+          a programmatic API for parameterised grammars — the level
+          <a href={REPO("expr")} target="_blank" rel="noopener">expr</a> and
+          <a href={REPO("directive")} target="_blank" rel="noopener">directive</a>
+          are built at.
+        </p>
+      </article>
+      <article>
+        <Heading level={3} id="nothing-is-generated">Nothing is generated</Heading>
+        <p>
+          The grammar is walked at runtime, so it can be inspected while it
+          runs: <a href={REPO("debug")} target="_blank" rel="noopener">debug</a>
+          describes a live grammar and prints it back as ABNF,
+          <a href={REPO("railroad")} target="_blank" rel="noopener">railroad</a>
+          draws it.
+        </p>
+      </article>
+      <article>
+        <Heading level={3} id="runs-where-you-do">Runs where you do</Heading>
+        <p>
+          The engine is implemented in TypeScript and in Go, both driven by the
+          same grammars and checked against the same fixtures.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Structure twice, then behaviour — the compile-target argument, shown. -->
+  <section class="example">
+    <Heading level={2} id="a-grammar-end-to-end">A grammar, end to end</Heading>
+    <p class="sec-note">
+      Addition, four times: the grammar as a person writes it, the same grammar
+      as data, and then the two ways to attach behaviour — by reference, and
+      inline.
+    </p>
+
+    <div class="code-cols">
+      <div>
+        <p class="code-label">1 · ABNF — as a person writes it</p>
+        <pre><code>{`val = add
+add = NR [ PL add ]
+PL  = "+"`}</code></pre>
+        <p class="code-note">
+          <code>NR</code> is the built-in number token, <code>[ … ]</code> is
+          optional, and <code>add</code> refers to itself to take a whole
+          chain. <code>val</code> wraps it — that's where the total will live.
+        </p>
       </div>
-      <a class="why-link" href="/why">Why tabnas? — the case for one grammar, two runtimes →</a>
+      <div>
+        <p class="code-label">2 · The same grammar, as data</p>
+        <pre><code>{`{
+  "options": {
+    "fixed": { "token": { "#PL": "+" } },
+    "rule":  { "start": "val" }
+  },
+  "rule": {
+    "val": {
+      "open":  [ { "p": "add" } ],
+      "close": [ {} ]
+    },
+    "add": {
+      "open":  [ { "s": "#NR" } ],
+      "close": [ { "s": "#PL", "r": "add" }, {} ]
+    }
+  }
+}`}</code></pre>
+        <p class="code-note">
+          <code>p</code> pushes a rule, <code>s</code> matches tokens,
+          <code>r</code> repeats the rule at the same depth, and
+          <code>{"{}"}</code> is the alternate that ends it. This recognises
+          <code>1+2+3</code> and rejects <code>1+*</code> — but produces
+          nothing. It's the shape an agent emits.
+        </p>
+      </div>
     </div>
 
-    <figure class="hero-demo">
-      <img class="emblem" src={emblem.src} width="112" height="112" alt="" aria-hidden="true" />
-      <pre class="grammar" aria-label="An addition grammar in ABNF"><code><span class="c"># an addition grammar, in ABNF</span>
-<span class="r">add</span> = NR [ <span class="r">PL</span> add ]
-<span class="r">PL</span>&nbsp; = <span class="s">"+"</span></code></pre>
-      <div class="arrow">↓</div>
-      <pre class="run"><code>tn.parse(<span class="s">'1+2+3'</span>).value <span class="c">// =&gt; 6</span></code></pre>
-    </figure>
+    <div class="actions-block">
+      <p class="code-label">3 · Actions by reference — the <code>@ref</code> form</p>
+      <div class="code-cols narrow">
+        <div>
+          <pre><code>{`let total = 0
+
+const tn = new Tabnas({ plugins: [abnf] })
+
+tn.abnf(\`
+  val = add
+  add = NR [ PL add ]
+  PL  = "+"
+\`, {
+  actions: {
+    '@val:bo':   () => { total = 0 },
+    '@add:o:NR': (r) => { total += r.o[0].val },
+  },
+})
+
+tn.parse('1+2+3')     // total === 6
+tn.parse('12+3+45')   // total === 60`}</code></pre>
+        </div>
+        <div>
+          <p class="code-note wide">
+            The grammar is exactly the ABNF from step 1 — valid RFC 5234,
+            nothing added to it. Behaviour binds out of band, through names the
+            compiler already assigns.
+          </p>
+          <p class="code-note wide">
+            <code>'@val:bo'</code> is a rule-phase hook: the <code>val</code>
+            rule, <b>b</b>efore <b>o</b>pen. It runs once at the start, so it's
+            where the accumulator gets zeroed — and because it does,
+            re-parsing just works. There are <code>ao</code>, <code>bc</code>
+            and <code>ac</code> hooks too.
+          </p>
+          <p class="code-note wide">
+            <code>'@add:o:NR'</code> is the other kind — an alternate mark: the
+            <code>add</code> rule, its <b>o</b>pen phase, on an <code>NR</code>
+            token. Ask the compiler which marks a grammar has with
+            <code>tabnas-abnf --marks</code> rather than guessing at names.
+          </p>
+          <p class="code-note wide">
+            This is what keeps the grammar a compile target: the text a person
+            or an agent writes never has to carry code, so it stays printable,
+            drawable, and checkable.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-block">
+      <p class="code-label">4 · Actions inline — carried on the parse</p>
+      <div class="code-cols narrow">
+        <div>
+          <pre><code>{`const tn = new Tabnas()
+
+tn.grammar({
+  options: {
+    fixed: { token: { '#PL': '+' } },
+    rule: { start: 'val' },
+  },
+  rule: {
+    val: {
+      // Start the accumulator at zero.
+      open:  [ { p: 'add', a: (r) => { r.node = 0 } } ],
+      close: [ {} ],
+    },
+    add: {
+      // Add each number to it.
+      open:  [ { s: '#NR', a: (r) => { r.parent.node += r.o[0].val } } ],
+      close: [ { s: '#PL', r: 'add' }, {} ],
+    },
+  },
+})
+
+tn.parse('1+2+3')     // => 6
+tn.parse('12+3+45')   // => 60`}</code></pre>
+        </div>
+        <div>
+          <p class="code-note wide">
+            Same grammar, same machine — the actions are just written straight
+            onto the alternates as <code>a</code>. The total now rides on the
+            parse instead of an outer variable, so <code>parse</code> returns
+            it directly and concurrent parses can't collide.
+          </p>
+          <p class="code-note wide">
+            Because <code>r</code> repeats <code>add</code> at the same stack
+            depth rather than nesting it, every <code>add</code> shares one
+            parent — so the accumulator is a single number and each action is a
+            single expression. <code>r.node</code> is the value a rule carries;
+            <code>r.o</code> the tokens matched in the open phase, so
+            <code>r.o[0].val</code> is the number just read.
+          </p>
+          <p class="code-note wide">
+            The <a href="/docs/quickstart">quickstart</a> walks through the
+            <code>@ref</code> form, and the <a href="/playground">playground</a>
+            runs a grammar in the browser.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p class="install">
+      <span class="code-label">Install</span>
+      <code>npm install @tabnas/parser @tabnas/abnf</code>
+      <span class="or">or</span>
+      <code>go get github.com/tabnas/parser/go</code>
+    </p>
   </section>
 
-  <!-- Trust strip (honest metrics, live where possible). -->
-  <section class="trust" aria-label="At a glance">
-    <div class="stat"><span class="n" id="gh-stars">★</span><span class="l">GitHub stars</span></div>
-    <div class="stat"><span class="n">2</span><span class="l">runtimes, one grammar</span></div>
-    <div class="stat"><span class="n">25</span><span class="l">packages</span></div>
-    <div class="stat"><span class="n">MIT</span><span class="l">open source</span></div>
-    <a class="stat sponsor" href={SPONSOR.url} target="_blank" rel="noopener">
-      <span class="n">Voxgig</span><span class="l">sponsor</span>
-    </a>
-  </section>
-
-  <!-- Problem-oriented feature story. -->
-  <section class="feature-row">
-    <article class="feature">
-      <h3>Stop writing the parser twice</h3>
-      <p>Shipping the same language to a Node service and a Go binary usually
-        means two parsers that drift apart. Define it once; TypeScript is
-        canonical and Go tracks it, checked against shared fixtures.</p>
-    </article>
-    <article class="feature">
-      <h3>Grammars that can't drift</h3>
-      <p>The grammar <em>is</em> the parser — no generated code to fall out of
-        sync. Compile <a href="/docs">ABNF</a> straight into the engine, or
-        render a live grammar back to ABNF or a railroad diagram.</p>
-    </article>
-    <article class="feature">
-      <h3>One tree to walk</h3>
-      <p>Every parse yields the same shape — <code>{"{ rule, src, kids }"}</code> —
-        so your walkers, actions, and tooling carry across every language you
-        define, in both runtimes.</p>
-    </article>
-  </section>
-
-  <!-- Packages -->
+  <!-- The packages. -->
   <section class="packages">
-    <div class="sec-head">
-      <h2>The ecosystem</h2>
-      <p>A small core engine and a growing set of ready-made grammars — each an
-        npm package and a Go module.</p>
-    </div>
+    <Heading level={2} id="packages">Packages</Heading>
+    <p class="sec-note">
+      A small core engine, three tools for working with grammars, and
+      {grammars.length} languages built on top — most of them extensions of
+      another one in the list. All {PACKAGES.length} ship for both runtimes;
+      versions are on the <a href="/releases">releases</a> page.
+    </p>
 
-    <div class="grid">
+    <div class="grid pkgs">
       {core.map((p) => (
-        <article class="pkg core">
-          <div class="pkg-top">
-            <h3>@tabnas/{p.name}</h3>
-            <span class="badge">core</span>
-          </div>
+        <article class="pkg">
+          <Heading level={3} id={p.name}>@tabnas/{p.name}</Heading>
           <p>{p.blurb}</p>
-          <div class="pkg-links">
-            <a href={REPO(p.name)} target="_blank" rel="noopener">GitHub</a>
+          <p class="pkg-links">
+            <a href={REPO(p.name)} target="_blank" rel="noopener">source</a>
             {p.npm && <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>}
-            {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">Go</a>}
-          </div>
+            {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">go</a>}
+          </p>
         </article>
       ))}
     </div>
 
-    <div class="plugin-row">
-      {plugins.map((p) => (
-        <a class="chip" href={REPO(p.name)} target="_blank" rel="noopener">
-          @tabnas/{p.name}
-        </a>
+    <p class="chips">
+      <span class="chips-label">Languages:</span>
+      {grammars.map((p) => (
+        <a class="chip" href={REPO(p.name)} target="_blank" rel="noopener">{p.name}</a>
       ))}
-      <a class="chip more" href="/docs">all packages →</a>
-    </div>
+      <a class="chip more" href="/releases">all {PACKAGES.length} packages</a>
+    </p>
   </section>
 
-  <!-- Split CTA: agents + community -->
-  <section class="split">
-    <a class="panel" href="/agents">
-      <h3>Built for AI agents</h3>
-      <p>Constrain LLM output to a grammar, parse agent DSLs, and read
-        agent-consumable docs. →</p>
-    </a>
-    <a class="panel alt" href="/community">
-      <h3>Join the community</h3>
-      <p>Questions, ideas, and contributions welcome. {SPONSOR.blurb} →</p>
-    </a>
-  </section>
-
-  <!-- Testimonials (renders only when quotes exist) -->
-  <Testimonials />
-
-  <!-- Final CTA band (full-bleed) -->
-  <section class="final-cta">
-    <div class="final-inner">
-      <h2>Define your first grammar in five minutes</h2>
-      <p>Install the engine, write three lines, and parse.</p>
-      <a class="btn on-dark" href="/docs/quickstart">Start building</a>
+  <!-- Who works on it, and how to join in. -->
+  <section class="project">
+    <Heading level={2} id="the-project">The project</Heading>
+    <div class="grid proj">
+      <article>
+        <Heading level={3} id="who-writes-it">Who writes it</Heading>
+        <p>
+          tabnas is written by
+          <a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>
+          (<a href={AUTHOR.github} target="_blank" rel="noopener">@rjrodger</a>),
+          who also wrote <a href="https://senecajs.org" target="_blank" rel="noopener">Seneca</a>
+          and jsonic — which is where this came from.
+        </p>
+      </article>
+      <article>
+        <Heading level={3} id="contributing">Contributing</Heading>
+        <p>
+          This project is AI-friendly: contributions written with an agent are
+          welcome, and every package repository ships an <code>AGENTS.md</code>
+          to point one in the right direction. Work lands in TypeScript first,
+          then Go to match. See <a href="/community">community</a>.
+        </p>
+      </article>
+      <article>
+        <Heading level={3} id="licence-and-funding">Licence and funding</Heading>
+        <p>
+          MIT, across every repository in the
+          <a href={GITHUB_ORG} target="_blank" rel="noopener">tabnas org</a>.
+          Development is sponsored by
+          <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a> —
+          see <a href="/sponsors">sponsors</a>.
+        </p>
+      </article>
     </div>
   </section>
 </Base>
 
-<script>
-  // Live GitHub star count across the org (single unauthenticated call).
-  (async () => {
-    const el = document.getElementById("gh-stars");
-    if (!el) return;
-    try {
-      const res = await fetch("https://api.github.com/orgs/tabnas/repos?per_page=100&type=public");
-      if (!res.ok) return;
-      const repos = await res.json();
-      const stars = repos.reduce((n, r) => n + (r.stargazers_count || 0), 0);
-      el.textContent = stars >= 1000 ? (stars / 1000).toFixed(1) + "k" : String(stars);
-    } catch {
-      /* leave the ★ placeholder */
-    }
-  })();
-</script>
-
 <style>
-  /* Hero */
-  .hero {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 2.5rem;
-    align-items: center;
-    padding: 2.5rem 0 2.5rem;
+  section { padding: 0 0 3.5rem; }
+
+  /* Intro */
+  .intro { text-align: center; padding: 2.5rem 0 3.5rem; }
+  .intro .emblem {
+    filter: drop-shadow(0 6px 20px rgba(11, 45, 26, 0.28));
+    margin-bottom: 1.25rem;
   }
-  .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.16em;
-    color: var(--accent); margin: 0 0 0.6rem;
-  }
-  .hero h1 {
-    font-size: clamp(2.6rem, 6vw, 4rem);
-    line-height: 1.02;
+  .intro :global(h1) {
+    font-size: clamp(2.1rem, 5vw, 3.2rem);
+    line-height: 1.08;
     text-wrap: balance;
+    max-width: 20ch;
+    margin: 0 auto 1rem;
+  }
+  .lede {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--ink-mute);
+    margin-top: 1.5rem;
+  }
+
+  section :global(h2) {
+    font-size: clamp(1.5rem, 3vw, 2rem);
     margin: 0 0 1rem;
   }
-  .lede { font-size: 1.2rem; color: var(--ink-soft); max-width: 40ch; }
-  .lede strong { color: var(--ink); }
-  .cta { display: flex; gap: 0.75rem; margin-top: 1.75rem; flex-wrap: wrap; }
-  .why-link {
-    display: inline-block; margin-top: 1rem; font-size: 0.95rem;
-    color: var(--accent); text-decoration: none; font-family: var(--font-heading);
-    font-style: italic; font-size: 1.05rem;
-  }
-  .why-link:hover { text-decoration: underline; }
-  .btn {
-    display: inline-block; padding: 0.7rem 1.25rem; border-radius: 10px;
-    font-weight: 600; text-decoration: none; font-size: 1rem;
-  }
-  .btn.primary { background: var(--primary); color: var(--on-primary); }
-  .btn.primary:hover { background: var(--primary-hover); }
-  .btn.ghost { color: var(--primary); border: 1.5px solid var(--border-strong); }
-  .btn.ghost:hover { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); }
+  section :global(h3) { font-size: 1.2rem; margin: 0 0 0.35rem; }
+  .sec-note { color: var(--ink-soft); font-size: 0.98rem; max-width: 68ch; }
 
-  .hero-demo {
+  /* Why */
+  .why { display: grid; grid-template-columns: 1.35fr 0.65fr; gap: 0.75rem 2.5rem; align-items: start; }
+  .why :global(h2) { grid-column: 1 / -1; margin-bottom: 0; }
+  .why-body p { color: var(--ink-soft); max-width: 62ch; }
+  .why-body .more { font-family: var(--font-heading); font-style: italic; font-size: 1.05rem; }
+  .tldr {
+    border-left: 3px solid var(--accent-strong);
+    padding: 0 0 0 1.25rem;
     margin: 0;
-    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    font-size: 1rem;
   }
-  .hero-demo .emblem { filter: drop-shadow(0 6px 20px rgba(11, 45, 26, 0.28)); margin-bottom: 0.5rem; }
-  .hero-demo pre {
-    width: 100%; margin: 0; padding: 1rem 1.25rem;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; box-shadow: var(--shadow);
-    font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.7;
+  .tldr p { color: var(--ink-soft); margin: 0; }
+  .tldr-head {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--accent) !important;
+    margin: 0 0 0.5rem !important;
+  }
+
+  /* Grids */
+  .grid { display: grid; gap: 1.5rem 2.25rem; }
+  .grid.feat { grid-template-columns: repeat(3, 1fr); }
+  .grid.proj { grid-template-columns: repeat(3, 1fr); }
+  .grid p { color: var(--ink-soft); font-size: 0.98rem; margin: 0; }
+
+  /* Example */
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.25rem 0; align-items: start; }
+  .code-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-mute); margin: 0 0 0.5rem;
+  }
+  .example pre {
+    margin: 0 0 0.75rem;
+    padding: 1rem 1.15rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.65;
     overflow-x: auto;
   }
-  .hero-demo code { background: none; padding: 0; color: var(--ink); font-size: inherit; }
-  .hero-demo .r { color: var(--primary); font-weight: 600; }
-  .hero-demo .s { color: var(--accent); }
-  .hero-demo .c { color: var(--ink-mute); }
-  .hero-demo .arrow { color: var(--accent-strong); font-size: 1.4rem; line-height: 1; }
-  .hero-demo .run { font-size: 1rem; }
-
-  /* Trust strip */
-  .trust {
-    display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; align-items: center;
-    padding: 1.1rem 1.4rem; margin: 0 0 2rem;
-    border: 1px solid var(--border); border-radius: 14px;
-    background: var(--surface);
+  .example pre > code { color: var(--ink); }
+  .code-note { color: var(--ink-mute); font-size: 0.85rem; margin: 0; max-width: 44ch; }
+  .install {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem;
+    margin-top: 2rem;
   }
-  .trust .stat { display: flex; flex-direction: column; line-height: 1.15; text-decoration: none; }
-  .trust .n { font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; color: var(--primary); font-variant-numeric: tabular-nums; }
-  .trust .l { font-size: 0.78rem; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
-  .trust .sponsor .n { color: var(--accent); }
-  .trust .sponsor:hover .n { text-decoration: underline; }
-
-  /* Feature row */
-  .feature-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
-    padding: 1rem 0 3rem;
-  }
-  .feature h3 { font-size: 1.3rem; margin: 0 0 0.4rem; }
-  .feature p { color: var(--ink-soft); margin: 0; }
+  .install code { font-size: 0.85rem; }
+  .install .or { color: var(--ink-mute); font-size: 0.85rem; }
 
   /* Packages */
-  .sec-head { text-align: center; margin: 1.5rem 0 2rem; }
-  .sec-head h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); }
-  .sec-head p { color: var(--ink-soft); max-width: 52ch; margin: 0.3rem auto 0; }
-  .grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+  .grid.pkgs { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.25rem; }
+  .pkg :global(h3) { font-family: var(--font-mono); font-size: 0.95rem; margin: 0 0 0.3rem; }
+  .pkg-links { display: flex; gap: 0.85rem; margin-top: 0.4rem !important; font-size: 0.85rem; }
+  .chips { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; margin-top: 1.75rem; }
+  .chips-label {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-mute);
   }
-  .pkg {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 1.25rem 1.4rem; box-shadow: var(--shadow);
-    display: flex; flex-direction: column; gap: 0.5rem;
-  }
-  .pkg-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-  .pkg-top h3 { font-family: var(--font-mono); font-size: 1rem; margin: 0; color: var(--ink); }
-  .badge {
-    font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--accent); border: 1px solid var(--border-strong); border-radius: 999px; padding: 0.15rem 0.5rem;
-  }
-  .pkg p { color: var(--ink-soft); font-size: 0.95rem; margin: 0; flex: 1; }
-  .pkg-links { display: flex; gap: 0.9rem; font-size: 0.9rem; }
-  .pkg-links a { color: var(--primary); text-decoration: none; }
-  .pkg-links a:hover { text-decoration: underline; }
-
-  .plugin-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.25rem; justify-content: center; }
   .chip {
-    font-family: var(--font-mono); font-size: 0.85rem;
+    font-family: var(--font-mono); font-size: 0.82rem;
     color: var(--ink-soft); text-decoration: none;
-    border: 1px solid var(--border); border-radius: 999px; padding: 0.4rem 0.85rem;
-    background: var(--surface);
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.7rem;
   }
   .chip:hover { color: var(--primary); border-color: var(--border-strong); }
-  .chip.more { color: var(--primary); border-style: dashed; }
-
-  /* Split CTA */
-  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 3.5rem 0 0; }
-  .panel {
-    display: block; text-decoration: none; color: inherit;
-    border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem;
-    background: var(--surface);
-  }
-  .panel h3 { font-size: 1.5rem; margin: 0 0 0.4rem; color: var(--ink); }
-  .panel p { color: var(--ink-soft); margin: 0; }
-  .panel:hover { border-color: var(--border-strong); }
-  .panel.alt {
-    background: linear-gradient(140deg, color-mix(in srgb, var(--accent-strong) 12%, var(--surface)), var(--surface));
-  }
-
-  /* Final CTA band — full-bleed */
-  .final-cta {
-    width: 100vw; position: relative; left: 50%; transform: translateX(-50%);
-    margin-top: 4rem;
-    background: linear-gradient(140deg, var(--green-800), var(--green-950));
-    color: #f1e8cd;
-    text-align: center;
-  }
-  .final-inner { max-width: 640px; margin: 0 auto; padding: 3.5rem 1.5rem; }
-  .final-cta h2 { color: #f6e6b8; font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
-  .final-cta p { color: color-mix(in srgb, #f1e8cd 80%, transparent); margin: 0 0 1.5rem; }
-  .btn.on-dark { background: var(--gold-300); color: var(--green-950); }
-  .btn.on-dark:hover { background: var(--gold-200); }
+  .chip.more { border-style: dashed; color: var(--primary); }
 
   @media (max-width: 880px) {
-    .hero { grid-template-columns: 1fr; }
-    .feature-row { grid-template-columns: 1fr; gap: 1.25rem; }
-    .split { grid-template-columns: 1fr; }
+    .why { grid-template-columns: 1fr; gap: 1.75rem; }
+    .grid.feat, .grid.proj { grid-template-columns: 1fr 1fr; }
+    .code-cols { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .grid.feat, .grid.proj { grid-template-columns: 1fr; }
   }
 </style>

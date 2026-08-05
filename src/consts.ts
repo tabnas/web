@@ -1,10 +1,11 @@
 // Global site data — imported anywhere with `import { ... } from '../consts'`.
 
 export const SITE_TITLE = "tabnas";
-export const SITE_TAGLINE = "Define grammars, not parsers";
+export const SITE_TAGLINE = "An extensible parsing engine, and a compile target for agents";
 export const SITE_DESCRIPTION =
-  "tabnas is a polyglot parser engine: define a grammar once and get a real " +
-  "parser — the same grammar, the same syntax tree, in TypeScript and Go.";
+  "tabnas is a parsing engine that can handle any language. Grammars are data, " +
+  "so you extend one that already works instead of starting over — and an agent " +
+  "can write one directly.";
 
 // Irish: "Tábla na nAistrithe" — a table of translations (i.e. a grammar).
 export const SITE_MOTTO = "Tábla na nAistrithe";
@@ -13,14 +14,29 @@ export const GITHUB_ORG = "https://github.com/tabnas";
 export const NPM_ORG = "https://www.npmjs.com/org/tabnas";
 export const STATUS_URL = "https://tabnas.github.io/status/";
 
+// Who writes it. Open source projects say so; products don't.
+export const AUTHOR = {
+  name: "Richard Rodger",
+  url: "https://richardrodger.com",
+  github: "https://github.com/rjrodger",
+};
+
 // Primary navigation.
 export const NAV: { href: string; label: string }[] = [
   { href: "/why", label: "Why" },
   { href: "/docs", label: "Docs" },
+  { href: "/agents", label: "Agents" },
   { href: "/playground", label: "Playground" },
-  { href: "/agents", label: "AI agents" },
-  { href: "/blog", label: "Blog" },
+  { href: "/examples", label: "Examples" },
+  { href: "/faq", label: "FAQ" },
   { href: "/community", label: "Community" },
+];
+
+// Secondary pages — surfaced in the footer rather than the header.
+export const PROJECT_NAV: { href: string; label: string }[] = [
+  { href: "/releases", label: "Releases" },
+  { href: "/comparisons", label: "Other parsers" },
+  { href: "/sponsors", label: "Sponsors" },
 ];
 
 // Social / external presence. Add handles as they're confirmed; the header
@@ -33,31 +49,91 @@ export const SOCIALS: { href: string; label: string; icon: string }[] = [
 export const SPONSOR = {
   name: "Voxgig",
   url: "https://voxgig.com",
-  blurb: "tabnas is open source, sponsored by Voxgig.",
+  blurb: "Development of tabnas is sponsored by Voxgig.",
 };
 
-// Featured packages (core tier first). npm under @tabnas/*, Go under
-// github.com/tabnas/<name>/go. Descriptions are one line each.
+// Every package in the org. `version` is the version in this repo's
+// checkout at the time of writing — /releases fetches the live tag from
+// GitHub and falls back to this. Each is an npm package under @tabnas/*
+// and a Go module under github.com/tabnas/<name>/go.
+export type Tier = "engine" | "tooling" | "grammar" | "plugin" | "cli";
+
 export const PACKAGES: {
   name: string;
-  tier: "core" | "plugin";
+  tier: Tier;
   blurb: string;
+  version: string;
   npm: boolean;
   go: boolean;
 }[] = [
-  { name: "parser", tier: "core", blurb: "The engine — define a grammar, get a parser and a uniform AST.", npm: true, go: true },
-  { name: "abnf", tier: "core", blurb: "Compile RFC 5234 ABNF straight into a working grammar.", npm: true, go: true },
-  { name: "debug", tier: "core", blurb: "Inspect a live grammar — describe it, render it back as ABNF.", npm: true, go: true },
-  { name: "json", tier: "core", blurb: "A complete JSON grammar built on the engine.", npm: true, go: true },
-  { name: "railroad", tier: "core", blurb: "Draw railroad (syntax) diagrams from a grammar.", npm: true, go: true },
-  { name: "jsonic", tier: "plugin", blurb: "A forgiving, human-friendly JSON superset.", npm: true, go: true },
-  { name: "yaml", tier: "plugin", blurb: "Parse YAML with the engine.", npm: true, go: true },
-  { name: "csv", tier: "plugin", blurb: "Parse CSV/TSV into rows and records.", npm: true, go: true },
+  // The engine.
+  { name: "parser", tier: "engine", version: "0.4.1", npm: true, go: true,
+    blurb: "The engine — a pluggable, rule-based parsing machine and a uniform syntax tree." },
+
+  // Grammar authoring and inspection.
+  { name: "abnf", tier: "tooling", version: "0.2.4", npm: true, go: true,
+    blurb: "Compile RFC 5234 ABNF straight into a working grammar." },
+  { name: "debug", tier: "tooling", version: "0.2.6", npm: true, go: true,
+    blurb: "Inspect a live grammar — describe it, render it back as ABNF." },
+  { name: "railroad", tier: "tooling", version: "0.2.2", npm: true, go: true,
+    blurb: "Render railroad (syntax) diagrams from a grammar." },
+
+  // Languages and data formats.
+  { name: "json", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "Standard JSON." },
+  { name: "jsonc", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "JSON with comments." },
+  { name: "json5", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "The JSON5 dialect." },
+  { name: "jsonic", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "A dynamic JSON parser that isn't strict and can be customised." },
+  { name: "yaml", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "YAML." },
+  { name: "toml", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "TOML." },
+  { name: "ini", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "INI files." },
+  { name: "csv", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "Delimited records — CSV, TSV, RFC 4180 quoting — into objects or arrays." },
+  { name: "xml", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "XML." },
+  { name: "markdown", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "Markdown." },
+  { name: "css", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "CSS, into an AST that preserves declaration order and duplicate properties." },
+  { name: "c", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "C source, into a concrete syntax tree — every token, comment, and macro kept as-is." },
+  { name: "proto", tier: "grammar", version: "0.2.3", npm: true, go: true,
+    blurb: "Protocol Buffers .proto IDL (proto2, proto3, editions 2023/2024)." },
+  { name: "zon", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "Zig Object Notation, as used by build.zig.zon manifests." },
+  { name: "feed", tier: "grammar", version: "0.4.1", npm: true, go: true,
+    blurb: "RSS (0.90–2.0) and Atom (0.3, 1.0), normalised to one Atom-shaped result." },
+
+  // Syntax plugins that layer onto a host grammar.
+  { name: "expr", tier: "plugin", version: "0.4.1", npm: true, go: true,
+    blurb: "Pratt-parser expressions — infix, prefix, suffix, ternary, with configurable precedence." },
+  { name: "directive", tier: "plugin", version: "0.4.1", npm: true, go: true,
+    blurb: "Directive syntax — token sequences like @name or add<1,2> that trigger custom parsing." },
+  { name: "hoover", tier: "plugin", version: "0.2.2", npm: true, go: true,
+    blurb: "String hoovering — block-delimited strings with unquoted internal spaces." },
+  { name: "path", tier: "plugin", version: "0.2.2", npm: true, go: true,
+    blurb: "Track the property path to each value as it is parsed." },
+  { name: "multisource", tier: "plugin", version: "0.4.2", npm: true, go: true,
+    blurb: "Merge multiple sources into one parse — a marked path is resolved and spliced in place." },
+
+  // Command line.
+  { name: "jsonic-cli", tier: "cli", version: "0.4.1", npm: true, go: true,
+    blurb: "Command-line interface for @tabnas/jsonic." },
 ];
 
-// Curated testimonials — add real quotes as they come in; the section only
-// renders when this is non-empty (Evil Martians: even one early quote helps).
-export const TESTIMONIALS: { quote: string; name: string; role?: string; url?: string }[] = [];
+export const TIER_LABEL: Record<Tier, string> = {
+  engine: "Engine",
+  tooling: "Grammar tooling",
+  grammar: "Languages and formats",
+  plugin: "Syntax plugins",
+  cli: "Command line",
+};
 
 export const REPO = (name: string) => `${GITHUB_ORG}/${name}`;
 export const NPM = (name: string) => `https://www.npmjs.com/package/@tabnas/${name}`;

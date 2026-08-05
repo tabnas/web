@@ -1,13 +1,11 @@
 ---
 layout: ../layouts/MdxPage.astro
 title: Why tabnas
-description: "Why tabnas exists: one grammar, two runtimes, a parser you can trust."
+description: "Why tabnas exists: an extensible parser you build on rather than replace, and a compile target agents can hit."
 ---
 
 import { SITE_TITLE, SITE_MOTTO } from "../consts";
 import mark from "../assets/brand/mark.svg";
-import CardGrid from "../components/CardGrid.astro";
-import Card from "../components/Card.astro";
 import "../styles/why.css";
 
 <article class="why">
@@ -32,7 +30,7 @@ visually, so you can see what's going on.
 
 > # The Technical TLDR
 >
-> *"A deterministic top-down predictive rule machine with bounded lookahead."*
+> *"A deterministic top-down predictive rule machine."*
 >
 > You write a for-loop over parsing tokens. There's no
 > recursion. Instead you have a stack to keep track of rule depth.  Each
@@ -400,29 +398,34 @@ example [@tabnas/directive](https://github.com/tabnas/directive), or
 the monster [@tabnas/expr](https://github.com/tabnas/expr).
 
 
-# The tabnas approach
+# Where that leaves us
 
-<CardGrid>
-  <Card title="The grammar is the parser">
-    No generated code to fall out of sync. You install a grammar and it
-    parses — or you compile one from ABNF at runtime. Inspect it live,
-    render it back to ABNF, draw it as a diagram.
-  </Card>
-  <Card title="One grammar, two runtimes">
-    TypeScript is canonical; Go tracks it exactly, verified against the
-    same fixtures. Ship identical language support to Node and Go without
-    maintaining two parsers.
-  </Card>
-  <Card title="A uniform tree">
-    Every parse yields the same shape — `{ rule, src, kids }` — so walkers,
-    actions, and tooling written once work for every language you define.
-  </Card>
-</CardGrid>
+The grammar *is* the parser. There's no generated code to fall out of sync —
+you install a grammar and it parses, or you compile one from ABNF at
+runtime. Because the machine is a table, you can inspect it live, render it
+back to ABNF, or draw it as a railroad diagram. And every parse yields the
+same shape, `{ rule, src, kids }`, so a walker written once works for every
+language you define.
 
+Which gets to the point of the whole exercise. Parsers are expensive to write,
+so most formats never get a good one, and extending a language someone else
+defined means forking their parser. Here, extension is the normal case, and the
+grammar is dull enough data that a language model can write it. Between those
+two, parsing something new stops being a project and starts being an
+afternoon. That's the bet, anyway.
 
-<div class="cta-row">
-  <a class="btn primary" href="/docs/quickstart">Start building</a>
-  <a class="btn ghost" href="/playground">Try it in the browser</a>
-</div>
+(The engine is implemented in both TypeScript and Go, incidentally. The Go
+port tracks the TypeScript one and runs the same fixtures, so a grammar
+behaves the same in both. Useful, but not the point.)
+
+Related reading:
+
+- [Quickstart](/docs/quickstart) — the addition grammar above, in full.
+- [How it works](/docs/how-it-works) — rules, alternates, and the stack.
+- [ABNF grammars](/docs/abnf-grammars) — the dialect, and left recursion.
+- [Other parsers](/comparisons) — how this differs from ANTLR, Peggy,
+  Chevrotain, nearley and tree-sitter, and when to use one of those instead.
+- [FAQ](/faq) — what it does, what it won't do, and why.
+- [Playground](/playground) — edit a grammar in the browser.
 
 </article>
