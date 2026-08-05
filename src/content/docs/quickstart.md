@@ -48,16 +48,14 @@ tn.parse('1+2')
 Recognising isn't computing. To get a total, attach actions by reference — the
 grammar text stays untouched.
 
-There are two kinds of reference. `'@val:bo'` is a **rule-phase hook**: the
-`val` rule, **b**efore **o**pen. It runs once at the start, so it's where the
-accumulator gets zeroed. `'@add:o:NR'` is an **alternate mark**: the `add`
-rule, its **o**pen phase, on an `NR` token. `r.o` holds the tokens matched in
-that phase, so `r.o[0].val` is the number just read — already a number,
-courtesy of the lexer.
+There are two kinds of reference. `'@add:o:NR'` is an **alternate mark**: the
+`add` rule, its **o**pen phase, on an `NR` token. `r.o` holds the tokens
+matched in that phase, so `r.o[0].val` is the number just read — already a
+number, courtesy of the lexer. `'@add:ac'` and `'@val:ac'` are **rule-phase
+hooks** — **a**fter **c**lose, on the way back up the stack, which is when a
+rule's children are complete and can be folded in.
 
 ```ts
-let total = 0
-
 const tn = new Tabnas({ plugins: [abnf] })
 tn.abnf(`
   val = add
@@ -65,17 +63,27 @@ tn.abnf(`
   PL  = "+"
 `, {
   actions: {
-    '@val:bo':   () => { total = 0 },
-    '@add:o:NR': (r) => { total += r.o[0].val },
+    // Each `add` holds its own number...
+    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+
+    // ...plus whatever the nested `add` came to.
+    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
+
+    // `val` carries the result of the parse.
+    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
   },
 })
 
-tn.parse('1+2+3')    // total === 6
-tn.parse('12+3+45')  // total === 60
+tn.parse('1+2+3').value    // => 6
+tn.parse('12+3+45').value  // => 60
 ```
 
-Because `@val:bo` zeroes the total at the start of every parse, re-parsing
-needs no cleanup between calls.
+The total lands on `val`'s node rather than in a variable outside the parse,
+so `parse` returns it and the instance carries no state between calls.
+
+`add`'s only child node is the nested `add` — `PL = "+"` is a lexical
+definition, so it compiles to a token rather than a rule and never appears
+in `kids`.
 
 Mark names come from each alternate's leading discriminator, so ask the
 compiler rather than guessing:

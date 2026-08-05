@@ -165,23 +165,32 @@ const groups = ORDER.map((tier) => ({
 
       <Heading level={3} id="named-refs">Named refs — code, bound out of band</Heading>
       <p>
-        Keeps the grammar declarative while the code lives in the host program.
-        Two kinds of name: rule-phase hooks (<code>bo</code>, <code>ao</code>,
-        <code>bc</code>, <code>ac</code> — before/after open and close) and
-        alternate marks.
+        Keeps the grammar declarative while the code lives in the host
+        program. Two kinds of name: alternate marks, which fire as tokens are
+        matched, and rule-phase hooks (<code>bo</code>, <code>ao</code>,
+        <code>bc</code>, <code>ac</code> — before/after open and close).
+        <code>ac</code> is where a rule's children are complete, so a fold
+        belongs there. Keep results on the node, not in a variable outside the
+        parse, so the grammar stays reusable.
       </p>
-      <pre><code>{`let total = 0
-
-tn.abnf(\`
+      <pre><code>{`tn.abnf(\`
   val = add
   add = NR [ PL add ]
   PL  = "+"
 \`, {
   actions: {
-    '@val:bo':   () => { total = 0 },
-    '@add:o:NR': (r) => { total += r.o[0].val },
+    // Each 'add' holds its own number...
+    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+
+    // ...plus whatever the nested 'add' came to.
+    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
+
+    // 'val' carries the result of the parse.
+    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
   },
-})`}</code></pre>
+})
+
+tn.parse('1+2+3').value   // => 6`}</code></pre>
       <p class="note">
         Mark names are assigned by the compiler from each alternate's leading
         discriminator. <strong>Do not guess them.</strong> Ask:

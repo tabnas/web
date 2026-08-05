@@ -189,9 +189,7 @@ PL  = "+"`}</code></pre>
       <p class="code-label">3 · Actions by reference — the <code>@ref</code> form</p>
       <div class="code-cols narrow">
         <div>
-          <pre><code>{`let total = 0
-
-const tn = new Tabnas({ plugins: [abnf] })
+          <pre><code>{`const tn = new Tabnas({ plugins: [abnf] })
 
 tn.abnf(\`
   val = add
@@ -199,13 +197,19 @@ tn.abnf(\`
   PL  = "+"
 \`, {
   actions: {
-    '@val:bo':   () => { total = 0 },
-    '@add:o:NR': (r) => { total += r.o[0].val },
+    // Each 'add' holds its own number...
+    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+
+    // ...plus whatever the nested 'add' came to.
+    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
+
+    // 'val' carries the result of the parse.
+    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
   },
 })
 
-tn.parse('1+2+3')     // total === 6
-tn.parse('12+3+45')   // total === 60`}</code></pre>
+tn.parse('1+2+3').value     // => 6
+tn.parse('12+3+45').value   // => 60`}</code></pre>
         </div>
         <div>
           <p class="code-note wide">
@@ -214,17 +218,21 @@ tn.parse('12+3+45')   // total === 60`}</code></pre>
             compiler already assigns.
           </p>
           <p class="code-note wide">
-            <code>'@val:bo'</code> is a rule-phase hook: the <code>val</code>
-            rule, <b>b</b>efore <b>o</b>pen. It runs once at the start, so it's
-            where the accumulator gets zeroed — and because it does,
-            re-parsing just works. There are <code>ao</code>, <code>bc</code>
-            and <code>ac</code> hooks too.
+            Two kinds of name. <code>'@add:o:NR'</code> is an <em>alternate
+            mark</em>: the <code>add</code> rule, its <b>o</b>pen phase, on an
+            <code>NR</code> token. <code>'@add:ac'</code> and
+            <code>'@val:ac'</code> are <em>rule-phase hooks</em> — <b>a</b>fter
+            <b>c</b>lose, on the way back up. There are <code>bo</code>,
+            <code>ao</code> and <code>bc</code> hooks too. Ask the compiler
+            which marks a grammar has with <code>tabnas-abnf --marks</code>
+            rather than guessing at names.
           </p>
           <p class="code-note wide">
-            <code>'@add:o:NR'</code> is the other kind — an alternate mark: the
-            <code>add</code> rule, its <b>o</b>pen phase, on an <code>NR</code>
-            token. Ask the compiler which marks a grammar has with
-            <code>tabnas-abnf --marks</code> rather than guessing at names.
+            The total lands on <code>val</code>'s node, not in a variable
+            outside the parse, so <code>parse</code> returns it and the same
+            instance can parse anything else without carrying state between
+            calls. Each <code>add</code> totals its own subtree on the way up;
+            <code>val</code> takes the result.
           </p>
           <p class="code-note wide">
             This is what keeps the grammar a compile target: the text a person
