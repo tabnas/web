@@ -1,0 +1,30 @@
+---
+/*
+  A heading with a linkable anchor, for .astro pages.
+
+  Markdown and MDX get this automatically from rehype-slug +
+  rehype-autolink-headings (see astro.config.mjs); this component emits the
+  same markup by hand so hand-written pages match. Styles for
+  `.heading-anchor` live in global.css.
+
+  The id is required rather than derived from the slot: slot content isn't
+  readable at build time, and an explicit id means the fragment URL is stable
+  even if the wording changes.
+*/
+interface Props {
+  /** Heading level, 1–6. */
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
+  /** Fragment id — also the anchor target. Keep stable across edits. */
+  id: string;
+  /** Extra classes for the heading element. */
+  class?: string;
+}
+
+const { level = 2, id, class: className } = Astro.props;
+const Tag = `h${level}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+---
+
+<Tag id={id} class:list={[className]}>
+  <slot />
+  <a class="heading-anchor" href={`#${id}`} aria-hidden="true" tabindex="-1">#</a>
+</Tag>

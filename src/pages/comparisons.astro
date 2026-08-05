@@ -1,0 +1,256 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { REPO, PACKAGES } from "../consts";
+
+// Factual comparison of approaches. Every row is about mechanism, not
+// quality — these are all good tools, and several are far more mature
+// than tabnas.
+const rows = [
+  {
+    tool: "tabnas",
+    url: null,
+    kind: "Runtime rule machine",
+    algo: "Deterministic LL, no backtracking",
+    grammar: "Data — ABNF, JSON, or API",
+    codegen: "None",
+    extend: "Add rules to an existing grammar",
+    self: true,
+  },
+  {
+    tool: "ANTLR",
+    url: "https://www.antlr.org",
+    kind: "Parser generator",
+    algo: "ALL(*)",
+    grammar: ".g4 file",
+    codegen: "Generates source",
+    extend: "Edit the grammar, regenerate",
+  },
+  {
+    tool: "Peggy (PEG.js)",
+    url: "https://peggyjs.org",
+    kind: "Parser generator",
+    algo: "PEG, ordered choice + backtracking",
+    grammar: ".peggy file",
+    codegen: "Generates source",
+    extend: "Fork the grammar",
+  },
+  {
+    tool: "Chevrotain",
+    url: "https://chevrotain.io",
+    kind: "Parser toolkit",
+    algo: "LL(k), configurable lookahead",
+    grammar: "TypeScript methods",
+    codegen: "None",
+    extend: "Subclass the parser",
+  },
+  {
+    tool: "nearley",
+    url: "https://nearley.js.org",
+    kind: "Parser generator",
+    algo: "Earley — any CFG, ambiguity allowed",
+    grammar: ".ne file",
+    codegen: "Generates source",
+    extend: "Edit the grammar, recompile",
+  },
+  {
+    tool: "tree-sitter",
+    url: "https://tree-sitter.github.io",
+    kind: "Parser generator",
+    algo: "GLR, incremental",
+    grammar: "grammar.js",
+    codegen: "Generates C",
+    extend: "inherits / injection, then regenerate",
+  },
+];
+---
+
+<Base
+  wide
+  title="Other parsers"
+  description="How tabnas differs, mechanically, from ANTLR, Peggy, Chevrotain, nearley, tree-sitter, and a hand-written parser."
+>
+  <article class="cmp">
+    <Heading level={1} id="tabnas-and-other-parsers">tabnas and other parsers</Heading>
+    <p class="lede">
+      These are all good tools, and most are older, faster to reach for, and far
+      more widely used than tabnas. This page is about how they differ
+      mechanically, so you can tell whether tabnas is the wrong shape for what
+      you're doing — which, often, it will be.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>Kind</th>
+            <th>Algorithm</th>
+            <th>Grammar lives in</th>
+            <th>Code generation</th>
+            <th>Extending someone else's grammar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr class={r.self ? "self" : ""}>
+              <th scope="row">
+                {r.url ? <a href={r.url} target="_blank" rel="noopener">{r.tool}</a> : r.tool}
+              </th>
+              <td>{r.kind}</td>
+              <td>{r.algo}</td>
+              <td>{r.grammar}</td>
+              <td>{r.codegen}</td>
+              <td>{r.extend}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <section>
+      <Heading level={2} id="the-one-real-difference">The one real difference</Heading>
+      <p>
+        Most of the tools above are generators: a grammar file goes in, parser
+        source comes out, and you compile it. That's a good trade — generated
+        parsers are fast and the grammar file is a clean artefact. The cost is
+        that the grammar and the parser are two different things, and extending
+        a language someone else wrote means editing their grammar and
+        regenerating.
+      </p>
+      <p>
+        tabnas keeps the grammar as data the engine walks at runtime. That
+        makes extension the normal case rather than a fork: you add rules and
+        token alternates to a grammar that already exists, which is how
+        <a href={REPO("jsonc")} target="_blank" rel="noopener">jsonc</a> is built on
+        <a href={REPO("json")} target="_blank" rel="noopener">json</a>, and
+        <a href={REPO("jsonic")} target="_blank" rel="noopener">jsonic</a> on that.
+        It also makes the grammar inspectable while it runs — you can print it
+        back as ABNF or draw it. <a href="/why">Why tabnas</a> has the longer version.
+      </p>
+      <p>
+        <a href="https://chevrotain.io" target="_blank" rel="noopener">Chevrotain</a>
+        is the closest in spirit: it also refuses code generation, and it's a
+        mature, well-tested toolkit. The difference is where the grammar lives.
+        In Chevrotain a grammar is TypeScript — methods on a class — so you
+        extend it by subclassing. In tabnas a grammar is data, which is what
+        makes the second half of the argument possible.
+      </p>
+      <p>
+        Because a grammar is flat declarative data rather than code, it is
+        something a language model can emit and something you can check before
+        running. None of the tools above are hostile to that, but a generator's
+        input is a grammar file with its own syntax and a toolkit's input is
+        code — both are harder targets than a table of rules and alternates.
+        Making parsing cheap enough to do casually is the point of the project;
+        see <a href="/agents">agents</a>.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="when-to-use-something-else">When to use something else</Heading>
+      <dl>
+        <div>
+          <dt>Your grammar is ambiguous</dt>
+          <dd>
+            tabnas is deterministic and does not backtrack. If you need
+            every valid parse of an ambiguous input,
+            <a href="https://nearley.js.org" target="_blank" rel="noopener">nearley</a>'s
+            Earley parser is built for that; PEG's ordered choice with
+            backtracking handles a different set of awkward cases.
+          </dd>
+        </div>
+        <div>
+          <dt>You're building editor tooling</dt>
+          <dd>
+            <a href="https://tree-sitter.github.io" target="_blank" rel="noopener">tree-sitter</a>
+            reparses incrementally on every keystroke and recovers from errors
+            mid-file. tabnas does neither, and isn't trying to.
+          </dd>
+        </div>
+        <div>
+          <dt>You need a mature grammar for a big language</dt>
+          <dd>
+            ANTLR's
+            <a href="https://github.com/antlr/grammars-v4" target="_blank" rel="noopener">grammars-v4</a>
+            has hundreds of battle-tested grammars. tabnas has
+            {PACKAGES.length} packages and one maintainer.
+          </dd>
+        </div>
+        <div>
+          <dt>You're working in a language the engine doesn't run in</dt>
+          <dd>
+            The engine is implemented in TypeScript and Go. ANTLR generates
+            for Java, C#, Python, Go, JavaScript, C++, Swift and more.
+          </dd>
+        </div>
+        <div>
+          <dt>You just need to parse JSON</dt>
+          <dd>Use your platform's JSON parser. Really.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section>
+      <Heading level={2} id="what-tabnas-asks-of-you">What tabnas asks of you</Heading>
+      <ul>
+        <li>
+          <strong>You write the lexer.</strong> tabnas draws a hard line between
+          lexing and parsing and is mostly about the parsing half. It gives you
+          tools for the lexing part, but you assemble it.
+        </li>
+        <li>
+          <strong>Left recursion is a rewrite, not native support.</strong> The
+          ABNF compiler rewrites left-recursive rules (<a href="https://en.wikipedia.org/wiki/Left_recursion#Removing_all_left_recursion"
+          target="_blank" rel="noopener">Paull's algorithm</a>), so the
+          resulting tree is flat rather than left-nested, and a purely
+          left-recursive rule with no base branch is an error.
+        </li>
+        <li>
+          <strong>It's pre-1.0.</strong> Minor versions can break things, and
+          grammar packages track the engine release they were built against.
+        </li>
+      </ul>
+      <p class="fine">
+        If something on this page is wrong or unfair to one of these projects,
+        please <a href={`${REPO("parser")}/issues`} target="_blank" rel="noopener">say so</a> —
+        getting a comparison wrong is worse than not having one.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .cmp { max-width: 60rem; }
+  .cmp :global(h1) { font-size: clamp(2.1rem, 5vw, 3rem); margin: 0 0 1rem; text-wrap: balance; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+
+  .table-wrap { overflow-x: auto; margin: 2rem 0 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono); font-size: 0.66rem;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
+    font-weight: 400;
+  }
+  tbody th { font-weight: 700; white-space: nowrap; }
+  tbody td { color: var(--ink-soft); }
+  tr.self th, tr.self td {
+    background: color-mix(in srgb, var(--accent-strong) 12%, transparent);
+    color: var(--ink);
+  }
+
+  section { margin-top: 3rem; }
+  .cmp :global(h2) { font-size: 1.6rem; margin: 0 0 0.85rem; }
+  section > p { color: var(--ink-soft); max-width: 66ch; }
+
+  dl { margin: 1rem 0 0; }
+  dl > div { margin-bottom: 1.5rem; }
+  dt { font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.2rem; }
+  dd { margin: 0; color: var(--ink-soft); max-width: 64ch; }
+
+  ul { color: var(--ink-soft); padding-left: 1.2rem; max-width: 66ch; }
+  li { margin-bottom: 0.65rem; }
+  li strong { color: var(--ink); }
+  .fine { font-size: 0.95rem; }
+</style>

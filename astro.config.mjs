@@ -2,17 +2,39 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
 	site: "https://tabnas.dev",
-	// On-demand rendering so the under-construction Basic-Auth middleware
-	// (src/middleware.ts) runs per request. Individual pages can still opt
-	// into prerendering; revert to output:"static" when the gate is removed.
-	output: "server",
+	// Fully static. The site was previously output:"server" so an
+	// under-construction Basic-Auth middleware could run per request; that
+	// gate is gone, and nothing else here needs a server at request time.
+	output: "static",
 	integrations: [mdx(), sitemap()],
+	// Every heading in markdown/MDX gets an id and a linkable anchor. The
+	// same markup is produced by hand in .astro pages (see Heading.astro) so
+	// the two look and behave identically; styles live in global.css.
+	markdown: {
+		rehypePlugins: [
+			rehypeSlug,
+			[
+				rehypeAutolinkHeadings,
+				{
+					behavior: "append",
+					properties: {
+						class: "heading-anchor",
+						ariaHidden: "true",
+						tabIndex: -1,
+					},
+					content: { type: "text", value: "#" },
+				},
+			],
+		],
+	},
 	adapter: cloudflare({
 		// Optimise imported raster images with sharp at build time
 		// (Cloudflare Workers can't run sharp at runtime; the site is static).

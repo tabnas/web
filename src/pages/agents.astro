@@ -1,0 +1,354 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { PACKAGES, TIER_LABEL, REPO, GITHUB_ORG } from "../consts";
+import type { Tier } from "../consts";
+
+const AGENTS_MD = (name: string) => `${REPO(name)}/blob/main/AGENTS.md`;
+const ORDER: Tier[] = ["engine", "tooling", "grammar", "plugin", "cli"];
+const groups = ORDER.map((tier) => ({
+  tier,
+  label: TIER_LABEL[tier],
+  items: PACKAGES.filter((p) => p.tier === tier),
+})).filter((g) => g.items.length);
+---
+
+<Base
+  wide
+  title="Agents"
+  description="How to build a parser with tabnas: the rule table format, the constraints to design around, how to verify your work, and where each package's AGENTS.md lives."
+>
+  <article class="ag">
+    <Heading level={1} id="building-with-tabnas">Building with tabnas</Heading>
+    <p class="lede">
+      Written for an agent that has arrived here to build something. It covers
+      the grammar format you should emit, the constraints the engine imposes,
+      how to check your work, and where the per-package instructions live.
+      A human wanting the argument for any of this should read
+      <a href="/why">why tabnas</a> instead.
+    </p>
+
+    <section>
+      <Heading level={2} id="what-you-are-targeting">1 · What you are targeting</Heading>
+      <p>
+        A tabnas grammar is <strong>data</strong>: a table of rules, each with
+        an <code>open</code> and a <code>close</code> phase, each phase holding
+        a list of <em>alternates</em>. An alternate matches a short token
+        pattern and may run an action, push a child rule, or repeat the current
+        one. Parsing is a for-loop over tokens with a rule stack — no recursion
+        and no backtracking.
+      </p>
+      <p>
+        That is the whole machine. You are not writing a parser; you are filling
+        in a table. It is deliberately dull, which is what makes it a target you
+        can hit reliably.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="install">2 · Install</Heading>
+      <pre><code>{`npm install @tabnas/parser @tabnas/abnf`}</code></pre>
+      <pre><code>{`go get github.com/tabnas/parser/go`}</code></pre>
+      <p class="note">
+        Pin exact versions. Everything is pre-1.0, so a caret range will refuse
+        the next minor release without telling you.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="do-not-start-from-scratch">3 · Do not start from scratch</Heading>
+      <p>
+        This is the step most worth spending time on. Extension is the cheapest
+        path and the one the engine is designed for: if something close to your
+        format already parses, start there and add rules. JSONC is JSON plus
+        comments; jsonic is JSONC with the quoting relaxed. Check the
+        <a href="/releases">package list</a> before writing anything.
+      </p>
+      <ul>
+        <li>Parsing a JSON dialect? Start from <a href={REPO("jsonic")} target="_blank" rel="noopener">jsonic</a> and remove or add rules.</li>
+        <li>Need operators and precedence? Add <a href={REPO("expr")} target="_blank" rel="noopener">expr</a> rather than hand-rolling a Pratt parser.</li>
+        <li>Need <code>@name</code>-style forms? Add <a href={REPO("directive")} target="_blank" rel="noopener">directive</a>.</li>
+        <li>Need free text between delimiters? Add <a href={REPO("hoover")} target="_blank" rel="noopener">hoover</a>.</li>
+        <li>Composing several documents into one parse? Add <a href={REPO("multisource")} target="_blank" rel="noopener">multisource</a>.</li>
+      </ul>
+      <p>
+        <a href="/examples">aontu</a> is the worked example: a whole
+        configuration language assembled from five of these plugins, defining no
+        parser of its own.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="the-rule-table">4 · The rule table</Heading>
+      <p>
+        This is the form to emit. It is plain data, so you can validate it,
+        diff it, and print it before anything runs.
+      </p>
+      <pre><code>{`{
+  "options": {
+    "fixed": { "token": { "#PL": "+" } },   // custom fixed tokens
+    "rule":  { "start": "val" }             // where parsing begins
+  },
+  "rule": {
+    "val": {
+      "open":  [ { "p": "add" } ],
+      "close": [ {} ]
+    },
+    "add": {
+      "open":  [ { "s": "#NR" } ],
+      "close": [ { "s": "#PL", "r": "add" }, {} ]
+    }
+  }
+}`}</code></pre>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>On an alternate, means</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><code>s</code></th><td>Match this token sequence — one token, or several for lookahead.</td></tr>
+            <tr><th scope="row"><code>p</code></th><td><strong>Push</strong> a child rule — it becomes a child node.</td></tr>
+            <tr><th scope="row"><code>r</code></th><td><strong>Repeat</strong> a rule at the same stack depth — no nesting, same parent.</td></tr>
+            <tr><th scope="row"><code>a</code></th><td>Action: a function, a <code>@ref</code> name, a <code>$</code>-builtin, or an array of them.</td></tr>
+            <tr><th scope="row"><code>c</code></th><td>Condition — the alternate only applies when it holds.</td></tr>
+            <tr><th scope="row"><code>{"{}"}</code></th><td>The empty alternate. Ends the phase. Without one, no match is a parse error.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <code>p</code> versus <code>r</code> is the distinction that catches
+        people out. Push nests, so the child's <code>parent</code> is the pushing
+        rule. Repeat stays at the same depth, so every repetition shares one
+        parent — which is what makes an accumulator a single value in a single
+        place.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="actions-without-code">5 · Actions, ideally without code</Heading>
+      <p>
+        A grammar that only recognises input returns nothing. Actions build the
+        result. There are three ways to attach them, and you should prefer them
+        in this order:
+      </p>
+
+      <Heading level={3} id="builtin-actions">Builtin actions — no functions at all</Heading>
+      <p>
+        The engine ships <code>$</code>-suffixed builtins, merged into the ref
+        map when the grammar loads. Referenced by name, they let you emit a
+        grammar that is <strong>pure JSON with no code in it</strong> — which is
+        the safest thing you can hand to someone else.
+      </p>
+      <pre><code>{`{ "rule": { "val": {
+  "open":  [ { "s": "#NR", "a": "@value$" } ],
+  "close": [ {} ]
+} } }
+
+// tn.parse('42')  =>  42`}</code></pre>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Builtin</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>@object$</code></th><td><code>r.node = {"{}"}</code></td></tr>
+            <tr><th scope="row"><code>@array$</code></th><td><code>r.node = []</code></td></tr>
+            <tr><th scope="row"><code>@key$</code></th><td>Capture the matched key token.</td></tr>
+            <tr><th scope="row"><code>@setval$</code></th><td>Assign the child's node as an object property.</td></tr>
+            <tr><th scope="row"><code>@push$</code></th><td>Append the child's node to an array.</td></tr>
+            <tr><th scope="row"><code>@value$</code></th><td>Resolve the matched scalar token.</td></tr>
+            <tr><th scope="row"><code>@reset$</code></th><td>Clear the parent-seeded node.</td></tr>
+            <tr><th scope="row"><code>@node$</code> <code>@capture$</code> <code>@bubble$</code></th><td>Rebuild the <code>{"{ rule, src, kids }"}</code> tree. Used by the ABNF compiler.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <Heading level={3} id="named-refs">Named refs — code, bound out of band</Heading>
+      <p>
+        Keeps the grammar declarative while the code lives in the host program.
+        Two kinds of name: rule-phase hooks (<code>bo</code>, <code>ao</code>,
+        <code>bc</code>, <code>ac</code> — before/after open and close) and
+        alternate marks.
+      </p>
+      <pre><code>{`let total = 0
+
+tn.abnf(\`
+  val = add
+  add = NR [ PL add ]
+  PL  = "+"
+\`, {
+  actions: {
+    '@val:bo':   () => { total = 0 },
+    '@add:o:NR': (r) => { total += r.o[0].val },
+  },
+})`}</code></pre>
+      <p class="note">
+        Mark names are assigned by the compiler from each alternate's leading
+        discriminator. <strong>Do not guess them.</strong> Ask:
+        <code>tabnas-abnf --marks -f grammar.abnf</code>.
+      </p>
+
+      <Heading level={3} id="inline-functions">Inline functions</Heading>
+      <p>
+        Written straight onto the alternate as <code>a</code>. The most direct,
+        but the grammar is now code and can no longer be serialised or safely
+        shared.
+      </p>
+      <pre><code>{`val: {
+  open:  [ { p: 'add', a: (r) => { r.node = 0 } } ],
+  close: [ {} ],
+},
+add: {
+  open:  [ { s: '#NR', a: (r) => { r.parent.node += r.o[0].val } } ],
+  close: [ { s: '#PL', r: 'add' }, {} ],
+}
+
+// tn.parse('1+2+3')  =>  6`}</code></pre>
+      <p>
+        <code>r</code> is the rule instance, <code>r.node</code> the value it
+        carries, <code>r.o</code> the tokens matched in the open phase (so
+        <code>r.o[0].val</code> is the first token's value, already a number),
+        and <code>r.parent</code> / <code>r.child</code> the neighbouring rules.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="constraints">6 · Constraints to design around</Heading>
+      <p>These are the things that will bite. All of them are by design.</p>
+      <ul>
+        <li>
+          <strong>Deterministic, no backtracking.</strong> Alternates are
+          tried in order and the first match wins. Two alternates that can't be
+          told apart from their leading tokens resolve to whichever comes
+          first — order them deliberately.
+        </li>
+        <li>
+          <strong>Ambiguity is not supported.</strong> One parse or an error.
+          If you need every valid parse, this is the wrong engine.
+        </li>
+        <li>
+          <strong>You write the lexer.</strong> tabnas separates lexing from
+          parsing and is about the parsing half. Built-ins like <code>NR</code>
+          and fixed tokens cover a lot; beyond that, you assemble it.
+        </li>
+        <li>
+          <strong>Left recursion is rewritten, not supported.</strong> The ABNF
+          compiler applies <a href="https://en.wikipedia.org/wiki/Left_recursion#Removing_all_left_recursion" target="_blank" rel="noopener">Paull's
+          algorithm</a>, so <code>P = P a / b</code>
+          becomes <code>P = b *(a)</code>. The tree comes out flat rather than
+          left-nested, and a purely left-recursive rule is an error.
+        </li>
+        <li>
+          <strong>ABNF desugars <code>[ … ]</code> and <code>( … )</code></strong>
+          into generated group rules, so at runtime a rule's
+          <code>parent</code> is often a synthetic rule rather than the one
+          above it in your source. Don't accumulate onto <code>r.parent</code>
+          in an ABNF-compiled grammar; use a rule-phase hook, or define the
+          grammar as data where you control the shape.
+        </li>
+        <li>
+          <strong>Empty alternates matter.</strong> A phase with no matching
+          alternate is a parse error. <code>{"{}"}</code> is how a rule ends.
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <Heading level={2} id="verify">7 · Verify your work</Heading>
+      <p>
+        A grammar that looks right and parses one happy-path input is not
+        evidence. Before reporting success:
+      </p>
+      <ul>
+        <li>Parse several known-good inputs and assert the <em>values</em>, not just that it didn't throw.</li>
+        <li>Parse known-bad inputs and confirm they're rejected. A grammar that accepts everything is a common failure.</li>
+        <li>Run <code>tabnas-abnf --marks</code> if an action didn't fire.</li>
+        <li>Use <a href={REPO("debug")} target="_blank" rel="noopener">@tabnas/debug</a> to describe the live grammar and render it back to ABNF — if the round-trip isn't what you meant, the grammar isn't either.</li>
+        <li>Use <a href={REPO("railroad")} target="_blank" rel="noopener">@tabnas/railroad</a> to draw it when the structure is hard to hold in your head.</li>
+        <li>Try it in the <a href="/playground">playground</a> — it takes ABNF or a rule table and shows both the tree and the value.</li>
+      </ul>
+    </section>
+
+    <section>
+      <Heading level={2} id="agents-md">8 · Per-package instructions</Heading>
+      <p>
+        Every package repository ships an <code>AGENTS.md</code> with its
+        layout, conventions, test commands, and the non-obvious things to know
+        before changing it. Read the one for the package you're touching — start
+        with <a href={AGENTS_MD("parser")} target="_blank" rel="noopener">parser</a>.
+      </p>
+      {groups.map((g) => (
+        <div class="agrp">
+          <p class="agrp-head">{g.label}</p>
+          <p class="chips">
+            {g.items.map((p) => (
+              <a class="chip" href={AGENTS_MD(p.name)} target="_blank" rel="noopener">{p.name}</a>
+            ))}
+          </p>
+        </div>
+      ))}
+      <p class="note">
+        Work lands in TypeScript first, then Go to match; both run the same
+        fixtures, so a change that doesn't really work fails loudly. Agent-written
+        contributions are welcome and need no disclosure — see
+        <a href="/community#this-project-is-ai-friendly">community</a>.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="this-site">9 · This site, machine-readable</Heading>
+      <p>
+        <a href="/llms.txt">llms.txt</a> indexes the site;
+        <a href="/llms-full.txt">llms-full.txt</a> is the full text. Source for
+        everything is under
+        <a href={GITHUB_ORG} target="_blank" rel="noopener">github.com/tabnas</a>.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .ag { max-width: 54rem; }
+  .ag :global(h1) { font-size: clamp(2.1rem, 5vw, 3rem); margin: 0 0 1rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 64ch; }
+
+  section { margin-top: 3rem; }
+  .ag :global(h2) { font-size: 1.6rem; margin: 0 0 0.85rem; }
+  .ag :global(h3) { font-size: 1.1rem; margin: 1.75rem 0 0.5rem; color: var(--accent); }
+  section p { color: var(--ink-soft); max-width: 66ch; }
+  .note { font-size: 0.92rem; }
+
+  pre {
+    margin: 0.75rem 0; padding: 0.9rem 1.1rem; overflow-x: auto;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.65;
+  }
+  pre > code { color: var(--ink); }
+
+  ul { color: var(--ink-soft); padding-left: 1.2rem; max-width: 66ch; }
+  li { margin-bottom: 0.6rem; }
+  li strong { color: var(--ink); }
+
+  .table-wrap { overflow-x: auto; margin: 1rem 0 1.25rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono); font-size: 0.66rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-mute); font-weight: 400;
+  }
+  tbody th { font-weight: 400; white-space: nowrap; }
+  tbody td { color: var(--ink-soft); }
+
+  .agrp { margin-top: 1rem; }
+  .agrp-head {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-mute); margin: 0 0 0.4rem;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+  .chip {
+    font-family: var(--font-mono); font-size: 0.8rem;
+    color: var(--ink-soft); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.2rem 0.65rem;
+  }
+  .chip:hover { color: var(--primary); border-color: var(--border-strong); }
+</style>

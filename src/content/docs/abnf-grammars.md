@@ -1,7 +1,7 @@
 ---
 title: ABNF grammars
 description: Define a language fast using the RFC 5234 ABNF dialect.
-section: Guides
+section: How-to
 order: 1
 ---
 
@@ -30,7 +30,7 @@ alternatives (not `::=` or `|`).
 
 ## Left recursion
 
-Left-recursive rules are accepted directly. A left-recursion pass (Paull's
+Left-recursive rules are accepted directly. A left-recursion pass ([Paull's](https://en.wikipedia.org/wiki/Left_recursion#Removing_all_left_recursion) — Wikipedia describes the method without using the name)
 algorithm) rewrites both direct (`P = P a / b`) and indirect recursion into the
 iterative form the engine runs without re-entering a rule at the same position:
 
@@ -45,7 +45,62 @@ details and caveats.
 
 ## Actions
 
-Attach behaviour with `@ref` action references keyed by rule and phase — for
-example `'@add:o:NR'` runs when the `add` rule opens on a number token. Actions
-augment the captured node (e.g. set `node.value`), so `tn.parse(...)` returns
-your real result.
+Attach behaviour with `@ref` action references, passed as `actions` and keyed
+by rule and phase. There are two forms:
+
+- `'@add:o:NR'` — an **alternate** action: runs when the `add` rule opens on an
+  `NR` token. The trailing mark is the alternate's leading discriminator.
+- `'@val:bo'` — a **rule-phase** hook: before-open. Also `ao`, `bc`, `ac` for
+  after-open, before-close and after-close.
+
+```ts
+let total = 0
+
+tn.abnf(`
+  val = add
+  add = NR [ PL add ]
+  PL  = "+"
+`, {
+  actions: {
+    '@val:bo':   () => { total = 0 },
+    '@add:o:NR': (r) => { total += r.o[0].val },
+  },
+})
+```
+
+`r` is the rule instance and `r.o` the tokens matched in the open phase, so
+`r.o[0].val` is the value of the first — a real number, courtesy of the lexer.
+
+### Finding the marks
+
+An alternate mark comes from the alternate's leading discriminator, which the
+compiler assigns — so don't guess at the name, ask for it:
+
+```bash
+tabnas-abnf --marks -f grammar.abnf
+```
+
+```
+val  o:add  p:add
+val  c:_  (empty)
+add  o:NR  s:#NR
+add  c:_  (empty)
+```
+
+`markListing(spec)` gives the same listing from code. Reading it also tells you
+the shape the compiler produced: `val o:add p:add` says `val` pushes `add` as a
+child rule, which is what `val = add` asks for.
+
+Requires `@tabnas/abnf` 0.2.4 or later. Before that, a production whose single
+alternative was one rule reference got dissolved by the left-recursion pass —
+`val = add` was rewritten to `val = NR [ PL add ]`, so `val` vanished from the
+tree and picked up an `o:NR` mark that belonged to `add`.
+
+### Parents and generated rules
+
+ABNF also desugars `[ … ]` and `( … )` into generated group rules, so a rule's
+`parent` at runtime is often one of those rather than the rule above it in your
+source. Accumulating onto `r.parent` works cleanly in a grammar defined
+[as data](/#a-grammar-end-to-end), where `r` repeats a rule at the same stack
+depth; with ABNF, keep the accumulator outside the parse — a `bo` hook on the
+start rule is a good place to reset it.

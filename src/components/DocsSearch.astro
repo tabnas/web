@@ -1,9 +1,9 @@
 ---
-// Custom search box backed by standalone Pagefind. The Pagefind index is
-// generated as a post-build step into /pagefind (see package.json `build`).
-// It only exists for prerendered/static HTML, so while the site runs under
-// the SSR under-construction gate the index may be absent — the box then
-// disables itself gracefully instead of erroring.
+// Custom search box backed by standalone Pagefind. The index is generated
+// as a post-build step into /pagefind (see package.json `build`), so it only
+// exists after a real build — under `astro dev` there is none and the box
+// disables itself gracefully rather than erroring. Use `npm run preview` to
+// exercise search locally.
 ---
 
 <div class="docsearch">

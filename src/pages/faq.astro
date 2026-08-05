@@ -1,0 +1,270 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { PACKAGES, REPO, GITHUB_ORG, AUTHOR, SPONSOR, STATUS_URL } from "../consts";
+
+const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
+---
+
+<Base
+  wide
+  title="FAQ"
+  description="What tabnas is, what it won't do, and the questions that come up first."
+>
+  <article class="faq">
+    <Heading level={1} id="faq">Frequently asked questions</Heading>
+    <p class="lede">
+      Short answers, including the unflattering ones. If something here is wrong
+      or missing, that's worth
+      <a href={`${REPO("parser")}/issues`} target="_blank" rel="noopener">an issue</a>.
+    </p>
+
+    <section>
+      <Heading level={2} id="basics">The basics</Heading>
+      <dl>
+        <div>
+          <dt>What is tabnas?</dt>
+          <dd>
+            A parsing engine you extend rather than replace. A grammar is data —
+            a table of rules and token alternates the engine walks at runtime —
+            so a new language is usually rules added to one that already parses.
+            The long version is on <a href="/why">why tabnas</a>.
+          </dd>
+        </div>
+        <div>
+          <dt>Why does it exist?</dt>
+          <dd>
+            Writing a parser is expensive, so most formats never get a good one.
+            Two things make it cheaper here: extension is the normal case
+            instead of a fork, and the grammar is plain enough data that a
+            language model can write it. See <a href="/agents">agents</a>.
+          </dd>
+        </div>
+        <div>
+          <dt>What does the name mean?</dt>
+          <dd>
+            <em>Tábla na nAistrithe</em> — Irish for "a table of translations",
+            which is what the engine walks.
+          </dd>
+        </div>
+        <div>
+          <dt>Is it ready to use?</dt>
+          <dd>
+            It works, and {PACKAGES.length} packages are published — but
+            everything is pre-1.0. Minor versions can break things, and grammar
+            packages track the engine release they were built against. Pin exact
+            versions. Per-repo CI and publish state is on the
+            <a href={STATUS_URL} target="_blank" rel="noopener">status page</a>.
+          </dd>
+        </div>
+        <div>
+          <dt>What's the licence?</dt>
+          <dd>MIT, across every repository in the org.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section>
+      <Heading level={2} id="using-it">Using it</Heading>
+      <dl>
+        <div>
+          <dt>Do I have to write ABNF?</dt>
+          <dd>
+            No. There are three levels, and they produce the same thing: ABNF
+            when a person is writing, a declarative rule table when an agent is,
+            and a programmatic API for parameterised grammars — the level
+            <a href={REPO("expr")} target="_blank" rel="noopener">expr</a> and
+            <a href={REPO("directive")} target="_blank" rel="noopener">directive</a>
+            are built at. The <a href="/playground">playground</a> takes the
+            first two.
+          </dd>
+        </div>
+        <div>
+          <dt>Do I have to write a lexer?</dt>
+          <dd>
+            Mostly, yes. tabnas draws a hard line between lexing and parsing and
+            is really about the parsing half. It gives you tools — matchers,
+            fixed tokens, built-ins like <code>NR</code> — but you assemble
+            them. Lexing is the easy and boring part.
+          </dd>
+        </div>
+        <div>
+          <dt>Can it handle ambiguous grammars?</dt>
+          <dd>
+            No. The engine is deterministic and does not backtrack. If you need every valid parse of an ambiguous input, an
+            Earley or GLR parser is the right tool —
+            <a href="/comparisons">other parsers</a> covers when to reach for one.
+          </dd>
+        </div>
+        <div>
+          <dt>What about left recursion?</dt>
+          <dd>
+            Accepted, but rewritten rather than natively supported. The ABNF
+            compiler applies <a href="https://en.wikipedia.org/wiki/Left_recursion#Removing_all_left_recursion" target="_blank" rel="noopener">Paull's
+            algorithm</a>, so <code>P = P a / b</code>
+            becomes <code>P = b *(a)</code>. The resulting tree is flat rather
+            than left-nested, and a purely left-recursive rule with no base
+            branch is an error.
+          </dd>
+        </div>
+        <div>
+          <dt>How do I extend an existing grammar?</dt>
+          <dd>
+            Add rules and token alternates to it. That's the whole mechanism,
+            and it's how the packages are built: JSON is a handful of rules,
+            JSONC adds comments, jsonic relaxes the quoting. See
+            <a href="/docs/extending">extending a grammar</a>.
+          </dd>
+        </div>
+        <div>
+          <dt>My action never fires. Why?</dt>
+          <dd>
+            Probably the mark name. An <code>@ref</code> alternate mark comes
+            from the alternate's leading discriminator, which the compiler
+            assigns — so ask it rather than guessing:
+            <code>tabnas-abnf --marks -f grammar.abnf</code>. ABNF also desugars
+            <code>[ … ]</code> and <code>( … )</code> into generated group
+            rules, so a rule's <code>parent</code> at runtime is often one of
+            those.
+          </dd>
+        </div>
+        <div>
+          <dt>How fast is it?</dt>
+          <dd>
+            Unmeasured, publicly. The design is a for-loop over tokens with a
+            lookup table and no backtracking, which is a fast shape — but there
+            are no published benchmarks, so treat any claim, including that one,
+            as unproven until there are.
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section>
+      <Heading level={2} id="scope">Scope</Heading>
+      <p class="sec-note">
+        Saying no is part of describing a project. These are deliberate;
+        arguing for them is welcome, but the current answer is no.
+      </p>
+      <dl>
+        <div>
+          <dt>What can it actually parse?</dt>
+          <dd>
+            Real languages, not just config formats. The strongest evidence is
+            <a href={REPO("c")} target="_blank" rel="noopener">@tabnas/c</a>,
+            which parses <strong>C source</strong> into a concrete syntax tree —
+            preserving every token, comment, macro definition, macro use and
+            compiler extension as written. There is also a
+            <a href={REPO("proto")} target="_blank" rel="noopener">Protocol Buffers</a>
+            IDL parser (proto2, proto3, editions 2023/2024), and
+            <a href={REPO("css")} target="_blank" rel="noopener">CSS</a>,
+            <a href={REPO("markdown")} target="_blank" rel="noopener">Markdown</a>
+            and <a href={REPO("xml")} target="_blank" rel="noopener">XML</a>.
+            Beyond the org, <a href="/examples">boru</a> is a complete
+            programming language — types, macros, an LSP — with its whole front
+            end on this engine.
+          </dd>
+          <dd>
+            The limits are shape rather than size: the grammar has to be
+            deterministic. Ambiguity is the thing it can't do — not complexity,
+            and not lookahead depth.
+          </dd>
+        </div>
+        <div>
+          <dt>Is there a hosted service?</dt>
+          <dd>
+            No, and there's nothing to host. tabnas is a library that runs in
+            your process. No account, no API key, no paid tier.
+          </dd>
+        </div>
+        <div>
+          <dt>Does it generate parser code?</dt>
+          <dd>
+            No. Generating source would give back the drift problem the engine
+            exists to avoid — grammars stay data, interpreted at runtime. It
+            also means you can inspect a grammar while it runs, print it back as
+            ABNF, or draw it.
+          </dd>
+        </div>
+        <div>
+          <dt>Which runtimes?</dt>
+          <dd>
+            TypeScript and Go. TypeScript is the reference implementation; the
+            Go port tracks it and runs the same fixtures, so a grammar behaves
+            the same in both.
+          </dd>
+        </div>
+        <div>
+          <dt>Is there an MCP server, or a grammar catalog?</dt>
+          <dd>
+            Not yet, and neither is promised. Both are under discussion in
+            <a href={`${GITHUB_ORG}/parser/discussions`} target="_blank" rel="noopener">Discussions</a>,
+            which is where the argument about how they should work is happening.
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section>
+      <Heading level={2} id="the-project">The project</Heading>
+      <dl>
+        <div>
+          <dt>Who makes it?</dt>
+          <dd>
+            <a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>,
+            who also wrote <a href="https://senecajs.org" target="_blank" rel="noopener">Seneca</a>
+            and jsonic — which is where tabnas came from. Development is
+            sponsored by
+            <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a>;
+            see <a href="/sponsors">sponsors</a>.
+          </dd>
+        </div>
+        <div>
+          <dt>Is anyone using it?</dt>
+          <dd>
+            Yes — <a href="/examples">examples</a> covers two real languages
+            built on the engine, one in TypeScript and one in Go. Beyond that
+            it's early, and pretending otherwise wouldn't help you.
+          </dd>
+        </div>
+        <div>
+          <dt>Can I contribute with an AI agent?</dt>
+          <dd>
+            Yes, and you don't have to disclose it. Every package repository
+            ships an <code>AGENTS.md</code>, and the shared fixtures mean a
+            change that doesn't actually work fails loudly. See
+            <a href="/community">community</a>.
+          </dd>
+        </div>
+        <div>
+          <dt>What would help most?</dt>
+          <dd>
+            Roughly in order: a grammar for a format you actually use, a failing
+            fixture for something that parses wrongly, and documentation for the
+            parts you found hard. There are {grammars} language grammars so far,
+            most of them extensions of another.
+          </dd>
+        </div>
+      </dl>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .faq { max-width: 52rem; }
+  .faq :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 60ch; }
+
+  section { margin-top: 3rem; }
+  .faq :global(h2) { font-size: 1.6rem; margin: 0 0 0.85rem; }
+  section > p { color: var(--ink-soft); max-width: 64ch; }
+  .sec-note { font-size: 0.95rem; }
+
+  dl { margin: 1rem 0 0; }
+  dl > div { margin-bottom: 1.6rem; }
+  dt {
+    font-family: var(--font-heading); font-weight: 700;
+    font-size: 1.1rem; margin-bottom: 0.25rem;
+  }
+  dd { margin: 0; color: var(--ink-soft); max-width: 64ch; }
+</style>

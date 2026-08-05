@@ -1,7 +1,7 @@
 ---
 title: How it works
 description: The ideas behind the engine — grammar as parser, a uniform tree, two runtimes.
-section: Concepts
+section: Explanation
 order: 1
 ---
 

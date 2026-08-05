@@ -29,9 +29,3 @@
 .why th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); }
 .why tr.hi td { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); font-weight: 600; color: var(--ink); }
 .why .fine { color: var(--ink-soft); }
-.why .cta-row { display: flex; gap: 0.75rem; margin-top: 2.5rem; flex-wrap: wrap; }
-.why .btn { display: inline-block; padding: 0.7rem 1.25rem; border-radius: 10px; font-weight: 600; text-decoration: none; }
-.why .btn.primary { background: var(--primary); color: var(--on-primary); }
-.why .btn.primary:hover { background: var(--primary-hover); }
-.why .btn.ghost { color: var(--primary); border: 1.5px solid var(--border-strong); }
-.why .btn.ghost:hover { background: color-mix(in srgb, var(--accent-strong) 12%, transparent); }

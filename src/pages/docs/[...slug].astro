@@ -3,15 +3,26 @@ import { getCollection, render } from "astro:content";
 import DocsLayout from "../../layouts/DocsLayout.astro";
 
 // Renders the docs content collection through the custom DocsLayout.
-// `/docs` (empty slug) shows the introduction. On-demand while the site is
-// gated (output:"server"); at the static launch these prerender and Pagefind
-// indexes them for search.
+// `/docs` (empty slug) shows the introduction.
+//
+// getStaticPaths enumerates the collection so every doc lands on disk as
+// HTML — which is what Pagefind indexes for the search box.
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  return [
+    // The bare /docs route; the rest param is undefined here.
+    { params: { slug: undefined } },
+    ...docs.map((d) => ({ params: { slug: d.id } })),
+  ];
+}
+
 const { slug } = Astro.params;
 const wanted = (slug || "introduction").replace(/\/$/, "");
 const docs = await getCollection("docs");
 const entry = docs.find((d) => d.id === wanted);
 if (!entry) {
-  return new Response("Not found", { status: 404 });
+  // Unreachable: getStaticPaths only emits ids that exist.
+  throw new Error(`No docs entry for "${wanted}"`);
 }
 const { Content, headings } = await render(entry);
 ---
