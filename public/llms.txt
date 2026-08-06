@@ -13,6 +13,7 @@
 - [Home](https://tabnas.dev/): what it is, and the addition grammar four ways
 - [Why tabnas](https://tabnas.dev/why): the long-form motivation and the algorithm
 - [Docs](https://tabnas.dev/docs): documentation hub (Diátaxis)
+- [How to](https://tabnas.dev/how-to): task-oriented guides — includes, expressions, parameterised parsers, line-oriented formats, custom tokens, errors, debugging, testing
 - [Agents](https://tabnas.dev/agents): how to build with tabnas — the format to emit, the constraints, how to verify your work
 - [Playground](https://tabnas.dev/playground): run a grammar in the browser, as ABNF or as a rule table
 - [Examples](https://tabnas.dev/examples): real languages built on the engine

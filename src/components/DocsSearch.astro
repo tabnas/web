@@ -4,14 +4,23 @@
 // exists after a real build — under `astro dev` there is none and the box
 // disables itself gracefully rather than erroring. Use `npm run preview` to
 // exercise search locally.
+//
+// One instance per page: the ids below are fixed, and the client script
+// looks them up by id.
+interface Props {
+  /** Placeholder and accessible label. The index spans every page that
+      carries `data-pagefind-body`, which is docs and how-to guides. */
+  placeholder?: string;
+}
+const { placeholder = "Search docs…" } = Astro.props;
 ---
 
-<div class="docsearch">
+<div class="docsearch" data-placeholder={placeholder}>
   <input
     id="docsearch-input"
     type="search"
-    placeholder="Search docs…"
-    aria-label="Search docs"
+    placeholder={placeholder}
+    aria-label={placeholder}
     autocomplete="off"
     disabled
   />
@@ -21,6 +30,8 @@
 <script>
   const input = document.getElementById("docsearch-input") as HTMLInputElement | null;
   const box = document.getElementById("docsearch-results");
+  const ready_placeholder =
+    input?.closest<HTMLElement>(".docsearch")?.dataset.placeholder ?? "Search docs…";
   if (input && box) {
     let pf: any = null;
     let ready = false;
@@ -33,7 +44,7 @@
         pf = await import(/* @vite-ignore */ path);
         await pf.init?.();
         input!.disabled = false;
-        input!.placeholder = "Search docs…";
+        input!.placeholder = ready_placeholder;
       } catch {
         input!.placeholder = "Search unavailable";
         input!.disabled = true;

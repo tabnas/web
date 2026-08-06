@@ -79,6 +79,12 @@ const isActive = (href: string) =>
     display: flex;
     align-items: center;
     gap: 0.35rem;
+    /* Backstop: if the row ever outgrows the bar — one nav item too many,
+       or a wide fallback font before the webfont lands — the links wrap
+       onto a second line instead of scrolling the whole page sideways.
+       The breakpoint below is set so this should not normally trigger. */
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
   .nav-link {
     font-family: var(--font-body);
@@ -88,6 +94,9 @@ const isActive = (href: string) =>
     padding: 0.45rem 0.7rem;
     border-radius: 8px;
     border-bottom: 2px solid transparent;
+    /* Without this, a cramped row squashes labels into two lines each
+       rather than letting the nav wrap as a whole. */
+    white-space: nowrap;
   }
   .nav-link:hover { color: var(--ink); background: color-mix(in srgb, var(--accent-strong) 12%, transparent); }
   .nav-link.active { color: var(--primary); border-bottom-color: var(--accent-strong); }
@@ -114,7 +123,13 @@ const isActive = (href: string) =>
   }
   .menu-btn span { display: block; width: 18px; height: 2px; background: var(--ink); border-radius: 2px; }
 
-  @media (max-width: 760px) {
+  /* Collapse to the menu button while the full row still fits.
+     Brand (160px) + nav (719px) + gap + padding needs ~935px, so the
+     horizontal nav only appears above that. It used to collapse at 760px,
+     which left 761–935px squashing the links and scrolling the page
+     sideways. Re-measure this number when the nav gains an item:
+     `.brand` width + `.nav` width at a wide viewport, + 56px. */
+  @media (max-width: 960px) {
     .menu-btn { display: flex; }
     .nav {
       position: absolute; left: 0; right: 0; top: 100%;
@@ -127,6 +142,9 @@ const isActive = (href: string) =>
     .nav.open { display: flex; }
     .nav-link { padding: 0.6rem 0.5rem; }
     .actions { margin: 0.4rem 0 0; }
+    /* The dropdown is a column, so the desktop wrap backstop would
+       otherwise stretch each link to the row height. */
+    .nav { flex-wrap: nowrap; justify-content: flex-start; }
   }
 
   @media (prefers-reduced-motion: reduce) {

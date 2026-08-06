@@ -25,11 +25,40 @@ export const AUTHOR = {
 export const NAV: { href: string; label: string }[] = [
   { href: "/why", label: "Why" },
   { href: "/docs", label: "Docs" },
+  { href: "/how-to", label: "How to" },
   { href: "/agents", label: "Agents" },
   { href: "/playground", label: "Playground" },
   { href: "/examples", label: "Examples" },
   { href: "/faq", label: "FAQ" },
   { href: "/community", label: "Community" },
+];
+
+// How-to guide groups, in the order they appear in the sidebar and on the
+// /how-to index. The strings must match the `group` enum in
+// content.config.ts; the blurb is the one-line framing on the index page.
+export const HOWTO_GROUPS: { name: string; blurb: string }[] = [
+  {
+    name: "Composing grammars",
+    blurb:
+      "Assemble a language out of pieces that already work — other sources, " +
+      "expression syntax, and plugins that take options.",
+  },
+  {
+    name: "Shaping the parse",
+    blurb:
+      "The rule table itself: how repetition and nesting are expressed, how " +
+      "the engine picks an alternate, and what changes when newlines matter.",
+  },
+  {
+    name: "Feeding the lexer",
+    blurb:
+      "Everything that happens before the rules run — the tokens your " +
+      "language needs, and the ones it should throw away.",
+  },
+  {
+    name: "Working on a grammar",
+    blurb: "Seeing what a grammar does, telling the reader what went wrong, and keeping it honest.",
+  },
 ];
 
 // Secondary pages — surfaced in the footer rather than the header.

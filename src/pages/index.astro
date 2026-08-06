@@ -430,7 +430,11 @@ tn.parse('12+3+45')   // => 60`}</code></pre>
   .grid p { color: var(--ink-soft); font-size: 0.98rem; margin: 0; }
 
   /* Example */
-  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.25rem 0; align-items: start; }
+  /* minmax(0, …) not 1fr: a bare 1fr takes its minimum from the content, so
+     the widest line of the rule-table block sized the column and the page
+     scrolled sideways below ~653px. The `pre` is overflow-x: auto, so with a
+     zero minimum the code scrolls inside its own box instead. */
+  .code-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; margin: 1.25rem 0; align-items: start; }
   .code-label {
     font-family: var(--font-mono);
     font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em;
@@ -476,7 +480,7 @@ tn.parse('12+3+45')   // => 60`}</code></pre>
   @media (max-width: 880px) {
     .why { grid-template-columns: 1fr; gap: 1.75rem; }
     .grid.feat, .grid.proj { grid-template-columns: 1fr 1fr; }
-    .code-cols { grid-template-columns: 1fr; }
+    .code-cols { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 600px) {
     .grid.feat, .grid.proj { grid-template-columns: 1fr; }
