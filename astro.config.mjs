@@ -29,6 +29,10 @@ export default defineConfig({
 						class: "heading-anchor",
 						ariaHidden: "true",
 						tabIndex: -1,
+						// Keep the literal '#' out of the Pagefind index. Without
+						// this every result title reads "Attaching actions#" and
+						// the '#' turns up mid-excerpt wherever a heading was.
+						"data-pagefind-ignore": "",
 					},
 					content: { type: "text", value: "#" },
 				},

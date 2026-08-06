@@ -84,7 +84,7 @@ const toc = headings
             without it Pagefind indexes the sidebar and footer on every page,
             so every result matches every nav label. */}
         <article class="prose" data-pagefind-body>
-          <h1 id={slug}>{title}<a class="heading-anchor" href={`#${slug}`} aria-hidden="true" tabindex="-1">#</a></h1>
+          <h1 id={slug}>{title}<a class="heading-anchor" data-pagefind-ignore href={`#${slug}`} aria-hidden="true" tabindex="-1">#</a></h1>
           <slot />
         </article>
 
