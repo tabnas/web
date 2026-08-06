@@ -40,20 +40,25 @@ That grammar recognises the input and builds a tree. Every parse has the same
 
 ```ts
 tn.parse('1+2')
-// => { rule: 'add', src: '1+2', kids: [ { rule: 'PL', src: '+', kids: [] }, … ] }
+// => { rule: 'val', src: '1+2', kids: [
+//      { rule: 'add', src: '1', kids: [] },
+//      { rule: 'add', src: '2', kids: [] } ] }
 ```
+
+Each repetition of `add` is a sibling — the compiler turns the tail
+self-reference `[ PL add ]` into a same-depth repeat, not a nested push.
+(`PL` compiles to a token, so it never appears in `kids`.)
 
 ## 4 · Add actions
 
 Recognising isn't computing. To get a total, attach actions by reference — the
 grammar text stays untouched.
 
-There are two kinds of reference. `'@add:o:NR'` is an **alternate mark**: the
-`add` rule, its **o**pen phase, on an `NR` token. `r.o` holds the tokens
-matched in that phase, so `r.o[0].val` is the number just read — already a
-number, courtesy of the lexer. `'@add:ac'` and `'@val:ac'` are **rule-phase
-hooks** — **a**fter **c**lose, on the way back up the stack, which is when a
-rule's children are complete and can be folded in.
+Actions attach by **alternate mark** — a rule's alternate, named by its
+leading discriminator. `'@val:o:add'` is the `val` rule's alternate that
+pushes `add`; `'@add:o:NR'` is the `add` rule's alternate on an `NR` token.
+`r.o` holds the tokens that alternate matched, so `r.o[0].val` is the number
+just read — already a number, courtesy of the lexer.
 
 ```ts
 const tn = new Tabnas({ plugins: [abnf] })
@@ -63,14 +68,11 @@ tn.abnf(`
   PL  = "+"
 `, {
   actions: {
-    // Each `add` holds its own number...
-    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+    // `val` holds the running total.
+    '@val:o:add': (r) => { r.node.value = 0 },
 
-    // ...plus whatever the nested `add` came to.
-    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
-
-    // `val` carries the result of the parse.
-    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
+    // Each number adds to it.
+    '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
   },
 })
 
@@ -78,12 +80,14 @@ tn.parse('1+2+3').value    // => 6
 tn.parse('12+3+45').value  // => 60
 ```
 
-The total lands on `val`'s node rather than in a variable outside the parse,
-so `parse` returns it and the instance carries no state between calls.
+`r.parent` is `val` for **every** repetition — that's the same-depth repeat
+again — so the total accumulates in one place, on `val`'s node, where
+`parse` returns it. The instance carries no state between calls.
 
-`add`'s only child node is the nested `add` — `PL = "+"` is a lexical
-definition, so it compiles to a token rather than a rule and never appears
-in `kids`.
+These are the same two actions a hand-written rule table uses for this
+grammar (see [the home page](/#a-grammar-end-to-end), steps 3 and 4):
+ABNF and the rule table aren't just equivalent notations, they compile to
+the same machine.
 
 Mark names come from each alternate's leading discriminator, so ask the
 compiler rather than guessing:
@@ -96,8 +100,12 @@ tabnas-abnf --marks -f grammar.abnf
 val  o:add  p:add
 val  c:_  (empty)
 add  o:NR  s:#NR
+add  c:PL  s:#PL
 add  c:_  (empty)
 ```
+
+`add c:PL` is the repeat itself — a close-phase alternate you can attach an
+action to with `'@add:c:PL'`.
 
 ## Next steps
 

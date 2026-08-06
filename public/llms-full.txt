@@ -52,22 +52,21 @@ Recognising is not computing. To get a value, attach actions by reference:
 
     tn.abnf(GRAMMAR, {
       actions: {
-        // Each `add` holds its own number...
-        '@add:o:NR': (r) => { r.node.value = r.o[0].val },
-        // ...plus whatever the nested `add` came to.
-        '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
-        // `val` carries the result of the parse.
-        '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
+        // `val` holds the running total.
+        '@val:o:add': (r) => { r.node.value = 0 },
+        // Each number adds to it.
+        '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
       },
     })
 
     tn.parse('1+2+3').value   // => 6
 
-`@add:o:NR` is an alternate mark, firing as a token is matched. `@add:ac` and
-`@val:ac` are rule-phase hooks — after-close, on the way back up, which is when
-a rule's children are complete and can be folded in. Keep results on the node
-rather than in a variable outside the parse, so the grammar stays reusable.
-Mark names are assigned by the compiler — list them with
+Both names are alternate marks. `r.parent` is `val` for every repetition,
+because a tail self-reference (`[ PL add ]`) compiles to a same-depth repeat
+of the rule — the same `{ s: '#PL', r: 'add' }` close alternate a
+hand-written rule table declares. Keep results on the node rather than in a
+variable outside the parse, so the grammar stays reusable. Mark names are
+assigned by the compiler — list them with
 `tabnas-abnf --marks -f grammar.abnf` rather than guessing.
 
 ## The rule table

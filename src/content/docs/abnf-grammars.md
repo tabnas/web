@@ -50,9 +50,8 @@ by rule and phase. There are two forms:
 
 - `'@add:o:NR'` — an **alternate** action: runs when the `add` rule opens on an
   `NR` token. The trailing mark is the alternate's leading discriminator.
-- `'@add:ac'` — a **rule-phase** hook: after-close. Also `bo`, `ao` and `bc`
-  for before-open, after-open and before-close. `ac` is where a rule's
-  children are complete, so it's where a fold belongs.
+- `'@add:bo'` — a **rule-phase** hook: before-open. Also `ao`, `bc` and `ac`
+  for after-open, before-close and after-close.
 
 ```ts
 tn.abnf(`
@@ -61,17 +60,17 @@ tn.abnf(`
   PL  = "+"
 `, {
   actions: {
-    // Each `add` holds its own number...
-    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+    // `val` holds the running total.
+    '@val:o:add': (r) => { r.node.value = 0 },
 
-    // ...plus whatever the nested `add` came to.
-    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
-
-    // `val` carries the result of the parse.
-    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
+    // Each number adds to it.
+    '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
   },
 })
 ```
+
+`r.parent` is `val` for every repetition: a tail self-reference like
+`[ PL add ]` compiles to a same-depth repeat of `add`, not a nested push.
 
 `r` is the rule instance and `r.o` the tokens matched in the open phase, so
 `r.o[0].val` is the value of the first — a real number, courtesy of the lexer.
@@ -89,23 +88,27 @@ tabnas-abnf --marks -f grammar.abnf
 val  o:add  p:add
 val  c:_  (empty)
 add  o:NR  s:#NR
+add  c:PL  s:#PL
 add  c:_  (empty)
 ```
 
-`markListing(spec)` gives the same listing from code. Reading it also tells you
-the shape the compiler produced: `val o:add p:add` says `val` pushes `add` as a
-child rule, which is what `val = add` asks for.
+`markListing(spec)` gives the same listing from code. Reading it also tells
+you the shape the compiler produced: `val o:add p:add` says `val` pushes
+`add` as a child rule, and `add c:PL s:#PL` says `add` repeats itself from
+its close phase when a `+` follows — the tail self-reference `[ PL add ]`
+compiled to a same-depth repeat, exactly what a hand-written grammar
+declares as `{ s: '#PL', r: 'add' }`.
 
-Requires `@tabnas/abnf` 0.2.4 or later. Before that, a production whose single
-alternative was one rule reference got dissolved by the left-recursion pass —
-`val = add` was rewritten to `val = NR [ PL add ]`, so `val` vanished from the
-tree and picked up an `o:NR` mark that belonged to `add`.
+Requires `@tabnas/abnf` 0.3.0 or later (and `@tabnas/parser` 0.5.0). Earlier
+versions compiled the tail into generated option/group rules, nesting each
+repetition; 0.2.x additionally dissolved pure aliases like `val = add`.
 
 ### Parents and generated rules
 
-ABNF also desugars `[ … ]` and `( … )` into generated group rules, so a rule's
-`parent` at runtime is often one of those rather than the rule above it in your
-source. Accumulating onto `r.parent` works cleanly in a grammar defined
-[as data](/#a-grammar-end-to-end), where `r` repeats a rule at the same stack
-depth; with ABNF, keep the accumulator outside the parse — a `bo` hook on the
-start rule is a good place to reset it.
+For a tail self-reference, `r.parent` is the wrapping rule for **every**
+repetition — accumulating onto `r.parent.node` is the intended idiom, the
+same as in a hand-written rule table.
+
+Other sugar still desugars into generated group rules: inside `( … )` or
+`*( … )` a rule's `parent` at runtime may be a `_gen*` rule you didn't
+write. The mark listing shows the compiled rule set when in doubt.

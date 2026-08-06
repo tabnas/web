@@ -43,14 +43,11 @@ tn.abnf(`
   PL  = "+"
 `, {
   actions: {
-    // Each `add` holds its own number...
-    '@add:o:NR': (r) => { r.node.value = r.o[0].val },
+    // `val` holds the running total.
+    '@val:o:add': (r) => { r.node.value = 0 },
 
-    // ...plus whatever the nested `add` came to.
-    '@add:ac': (r) => { r.node.value += r.node.kids[0]?.value ?? 0 },
-
-    // `val` carries the result of the parse.
-    '@val:ac': (r) => { r.node.value = r.node.kids[0].value },
+    // Each number adds to it.
+    '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
   },
 })
 
@@ -58,16 +55,19 @@ tn.parse('1+2+3').value     // => 6
 tn.parse('12+3+45').value   // => 60
 ```
 
-The total lands on `val`'s node rather than in a variable outside the parse,
-so `parse` returns it and the instance carries no state between calls.
+`r.parent` is `val` for **every** repetition, because the compiler turns the
+tail self-reference `[ PL add ]` into a same-depth repeat — the same shape as
+the inline example below. The total lives in one place, on `val`'s node,
+where `parse` returns it; the instance carries no state between calls.
 
 Two kinds of name:
 
 - **Alternate marks** — `@<rule>:<phase>:<mark>`, where the mark comes from the
-  alternate's leading discriminator. These fire as tokens are matched.
+  alternate's leading discriminator. Open-phase marks fire as tokens are
+  matched; close-phase marks (like the repeat's own `@add:c:PL`) fire on the
+  way back up.
 - **Rule-phase hooks** — `@<rule>:bo`, `:ao`, `:bc`, `:ac` for before/after
-  open and close. `ac` is where a rule's children are complete, so it's where
-  a fold belongs.
+  open and close.
 
 ### Finding the mark names
 
@@ -81,6 +81,7 @@ tabnas-abnf --marks -f grammar.abnf
 val  o:add  p:add
 val  c:_  (empty)
 add  o:NR  s:#NR
+add  c:PL  s:#PL
 add  c:_  (empty)
 ```
 
@@ -92,9 +93,11 @@ AbnfActionError: abnf: action ref '@item:o:ALPHA' matches no open alt
 with mark 'ALPHA' in rule 'item'
 ```
 
-That error is usually caused by desugaring: `[ … ]`, `( … )` and `*( … )`
-compile to generated group rules, so the marks belong to rules you didn't
-write. The listing above is the authority.
+That error is usually caused by desugaring: `( … )` and `*( … )` compile to
+generated group rules, so their marks belong to rules you didn't write. (A
+tail self-reference like `[ PL add ]` is the exception — it compiles to a
+repeat on the rule itself, which is why `add` owns the `c:PL` mark above.)
+The listing is the authority.
 
 ## Inline functions — the most direct
 
@@ -138,11 +141,15 @@ ABNF, or safely accepted from anywhere you don't trust.
 | A grammar that survives JSON round-tripping | Builtins |
 | A grammar an agent wrote, that you want to check before running | Builtins |
 | ABNF that stays valid RFC 5234 | Named refs |
-| The result on the parse, not in a closure | Inline functions, with a wrapping rule |
+| Full control of the rule table | Inline functions |
 
 ## A note on `r.parent`
 
-Accumulating onto `r.parent` works cleanly in a grammar you wrote as data,
-where you control which rules push and which repeat. In an ABNF-compiled
-grammar the parent is often a generated group rule, so prefer a rule-phase
-hook and an outer variable there.
+For a tail self-reference (`add = NR [ PL add ]`) the compiler emits a
+same-depth repeat, so `r.parent` is the wrapping rule for every repetition
+and accumulating onto `r.parent.node` is the intended idiom — in ABNF and
+hand-written grammars alike.
+
+Other sugar is different: `( … )` and `*( … )` still compile to generated
+group rules, so inside those a rule's `parent` may be a rule you didn't
+write. When in doubt, `tabnas-abnf --marks` shows the compiled rule set.
