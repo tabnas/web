@@ -219,6 +219,16 @@ done
 Cloudflare Workers via `wrangler.json`, `output: "static"` in
 `astro.config.mjs` — every page is prerendered.
 
+**Deployment is automatic.** Cloudflare builds and publishes the site itself
+when changes land on `main`; merging a pull request is the deploy step. Do not
+run `npm run deploy` (`wrangler deploy`) as part of shipping a change — the
+script stays for manual recovery, and an agent session has no Cloudflare
+credentials anyway (`wrangler whoami` reports "not authenticated", and there is
+no `CLOUDFLARE_API_TOKEN`). That is expected, not a broken environment.
+
+So "publish this" means: build clean, merge to `main`, and check the live site
+a few minutes later.
+
 The site was previously behind HTTP Basic Auth while under construction
 (`src/middleware.ts` plus `run_worker_first` in `wrangler.json`). **That gate
 has been removed** and the site is now fully static (`output: "static"`). If a
