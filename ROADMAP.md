@@ -86,6 +86,7 @@ Rewritten around the `/why` motivation: the homepage, `SITE_TAGLINE` and
 | `/` | What it is, why it exists, core features, the addition grammar four ways, packages, the project |
 | `/why` | The long-form motivation and the algorithm. The source document. |
 | `/docs` | Diátaxis — Start / Tutorials / How-to / Reference / Explanation, with Pagefind search |
+| `/how-to` | Task-oriented guides, at top level. An intro and index page, plus one page per problem |
 | `/agents` | Half the thesis, and a build guide written for an agent |
 | `/playground` | Client-side engine — ABNF or rule table, tree and value |
 | `/examples` | Real languages on the engine: aontu (TS), boru (Go) |
@@ -95,10 +96,20 @@ Rewritten around the `/why` motivation: the homepage, `SITE_TAGLINE` and
 | `/community` | How the project works, contributing, AI-friendly policy |
 | `/sponsors` | Voxgig, and what sponsorship pays for |
 
-Navigation: Why, Docs, Agents, Playground, Examples, FAQ, Community —
+Navigation: Why, Docs, How to, Agents, Playground, Examples, FAQ, Community —
 `/agents` sits high because it carries half the thesis, not because agents are
 fashionable. The footer carries Releases, Other parsers, Sponsors,
 Contributing, Code of Conduct.
+
+**On `/how-to` versus the docs How-to section.** The task-oriented quadrant is
+big enough to be a section of its own, and it is the part a working reader
+reaches for most, so it sits at top level next to `/why` rather than three
+clicks into `/docs`. Three pages stayed in `/docs` — `abnf-grammars`,
+`actions`, `extending` — because they double as the way in to ABNF, actions and
+extension, and their URLs are already linked from the quickstart and the
+homepage. The `/how-to` index lists them alongside its own guides, so there is
+still exactly one place to look. A guide belongs at `/how-to` if it is named
+after a problem; it belongs in `/docs` if it is named after a feature.
 
 ## Still to do
 

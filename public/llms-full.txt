@@ -171,12 +171,62 @@ Everything is pre-1.0 — pin exact versions.
   formatter and LSP, built on parser, jsonic, abnf, csv and expr.
   https://github.com/boru-lang/boru
 
+## How-to guides
+
+Task-oriented pages at https://tabnas.dev/how-to, each solving one problem
+against a running grammar. Every sample is executed before it ships.
+
+Composing grammars:
+
+- Include one source from another — the `@` mark, resolvers, processors,
+  dependency tracking, and the `@tabnas/directive` mechanism underneath.
+  https://tabnas.dev/how-to/include-other-sources
+- Parse expressions with precedence — `@tabnas/expr`, the binding-power scale,
+  custom operators, function-call syntax, evaluation.
+  https://tabnas.dev/how-to/expressions-with-precedence
+- Write a parameterised parser — plugin `defaults`, deep-merged options, and
+  the five things an option can change (token, lexer, IGNORE set, rule groups,
+  the parser itself). https://tabnas.dev/how-to/parameterised-parsers
+
+Shaping the parse:
+
+- Handle recursion and repetition — `r` versus `p`, tail self-reference, the
+  ABNF left-recursion rewrite, and depth guards.
+  https://tabnas.dev/how-to/recursion-and-repetition
+- Choose between alternates — order, multi-token lookahead, `c`, counters, `b`,
+  and group tags. https://tabnas.dev/how-to/choose-between-alternates
+- Parse a line-oriented format — taking `#LN` out of the IGNORE set; a worked
+  INI grammar; `@tabnas/csv`. https://tabnas.dev/how-to/line-oriented-formats
+
+Feeding the lexer:
+
+- Lex a token the engine doesn't know — `fixed.token`, `match.token`,
+  `match.value`, and a hand-written matcher.
+  https://tabnas.dev/how-to/custom-tokens
+- Handle comments and whitespace — comment definitions, `eatline`, and what
+  `IGNORE` costs. https://tabnas.dev/how-to/comments-and-whitespace
+- Handle strings, quotes and escapes — quote characters, multi-line strings,
+  escape tables, CSV-style doubling.
+  https://tabnas.dev/how-to/strings-and-quoting
+
+Working on a grammar:
+
+- Debug a grammar — `rule()`, `sub()`, `@tabnas/debug` describe/model/trace,
+  `@tabnas/railroad`. https://tabnas.dev/how-to/debug-a-grammar
+- Give good parse errors — `fileName`, `errmsg.name`, custom codes with
+  `{brace}` injection, the `e` alternate, `token.bad()`.
+  https://tabnas.dev/how-to/parse-errors
+- Test a grammar — fresh instances, accept/reject tables, asserting on
+  `e.code`, ABNF round-trip, `tabnas-abnf --parse`.
+  https://tabnas.dev/how-to/test-a-grammar
+
 ## Links
 
 - Home: https://tabnas.dev/
 - Why: https://tabnas.dev/why
 - Agents: https://tabnas.dev/agents
 - Docs: https://tabnas.dev/docs
+- How to: https://tabnas.dev/how-to
 - Quickstart: https://tabnas.dev/docs/quickstart
 - Rule table reference: https://tabnas.dev/docs/rule-table
 - Playground: https://tabnas.dev/playground

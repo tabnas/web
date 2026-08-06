@@ -4,25 +4,29 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import DocsSearch from "../components/DocsSearch.astro";
 import { getCollection } from "astro:content";
-import { SITE_TITLE } from "../consts";
+import { HOWTO_GROUPS, REPO, SITE_TITLE } from "../consts";
 
+// The shell for a single how-to guide. Deliberately the same shape as
+// DocsLayout — sidebar, article, "On this page" — because a reader moving
+// between /docs and /how-to should not have to relearn the furniture.
 interface Props {
   title: string;
   description: string;
   slug: string;
+  packages: string[];
   headings: { depth: number; slug: string; text: string }[];
 }
-const { title, description, slug, headings } = Astro.props;
+const { title, description, slug, packages, headings } = Astro.props;
 
-const SECTIONS = ["Start", "Tutorials", "How-to", "Reference", "Explanation"] as const;
-const all = (await getCollection("docs")).sort(
+const order = HOWTO_GROUPS.map((g) => g.name);
+const all = (await getCollection("howto")).sort(
   (a, b) =>
-    SECTIONS.indexOf(a.data.section) - SECTIONS.indexOf(b.data.section) ||
+    order.indexOf(a.data.group) - order.indexOf(b.data.group) ||
     a.data.order - b.data.order,
 );
-const groups = SECTIONS.map((section) => ({
-  section,
-  items: all.filter((d) => d.data.section === section),
+const groups = HOWTO_GROUPS.map((g) => ({
+  name: g.name,
+  items: all.filter((d) => d.data.group === g.name),
 })).filter((g) => g.items.length);
 
 const flat = all.map((d) => ({ id: d.id, title: d.data.title }));
@@ -36,7 +40,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 <!doctype html>
 <html lang="en">
   <head>
-    <BaseHead title={`${title} · Docs · ${SITE_TITLE}`} description={description} />
+    <BaseHead title={`${title} · How to · ${SITE_TITLE}`} description={description} />
     <script is:inline>
       (() => {
         const saved = localStorage.getItem("theme");
@@ -48,25 +52,21 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
   <body>
     <Header />
     <div class="docs-shell">
-      <aside class="sidebar" aria-label="Docs navigation">
-        <DocsSearch />
+      <aside class="sidebar" aria-label="How-to navigation">
+        <DocsSearch placeholder="Search docs and guides…" />
         <nav>
+          <p class="group-head"><a class="side-link index" href="/how-to">All how-to guides</a></p>
           {groups.map((g) => (
             <div class="group">
-              <p class="group-head">{g.section}</p>
+              <p class="group-head">{g.name}</p>
               <ul>
                 {g.items.map((d) => (
                   <li>
-                    <a href={`/docs/${d.id}`} class:list={["side-link", { active: d.id === slug }]}>
+                    <a href={`/how-to/${d.id}`} class:list={["side-link", { active: d.id === slug }]}>
                       {d.data.title}
                     </a>
                   </li>
                 ))}
-                {/* The rest of the how-to quadrant is a top-level section;
-                    without this the three pages here look like all of it. */}
-                {"How-to" === g.section && (
-                  <li><a href="/how-to" class="side-link more">All how-to guides →</a></li>
-                )}
               </ul>
             </div>
           ))}
@@ -74,20 +74,28 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
       </aside>
 
       <main class="doc-main">
-        {/* data-pagefind-body scopes the search index to the doc text —
-            without it Pagefind indexes the sidebar and footer on every page,
-            so every result matches every nav label. */}
+        {/* Same scoping as the docs article: without data-pagefind-body the
+            sidebar and footer are indexed on every page, so every result
+            matches every nav label. */}
         <article class="prose" data-pagefind-body>
           <h1 id={slug}>{title}<a class="heading-anchor" href={`#${slug}`} aria-hidden="true" tabindex="-1">#</a></h1>
+          <p class="lede">{description}</p>
+          {packages.length > 0 && (
+            <p class="pkgs" data-pagefind-ignore>
+              {packages.map((p) => (
+                <a class="chip" href={REPO(p)} target="_blank" rel="noopener">@tabnas/{p}</a>
+              ))}
+            </p>
+          )}
           <slot />
         </article>
 
         <nav class="pager">
           {prev ? (
-            <a class="pg prev" href={`/docs/${prev.id}`}><span>← Previous</span>{prev.title}</a>
+            <a class="pg prev" href={`/how-to/${prev.id}`}><span>← Previous</span>{prev.title}</a>
           ) : <span />}
           {next ? (
-            <a class="pg next" href={`/docs/${next.id}`}><span>Next →</span>{next.title}</a>
+            <a class="pg next" href={`/how-to/${next.id}`}><span>Next →</span>{next.title}</a>
           ) : <span />}
         </nav>
       </main>
@@ -127,13 +135,20 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
         color: var(--ink-soft); text-decoration: none; font-size: 0.95rem;
         border-left: 2px solid transparent;
       }
+      .side-link.index { font-family: var(--font-body); text-transform: none; letter-spacing: 0; }
       .side-link:hover { color: var(--ink); background: color-mix(in srgb, var(--accent-strong) 10%, transparent); }
       .side-link.active { color: var(--primary); border-left-color: var(--accent-strong); font-weight: 600; }
-      .side-link.more { color: var(--ink-mute); font-size: 0.88rem; }
-      .side-link.more:hover { color: var(--primary); }
 
       .doc-main { min-width: 0; }
-      .prose h1 { margin-bottom: 1rem; }
+      .prose h1 { margin-bottom: 0.6rem; }
+      .prose .lede { color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 1rem; }
+      .prose .pkgs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1.75rem; }
+      .prose .chip {
+        font-family: var(--font-mono); font-size: 0.75rem; text-decoration: none;
+        color: var(--ink-soft); background: var(--surface-2);
+        border: 1px solid var(--border); border-radius: 999px; padding: 0.15rem 0.6rem;
+      }
+      .prose .chip:hover { color: var(--primary); border-color: var(--border-strong); }
       .prose :global(h2) { margin-top: 2.25rem; scroll-margin-top: 5rem; }
       .prose :global(h3) { margin-top: 1.5rem; scroll-margin-top: 5rem; }
       .prose :global(pre) {
@@ -167,9 +182,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
         .toc { display: none; }
       }
       @media (max-width: 760px) {
-        /* minmax(0, …) not 1fr: a bare 1fr takes its minimum from the
-           content, so a wide code block in .doc-main sized the single
-           column to ~756px and the whole page scrolled sideways. */
+        /* minmax(0, …) not 1fr — see the same note in DocsLayout. */
         .docs-shell { grid-template-columns: minmax(0, 1fr); }
         .sidebar { position: static; }
       }

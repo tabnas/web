@@ -60,7 +60,9 @@ these as the fallback). Update them in the same commit.
 | `src/pages/playground.astro` | Client-side playground. Imports the real engine. |
 | `src/pages/docs/[...slug].astro` | Docs route. **Prerendered** — see Search below. |
 | `src/content/docs/` | Docs content collection (Diátaxis: Start / Tutorials / How-to / Reference / Explanation). |
-| `src/consts.ts` | Site metadata, nav, author, sponsor, and the full package table. |
+| `src/pages/how-to/` | Top-level how-to section: `index.astro` is the intro and index, `[slug].astro` the guides. |
+| `src/content/howto/` | How-to content collection, grouped by `group` (see `HOWTO_GROUPS` in `consts.ts`). |
+| `src/consts.ts` | Site metadata, nav, author, sponsor, how-to groups, and the full package table. |
 | `src/components/Heading.astro` | Heading + `#` anchor for hand-written `.astro` pages. |
 | `src/layouts/` | `Base`, `DocsLayout`, `BlogPost`, `MdxPage`. |
 | `src/styles/` | `tokens.css` (design tokens), `global.css`, per-page sheets. |
@@ -110,6 +112,36 @@ grammar actually has, rather than guessing at names.
 ```bash
 npx tabnas-abnf --marks -f grammar.abnf
 ```
+
+### The how-to guides
+
+`src/content/howto/` uses eight packages this repo does **not** depend on —
+`csv`, `expr`, `directive`, `multisource`, `debug`, `railroad`, `json`,
+`jsonic`. They are deliberately not in `package.json`: the site ships none of
+them, and a static site should not carry eight packages it never imports.
+
+To re-verify those samples after a version bump, install them into a scratch
+directory outside the repo and run each sample there:
+
+```bash
+mkdir -p /tmp/verify && cd /tmp/verify
+npm init -y >/dev/null && npm pkg set type=module
+npm install @tabnas/{parser,abnf,json,jsonic,csv,expr,directive,multisource,debug,railroad}@latest
+```
+
+Every `// =>` on those pages is a value the engine actually returned. Some of
+them are non-obvious and were arrived at by experiment — the flat tree from
+the ABNF left-recursion rewrite, the `\n\n` run lexing as one `#LN`, the
+`[['#OB','#OS']]` alternation nesting, and the fact that an *unset* counter
+compares as `true` against every `lt`/`gt` limit. Do not "tidy" one without
+running it.
+
+Known package gaps found while writing these, both worked around rather than
+documented as working: `@tabnas/hoover@0.2.2`'s `val` alternate does not
+install against `@tabnas/parser@0.5.0` (so hoover has no code sample on the
+site), and `@tabnas/csv`'s `csv_extra_field` error template uses `$fsrc` where
+the engine's injector expects `{fsrc}`, so the placeholder is printed
+literally.
 
 The canonical addition grammar, which appears four ways on the home page and
 again in the quickstart, is:
