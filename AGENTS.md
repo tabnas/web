@@ -133,7 +133,9 @@ Every `// =>` on those pages is a value the engine actually returned. Some of
 them are non-obvious and were arrived at by experiment — the flat tree from
 the ABNF left-recursion rewrite, the `\n\n` run lexing as one `#LN`, the
 `[['#OB','#OS']]` alternation nesting, and the fact that an *unset* counter
-compares as `true` against every `lt`/`gt` limit. Do not "tidy" one without
+reads as `0` (so `lt` passes and `gt` does not, and `exist` is the only way to
+tell "never counted" from "counted zero" — before 0.6 an unset counter
+compared as `true` against every `lt`/`gt` limit). Do not "tidy" one without
 running it.
 
 Known package gaps found while writing these, both worked around rather than
