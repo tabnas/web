@@ -96,13 +96,13 @@ export const PACKAGES: {
   go: boolean;
 }[] = [
   // The engine.
-  { name: "parser", tier: "engine", version: "0.5.0", npm: true, go: true,
+  { name: "parser", tier: "engine", version: "0.5.1", npm: true, go: true,
     blurb: "The engine — a pluggable, rule-based parsing machine and a uniform syntax tree." },
 
   // Grammar authoring and inspection.
-  { name: "abnf", tier: "tooling", version: "0.3.0", npm: true, go: true,
+  { name: "abnf", tier: "tooling", version: "0.3.2", npm: true, go: true,
     blurb: "Compile RFC 5234 ABNF straight into a working grammar." },
-  { name: "debug", tier: "tooling", version: "0.2.6", npm: true, go: true,
+  { name: "debug", tier: "tooling", version: "0.2.7", npm: true, go: true,
     blurb: "Inspect a live grammar — describe it, render it back as ABNF." },
   { name: "railroad", tier: "tooling", version: "0.2.2", npm: true, go: true,
     blurb: "Render railroad (syntax) diagrams from a grammar." },
@@ -122,7 +122,7 @@ export const PACKAGES: {
     blurb: "TOML." },
   { name: "ini", tier: "grammar", version: "0.4.1", npm: true, go: true,
     blurb: "INI files." },
-  { name: "csv", tier: "grammar", version: "0.4.1", npm: true, go: true,
+  { name: "csv", tier: "grammar", version: "0.4.2", npm: true, go: true,
     blurb: "Delimited records — CSV, TSV, RFC 4180 quoting — into objects or arrays." },
   { name: "xml", tier: "grammar", version: "0.4.1", npm: true, go: true,
     blurb: "XML." },
@@ -132,7 +132,7 @@ export const PACKAGES: {
   // record/field, and `parse('# Heading')` returns `[]`. Its own README and
   // AGENTS.md say so ("Don't be misled by the package name"), so the blurb
   // should too rather than promise a Markdown parser that isn't there.
-  { name: "markdown", tier: "grammar", version: "0.4.1", npm: true, go: true,
+  { name: "markdown", tier: "grammar", version: "0.4.2", npm: true, go: true,
     blurb: "Markdown — not yet implemented; currently the delimited-record scaffold it was forked from." },
   { name: "css", tier: "grammar", version: "0.4.1", npm: true, go: true,
     blurb: "CSS, into an AST that preserves declaration order and duplicate properties." },
@@ -150,11 +150,11 @@ export const PACKAGES: {
     blurb: "Pratt-parser expressions — infix, prefix, suffix, ternary, with configurable precedence." },
   { name: "directive", tier: "plugin", version: "0.4.1", npm: true, go: true,
     blurb: "Directive syntax — token sequences like @name or add<1,2> that trigger custom parsing." },
-  { name: "hoover", tier: "plugin", version: "0.2.2", npm: true, go: true,
+  { name: "hoover", tier: "plugin", version: "0.2.3", npm: true, go: true,
     blurb: "String hoovering — block-delimited strings with unquoted internal spaces." },
   { name: "path", tier: "plugin", version: "0.2.2", npm: true, go: true,
     blurb: "Track the property path to each value as it is parsed." },
-  { name: "multisource", tier: "plugin", version: "0.4.2", npm: true, go: true,
+  { name: "multisource", tier: "plugin", version: "0.4.3", npm: true, go: true,
     blurb: "Merge multiple sources into one parse — a marked path is resolved and spliced in place." },
 
   // Command line.
