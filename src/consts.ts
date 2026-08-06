@@ -96,7 +96,7 @@ export const PACKAGES: {
   go: boolean;
 }[] = [
   // The engine.
-  { name: "parser", tier: "engine", version: "0.5.1", npm: true, go: true,
+  { name: "parser", tier: "engine", version: "0.6.0", npm: true, go: true,
     blurb: "The engine — a pluggable, rule-based parsing machine and a uniform syntax tree." },
 
   // Grammar authoring and inspection.

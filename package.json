@@ -16,8 +16,8 @@
 		"@astrojs/mdx": "4.3.13",
 		"@astrojs/rss": "4.0.14",
 		"@astrojs/sitemap": "3.6.1",
-		"@tabnas/abnf": "0.3.0",
-		"@tabnas/parser": "0.5.0",
+		"@tabnas/abnf": "0.3.2",
+		"@tabnas/parser": "0.6.0",
 		"astro": "5.16.9",
 		"typescript": "5.9.3"
 	},
