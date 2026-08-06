@@ -120,11 +120,6 @@ after a problem; it belongs in `/docs` if it is named after a feature.
 - `/examples` describes aontu and boru from their READMEs and manifests.
   Worth a maintainer's eye.
 - `@tabnas/markdown`'s README describes a CSV reader (copy-paste error).
-- `parser/doc/architecture.md` says "only two-token lookahead". That is stale —
-  the engine handles any number — and it was copied onto this site before being
-  caught. Fix it at source.
-- `public/llms.txt` and `llms-full.txt` are hand-maintained and now describe
-  pages that no longer exist (`/blog`, `/roadmap`).
 
 **Needs org action:**
 

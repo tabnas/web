@@ -237,16 +237,13 @@ be deleted from the Cloudflare dashboard.
 
 ## Things that will trip you up
 
-- **`src/pages/why.mdx~`** is a stray editor backup, not a route. Ignore it, or
-  delete it.
-- **A duplicate content id warning** at build time (`Duplicate id
-  "introduction"`) predates the current work and is harmless.
 - **`@tabnas/markdown`'s README describes a CSV reader** — a copy-paste error in
   that repo. Don't propagate the wrong blurb into `src/consts.ts`.
 - **The GitHub star widgets read 0** because the org repos are new. That is
   honest, not broken.
-- **Lookahead is not limited to two tokens.** `parser/doc/architecture.md`
-  says "only two-token lookahead" — that is stale, and it got copied onto this
-  site more than once before being caught. The engine handles any number.
+- **Lookahead is not limited to two tokens.** The engine handles any number.
+  `parser/doc/architecture.md` used to claim "only two-token lookahead" and
+  that got copied onto this site more than once; the upstream doc now states
+  the rule correctly, but the wrong version is still in circulation.
 - **`llms.txt` / `llms-full.txt`** in `public/` are hand-maintained. Update
   them when page structure changes materially.

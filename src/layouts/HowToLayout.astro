@@ -34,7 +34,10 @@ const idx = flat.findIndex((d) => d.id === slug);
 const prev = idx > 0 ? flat[idx - 1] : null;
 const next = idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null;
 
-const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+// Strip the trailing autolink '#' — see the note in DocsLayout.
+const toc = headings
+  .filter((h) => h.depth === 2 || h.depth === 3)
+  .map((h) => ({ ...h, text: h.text.replace(/#$/, "") }));
 ---
 
 <!doctype html>

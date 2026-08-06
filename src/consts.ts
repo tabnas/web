@@ -96,11 +96,11 @@ export const PACKAGES: {
   go: boolean;
 }[] = [
   // The engine.
-  { name: "parser", tier: "engine", version: "0.4.1", npm: true, go: true,
+  { name: "parser", tier: "engine", version: "0.5.0", npm: true, go: true,
     blurb: "The engine — a pluggable, rule-based parsing machine and a uniform syntax tree." },
 
   // Grammar authoring and inspection.
-  { name: "abnf", tier: "tooling", version: "0.2.4", npm: true, go: true,
+  { name: "abnf", tier: "tooling", version: "0.3.0", npm: true, go: true,
     blurb: "Compile RFC 5234 ABNF straight into a working grammar." },
   { name: "debug", tier: "tooling", version: "0.2.6", npm: true, go: true,
     blurb: "Inspect a live grammar — describe it, render it back as ABNF." },
