@@ -13,7 +13,7 @@ alternates part of your grammar*.
 Nearly every "why did it parse that way" question is one of the five tools
 below.
 
-## Order — most specific first
+## Order — best practice: most specific first
 
 An alternate is taken only when its **whole** token sequence matches. A
 sequence that fails partway costs nothing: the engine abandons it and tries the
@@ -73,6 +73,14 @@ is wrong.
 
 Lookahead is free in the sense that it does not backtrack: the tokens are
 peeked, and the alternate either matches or the next one is tried.
+
+What it does **not** do is re-lex. Lookahead peeks at tokens the lexer has
+already produced, so the tokenisation is fixed before any alternate sees it —
+an alternate cannot ask for the same characters to be read a different way. If
+two constructs in your language need the same text lexed differently, that is a
+lexer problem, not an alternate-ordering one: give them distinct tokens (see
+[lexing a token the engine doesn't know](/how-to/custom-tokens)), or use a
+matcher whose behaviour depends on the rule it is called from.
 
 ## Alternation inside one position
 

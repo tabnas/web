@@ -29,7 +29,7 @@ const slug = id ?? slugify(title);
     {/* A whole-card link would swallow a nested anchor, so only plain
         (non-href) cards get one. */}
     {!href && (
-      <a class="heading-anchor" href={`#${slug}`} aria-hidden="true" tabindex="-1">#</a>
+      <a class="heading-anchor" data-pagefind-ignore href={`#${slug}`} aria-hidden="true" tabindex="-1">#</a>
     )}
   </Heading>
   <slot />
