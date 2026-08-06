@@ -119,7 +119,15 @@ after a problem; it belongs in `/docs` if it is named after a feature.
   comparison wrong is worse than not having one.
 - `/examples` describes aontu and boru from their READMEs and manifests.
   Worth a maintainer's eye.
-- `@tabnas/markdown`'s README describes a CSV reader (copy-paste error).
+- ~~`@tabnas/markdown`'s README describes a CSV reader (copy-paste error).~~
+  **Misdiagnosed — the README is right.** `@tabnas/markdown` *is* a
+  delimited-record reader: it was created from the `@tabnas/csv` template and
+  still has that grammar (`markdown` / `newline` / `record` / `text`), `.csv`
+  fixtures, and `markdown_extra_field` error codes. `parse('# Heading')`
+  returns `[]`. Both its README and its AGENTS.md disclose this. The package
+  listing blurb has been corrected to match; the outstanding work is a real
+  Markdown grammar, which is a maintainer call, not a doc fix. Checked
+  `@tabnas/xml` too — that one genuinely parses XML, so this is not a pattern.
 
 **Needs org action:**
 
