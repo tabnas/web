@@ -78,10 +78,21 @@ r.exist('depth')                      // was it ever set?
 > **Changed in 0.6.** Previously an unset counter compared as **true against
 > every helper**, so `lt('depth',3)` and `gt('depth',3)` were both true and a
 > `$gte` guard fired on the very first token, before anything had been counted.
-> Grammars that relied on that — a `$gt: 0` alternate matching while the
-> counter was still unset — now need `{ 'n.k': { $exist: false } }`, or the
-> ordering shown below. Paths that are not counters are unaffected: an absent
-> `o0` or a `u.*` you never set is genuine absence, not zero.
+>
+> An alternate gated on `{ 'n.k': { $gt: 0 } }` used to match on **two**
+> grounds: the counter was positive, *or* it was unset and the comparison
+> passed regardless. Only the second is gone. If you relied on both, add the
+> unset case as its own alternate — do not swap the condition, or you lose the
+> positive-counter branch you actually wanted:
+>
+> ```ts
+> { s: '#CB', c: { 'n.k': { $gt: 0 } },        b: 1 }   // keep this
+> { s: '#CB', c: { 'n.k': { $exist: false } }, b: 1 }   // add this if you
+>                                                        // relied on fail-open
+> ```
+>
+> Paths that are not counters are unaffected: an absent `o0` or a `u.*` you
+> never set is genuine absence, not zero.
 
 ## A depth limit, done properly
 
@@ -160,13 +171,18 @@ This is worth pinning down, because the asymmetry is invisible in the syntax:
 // $eq does NOT match an unset path
 { c: { 'u.flag': 1 } }              // skipped when u.flag is unset
 
-// the ordered ops DO pass an unset path
-{ c: { 'n.never': { $gte: 99 } } }  // taken when n.never is unset
+// an unset COUNTER reads as 0, so this is a real comparison
+{ c: { 'n.never': { $gte: 99 } } }  // NOT taken: 0 is not >= 99
+{ c: { 'n.never': { $lt: 1 } } }    // taken: 0 < 1
+
+// a non-counter path that does not resolve still passes the ordered ops
+{ c: { 'u.never': { $gte: 99 } } }  // taken: nothing to compare
 ```
 
-So `$eq` fails closed and `$lt`/`$lte`/`$gt`/`$gte` fail open. Reach for the
-ordered ops in the permissive direction, as above, and for `$eq` when you want
-"only if this was explicitly set".
+So counters compare as numbers from zero, `$eq` on a non-counter path fails
+closed, and the ordered ops fail open only for paths that are not counters.
+Use `$exist` when you mean "only if this was explicitly set" — on a counter
+that is the sole way to tell "never counted" from "counted zero".
 
 ## Which form to use
 

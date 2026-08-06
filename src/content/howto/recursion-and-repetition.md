@@ -199,9 +199,10 @@ Counters set with `n` propagate to pushed and repeated rules, so `depth` counts
 levels rather than occurrences. And `b: 1` puts the token back, so the guard
 inspects without consuming.
 
-Note the double negative in the condition: an unset counter compares as `true`
-against every limit, so `r.lt('depth', MAX)` is true at depth 0, and the guard
-wants the opposite.
+Note the double negative in the condition: an unset counter reads as `0`, so
+`r.lt('depth', MAX)` is true at depth 0, and the guard wants the opposite.
+(Before 0.6 an unset counter compared as `true` against *every* limit, so the
+same reasoning had to hold in both directions at once.)
 
 The `custom` modifier reaches into the host grammar's alternates by index,
 which is a real coupling — indices 1 and 2 are the `map` and `list` pushes in

@@ -125,11 +125,15 @@ comparison helpers read them:
 { s: '#OB', b: 1, c: (r) => !r.lt('depth', 3), e: tooDeep } // refuse past three
 ```
 
-**An unset counter compares as true against every limit.** `r.lt('depth', 3)`
-is true when `depth` has never been set, and so is `r.gt('depth', 3)`. Guards
-written the obvious way therefore fire on the very first token; write the
-condition so that the "not yet counting" case lands on the side you want, and
-test the zero case explicitly.
+**An unset counter reads as `0`.** `r.lt('depth', 3)` is true before anything
+is counted, `r.gt('depth', 3)` is false, and exactly one of `<`, `=`, `>`
+holds — so a guard means what it says wherever you put it. Use
+`r.exist('depth')` when you need to tell "never counted" from "counted zero";
+the comparisons cannot.
+
+> Before 0.6 an unset counter compared as true against *every* limit, so
+> `r.lt('depth',3)` and `r.gt('depth',3)` were both true and guards written
+> the obvious way fired on the very first token.
 
 Setting a counter to `0` resets it rather than incrementing — `n: { pk: 0 }`
 in the JSON grammar is a reset, not a no-op.

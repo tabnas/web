@@ -160,11 +160,14 @@ helpers, and a trap:
 | `r.lt` `r.lte` | below / at most `n` |
 | `r.gt` `r.gte` | above / at least `n` |
 
-**An unset counter compares as true against every one of them.** Not just
-`lt` — `r.gt('depth', 99)` is also true when `depth` has never been set. This
-is deliberate (a rule that never counts should not be blocked by a limit) and
-it is the single most common source of a guard that fires on the first token.
-[Conditions and counters](/docs/conditions) covers it properly.
+**An unset counter reads as `0`** — it has counted nothing. So `r.lt('depth', 3)`
+is true before anything is counted, `r.gt('depth', 99)` is false, and exactly
+one of `<`, `=`, `>` holds. `r.exist('k')` asks whether the counter was set at
+all, which the comparisons cannot: one set to `0` and one never set compare
+identically. [Conditions and counters](/docs/conditions) covers it properly.
+
+> Before 0.6 an unset counter compared as **true against every one of them**,
+> so `lt` and `gt` were both true and a guard could fire on the first token.
 
 ## Reading it live
 
