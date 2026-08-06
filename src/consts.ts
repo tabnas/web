@@ -126,8 +126,14 @@ export const PACKAGES: {
     blurb: "Delimited records — CSV, TSV, RFC 4180 quoting — into objects or arrays." },
   { name: "xml", tier: "grammar", version: "0.4.1", npm: true, go: true,
     blurb: "XML." },
+  // Named for what it is intended to become. The published package is still
+  // the `@tabnas/csv` scaffold it was created from — its grammar rules,
+  // `.csv` fixtures and `markdown_extra_field` error codes are all
+  // record/field, and `parse('# Heading')` returns `[]`. Its own README and
+  // AGENTS.md say so ("Don't be misled by the package name"), so the blurb
+  // should too rather than promise a Markdown parser that isn't there.
   { name: "markdown", tier: "grammar", version: "0.4.1", npm: true, go: true,
-    blurb: "Markdown." },
+    blurb: "Markdown — not yet implemented; currently the delimited-record scaffold it was forked from." },
   { name: "css", tier: "grammar", version: "0.4.1", npm: true, go: true,
     blurb: "CSS, into an AST that preserves declaration order and duplicate properties." },
   { name: "c", tier: "grammar", version: "0.4.1", npm: true, go: true,
