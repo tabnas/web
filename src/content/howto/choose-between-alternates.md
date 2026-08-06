@@ -15,8 +15,27 @@ below.
 
 ## Order — most specific first
 
-Two alternates whose leading tokens overlap will always resolve to the earlier
-one. So the longer, more specific pattern goes first:
+An alternate is taken only when its **whole** token sequence matches. A
+sequence that fails partway costs nothing: the engine abandons it and tries the
+next one, having consumed nothing.
+
+So sharing leading tokens is not itself a problem. Here two alternates agree on
+their first two tokens and differ on the third, and the input still reaches the
+second one:
+
+```ts
+tn.rule('stmt', (rs) => rs.open([
+  { s: ['#TX', '#CO', '#AR'], a: arrowForm },
+  { s: ['#TX', '#CO', '#TX'], a: typed },
+]))
+
+tn.parse('a :: int')   // => typed — the first alternate failed on its third token
+tn.parse('a :: ->')    // => arrowForm
+```
+
+What *does* cost you is a **shorter alternate placed before a longer one it is
+a prefix of**. The short one matches in full, the parse commits, and the long
+one never gets a turn. So the longer, more specific pattern goes first:
 
 ```ts
 tn.rule('stmt', (rs) => rs.open([
@@ -30,13 +49,27 @@ tn.parse('a :: int')        // => { kind: 'typed',       name: 'a', type: 'int' 
 tn.parse('a')               // => { kind: 'bare',        name: 'a' }
 ```
 
-Reverse those three and every input is `bare`, with no error to tell you.
+Reverse those three and `a` still parses, but `a :: int` does not. `{ s:
+['#TX'] }` matched, the rule closed, and nothing is left that can accept a
+`::`. The error is not much help either:
+
+```
+[tabnas/unexpected]: unexpected character(s):
+  --> <no-file>:1:1
+  1 | a :: int
+      ^ unexpected character(s):
+```
+
+Column 1, and an empty character list. The cause is three alternates in the
+wrong order; nothing in the message says so. When a grammar rejects input that
+is obviously valid, alternate order is the first thing to check.
 
 ## Lookahead — as many tokens as you need
 
 `s` is a *sequence*: the alternate matches only if all of its tokens match, in
-order. The example above looks four tokens ahead. There is no two-token limit —
-that claim appears in some older notes and is wrong.
+order. The second example above looks four tokens ahead, and six works the same
+way. There is no two-token limit — that claim appears in some older notes and
+is wrong.
 
 Lookahead is free in the sense that it does not backtrack: the tokens are
 peeked, and the alternate either matches or the next one is tried.
