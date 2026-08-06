@@ -10,7 +10,7 @@ lexer, the difference has to come from somewhere else — how deep you are, what
 the enclosing rule is, whether something has already been seen.
 
 That is what `c` is for. This tutorial covers the three ways to write one, and
-the one piece of semantics that catches everybody.
+how counters read before anything has been counted.
 
 ## A condition is a predicate
 
@@ -52,22 +52,36 @@ The rule instance has comparison helpers:
 | `r.lt('k', n)` `r.lte` | below / at most `n` |
 | `r.gt('k', n)` `r.gte` | above / at least `n` |
 
-## The thing that catches everybody
+## An unset counter reads as zero
 
-**An unset counter compares as true against every helper.**
+A counter that has never been incremented has counted nothing, so it compares
+as `0`:
 
 ```ts
-r.lt('depth', 3)    // true when depth has never been set
-r.gt('depth', 3)    // ALSO true when depth has never been set
+r.lt('depth', 3)    // true  — 0 < 3, nothing counted yet
+r.gt('depth', 3)    // false — 0 is not past the limit
+r.eq('depth', 0)    // true
 ```
 
-It is deliberate — a rule that never counts should not be blocked by a limit it
-knows nothing about — but it means a guard written the obvious way fires
-immediately, on the very first token, before anything has been counted.
+That keeps the permissive direction you want — a rule that never counts is not
+blocked by a limit it knows nothing about — while leaving exactly one of `<`,
+`=`, `>` true, so a guard means what it says wherever you put it.
 
-The habit that avoids it: **write the condition in the permissive direction**,
-so "not counting yet" lands on the side that lets the parse continue, and put
-the refusal in a later alternate with no condition at all.
+`eq('k', 0)` is therefore true both for a counter set to `0` and for one never
+set. When the difference matters, ask directly:
+
+```ts
+r.exist('depth')                      // was it ever set?
+{ 'n.depth': { $exist: true } }       // declarative equivalent
+```
+
+> **Changed in 0.6.** Previously an unset counter compared as **true against
+> every helper**, so `lt('depth',3)` and `gt('depth',3)` were both true and a
+> `$gte` guard fired on the very first token, before anything had been counted.
+> Grammars that relied on that — a `$gt: 0` alternate matching while the
+> counter was still unset — now need `{ 'n.k': { $exist: false } }`, or the
+> ordering shown below. Paths that are not counters are unaffected: an absent
+> `o0` or a `u.*` you never set is genuine absence, not zero.
 
 ## A depth limit, done properly
 
@@ -103,8 +117,15 @@ tn.parse('[[[[1]]]]')                  // throws [tabnas/too_deep]
 ```
 
 Note the order: the two push alternates carry the condition, and the guard is
-*after* them. Write it the other way — a `$gte` guard first — and every parse
-fails at the opening brace, because `depth` is unset there and `$gte` passes.
+*after* them. Alternates are tried in order, so the first one that matches
+wins — put the guard first and it claims the token before the push alternates
+are ever considered.
+
+A `$gte` guard first now also works, since an unset `depth` reads as `0` and
+`0 >= MAX` is false at the opening brace. Before 0.6 it did not: `$gte` passed
+unconditionally while the counter was unset, so every parse failed on the first
+token. Ordering the permissive alternates first is still the clearer habit —
+it does not depend on how the counter reads when nothing has been counted.
 
 ## Declarative conditions
 
