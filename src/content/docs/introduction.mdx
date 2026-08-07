@@ -5,6 +5,9 @@ section: Start
 order: 1
 ---
 
+import CodeTabs from "../../components/CodeTabs.astro";
+
+
 **tabnas** is a parsing engine that can handle any language. You describe a
 language as a grammar and get a working parser that builds a small, uniform
 syntax tree.
@@ -31,9 +34,7 @@ See [why tabnas](/why) for where this came from, and
 
 Every parse yields the same shape:
 
-```ts
-{ rule: string, src: string, kids: Node[] }
-```
+<CodeTabs id="docs-node-shape" label="The node shape" />
 
 Because the shape never changes, a walker, action, or tool you write once
 applies to every grammar you define.
