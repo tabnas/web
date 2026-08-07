@@ -230,6 +230,12 @@ import Base from "../layouts/Base.astro";
   // Show what parse() actually returned, including the awkward cases: it is
   // undefined for a grammar with no actions, and may be a plain scalar.
   function show(out: any) {
+    // Clear any previous error. showError() hides the result panels when a
+    // parse fails, so this is its mirror: without it a stale error stayed on
+    // screen next to a freshly valid result, which reads as "still broken".
+    errorWrap.hidden = true;
+    errorEl.textContent = "";
+
     const t = out === null ? "null" : Array.isArray(out) ? "array" : typeof out;
     valueType.textContent = t;
     valueEl.textContent = describe(out);
