@@ -1,0 +1,87 @@
+---
+// The full package list, rendered from the PACKAGES registry in consts.ts.
+//
+// This page used to be a hand-maintained markdown table. It listed 8 of the
+// 25 packages and told the reader to "see the full list on GitHub" — which is
+// the shape a list takes when nobody remembers to update it. Driving it from
+// the same registry the homepage and /releases already use means a new package
+// appears here the moment it is added, and cannot silently go missing.
+import { PACKAGES, TIER_LABEL, REPO, NPM, GODOC, type Tier } from "../consts";
+
+const TIER_ORDER: Tier[] = ["engine", "tooling", "grammar", "plugin", "cli"];
+
+// A one-line orientation per group, so the table is not just a list of names.
+const TIER_NOTE: Record<Tier, string> = {
+  engine: "The machine everything else plugs into.",
+  tooling: "Write, inspect and draw grammars.",
+  grammar: "Ready-made languages and data formats. Each is a plugin, so you can extend one rather than start over.",
+  plugin: "Syntax that layers onto a host grammar instead of standing alone.",
+  cli: "Command-line entry points.",
+};
+
+const groups = TIER_ORDER.map((tier) => ({
+  tier,
+  label: TIER_LABEL[tier],
+  note: TIER_NOTE[tier],
+  items: PACKAGES.filter((p) => p.tier === tier),
+})).filter((g) => g.items.length);
+---
+
+<p class="pkg-count">
+  {PACKAGES.length} packages. Versions are the ones current when this page was
+  built — <a href="/releases">releases</a> fetches the live tags.
+</p>
+
+{groups.map((g) => (
+  <section class="pkg-group">
+    <h2 id={g.tier}>{g.label}</h2>
+    <p class="pkg-note">{g.note}</p>
+    <div class="pkg-scroll">
+      <table class="pkg-table">
+        <thead>
+          <tr><th>Package</th><th>What it does</th><th>Version</th><th>Links</th></tr>
+        </thead>
+        <tbody>
+          {g.items.map((p) => (
+            <tr>
+              <td class="pkg-name"><a href={REPO(p.name)} target="_blank" rel="noopener"><code>@tabnas/{p.name}</code></a></td>
+              <td>{p.blurb}</td>
+              <td class="pkg-ver"><code>{p.version}</code></td>
+              <td class="pkg-links">
+                {p.npm && <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>}
+                {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">go</a>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+))}
+
+<style>
+  .pkg-count { color: var(--ink-mute); font-size: 0.9rem; margin: 0 0 1.5rem; }
+  .pkg-group { margin: 0 0 2rem; }
+  .pkg-note { color: var(--ink-soft); font-size: 0.92rem; margin: 0 0 0.75rem; }
+
+  /* A four-column table has nowhere to go on a phone, so let it scroll
+     inside its own box rather than widening the page. */
+  .pkg-scroll { overflow-x: auto; max-width: 100%; }
+
+  .pkg-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .pkg-table th, .pkg-table td {
+    text-align: left; padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  .pkg-table th {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-mute); font-weight: 600; white-space: nowrap;
+  }
+  .pkg-name { white-space: nowrap; }
+  .pkg-name code { font-size: 0.85em; }
+  .pkg-ver { white-space: nowrap; color: var(--ink-mute); }
+  .pkg-ver code { font-size: 0.85em; }
+  .pkg-links { white-space: nowrap; }
+  .pkg-links a { margin-right: 0.6rem; font-size: 0.85em; }
+  .pkg-links a:last-child { margin-right: 0; }
+</style>

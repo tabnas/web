@@ -5,7 +5,6 @@ description: "Get help, share ideas, and contribute to tabnas."
 ---
 
 import { GITHUB_ORG, REPO, SPONSOR } from "../consts";
-import CommunitySignals from "../components/CommunitySignals.astro";
 import CardGrid from "../components/CardGrid.astro";
 import Card from "../components/Card.astro";
 import "../styles/community.css";
@@ -18,8 +17,6 @@ import "../styles/community.css";
   tabnas is developed in the open, under the MIT licence. Bug reports,
   questions, and new grammars all arrive the same way — through GitHub.
 </p>
-
-<CommunitySignals />
 
 <CardGrid>
   <Card title="Discuss" level="h2" href={`${GITHUB_ORG}/parser/discussions`}>

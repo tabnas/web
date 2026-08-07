@@ -1,0 +1,22 @@
+---
+title: Packages
+description: Every package in the project — the engine, the grammar tooling, and all the ready-made grammars.
+section: Reference
+order: 2
+---
+
+import PackageTable from "../../components/PackageTable.astro";
+
+Every package is published to npm under the `@tabnas/*` scope and, where
+applicable, as a Go module at `github.com/tabnas/<name>/go`. Each ships
+four-quadrant [Diátaxis](https://diataxis.fr) docs in both languages.
+
+Grammars are plugins over other grammars, so the list below is closer to a
+dependency order than a catalogue: JSON is a handful of rules, JSONC adds
+comments to them, JSON5 and jsonic relax the quoting, and so on. Extending one
+of these is usually cheaper than starting a new grammar.
+
+<PackageTable />
+
+Health and CI status for every repository is on the
+[org status dashboard](https://tabnas.github.io/status/).
