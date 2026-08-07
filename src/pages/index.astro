@@ -20,6 +20,33 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
       and regular, an agent can write one. Between those two things, parsing
       something new stops being a project.
     </p>
+    <!-- Abridged copy of example 3 below: the shortest thing that shows the
+         actual argument — RFC 5234 ABNF in, behaviour bound by reference, a
+         value out. Comments and the second parse are dropped for the fold;
+         the full walkthrough is linked beneath. -->
+    <div class="hero-code">
+      <p class="code-label">ABNF in, a parser out</p>
+      <pre><code>{`const tn = new Tabnas({ plugins: [abnf] })
+
+tn.abnf(\`
+  val = add
+  add = NR [ PL add ]
+  PL  = "+"
+\`, {
+  actions: {
+    '@val:o:add': (r) => { r.node.value = 0 },
+    '@add:o:NR':  (r) => { r.parent.node.value += r.o[0].val },
+  },
+})
+
+tn.parse('1+2+3').value   // => 6`}</code></pre>
+      <p class="code-note">
+        Valid RFC 5234 — nothing added to it. Behaviour binds out of band,
+        through names the compiler already assigns.
+        <a href="#a-grammar-end-to-end">See it end to end ↓</a>
+      </p>
+    </div>
+
     <p class="meta">
       MIT licensed ·
       <a href={GITHUB_ORG} target="_blank" rel="noopener">github.com/tabnas</a>
@@ -390,6 +417,27 @@ tn.parse('12+3+45')   // => 60`}</code></pre>
     max-width: 60ch;
     margin: 0 auto;
   }
+  /* Abridged example 3, above the fold. Left-aligned inside the centred
+     intro — code centred with the prose reads as decoration, not as code. */
+  .hero-code {
+    text-align: left;
+    max-width: 52ch;
+    margin: 2.25rem auto 0;
+  }
+  .hero-code pre {
+    margin: 0 0 0.6rem;
+    padding: 1rem 1.15rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  .hero-code pre > code { color: var(--ink); }
+  .hero-code .code-note { max-width: none; }
+
   .meta {
     font-family: var(--font-mono);
     font-size: 0.8rem;
