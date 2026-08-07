@@ -15,11 +15,11 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <img class="emblem" src={emblem.src} width="128" height="128" alt="" aria-hidden="true" />
     <Heading level={1} id="tabnas">{SITE_TAGLINE}</Heading>
     <p class="lede">
-      tabnas is a parser VM: a simple state and lookup engine that grammars
-      compile down to. Because a grammar is just data, you extend one that
-      already works rather than starting over — and because the data is flat
-      and regular, an agent can write one. Between those two things, parsing
-      something new stops being a project.
+      <i>tabnas</i> is a parser VM: a simple state and lookup engine that
+      grammars compile down to. Because a grammar is just data, you extend one
+      that already works rather than starting over — and because the data is
+      flat and regular, an agent can write one. <i>tabnas</i> has already
+      burned the tokens, so you don't have to.
     </p>
     <!-- Abridged copy of example 3 below: the shortest thing that shows the
          actual argument — RFC 5234 ABNF in, behaviour bound by reference, a
@@ -43,7 +43,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
 
   <!-- The motivation, condensed from /why. -->
   <section class="why">
-    <Heading level={2} id="why-tabnas">Why tabnas</Heading>
+    <Heading level={2} id="why-tabnas">Why <i>tabnas</i></Heading>
     <div class="why-body">
       <p>
         Writing a parser is expensive, so most languages get one and that's
@@ -53,7 +53,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
         fork.
       </p>
       <p>
-        tabnas started as an attempt to write a more forgiving JSON parser and
+        <i>tabnas</i> started as an attempt to write a more forgiving JSON parser and
         turned into an extensible one by accident. The engine is a for-loop
         over tokens with a rule stack, and the grammar is the lookup table it
         walks. So adding a language feature means adding rules and token
@@ -299,7 +299,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
       <article>
         <Heading level={3} id="who-writes-it">Who writes it</Heading>
         <p>
-          tabnas is written by
+          <i>tabnas</i> is written by
           <a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>
           (<a href={AUTHOR.github} target="_blank" rel="noopener">@rjrodger</a>),
           who also wrote <a href="https://senecajs.org" target="_blank" rel="noopener">Seneca</a>
@@ -319,7 +319,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
         <Heading level={3} id="licence-and-funding">Licence and funding</Heading>
         <p>
           MIT, across every repository in the
-          <a href={GITHUB_ORG} target="_blank" rel="noopener">tabnas org</a>.
+          <a href={GITHUB_ORG} target="_blank" rel="noopener"><i>tabnas</i> org</a>.
           Development is sponsored by
           <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a> —
           see <a href="/sponsors">sponsors</a>.
