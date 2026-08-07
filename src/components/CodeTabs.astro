@@ -19,9 +19,16 @@ interface Props {
   label?: string
   /** Trim to these line ranges, 1-based inclusive, e.g. [[1,12]]. */
   lines?: [number, number][]
+  /**
+   * Suffix that keeps the radio group unique when one example appears twice on
+   * a page — abridged in the hero, in full further down, say. Without it both
+   * copies share a name and an element id, so the two tab bars fight over
+   * which pane is showing.
+   */
+  instance?: string
 }
 
-const { id, label, lines } = Astro.props
+const { id, label, lines, instance } = Astro.props
 
 const dir = join(process.cwd(), 'examples', id)
 const read = (p: string) => (existsSync(p) ? readFileSync(p, 'utf8') : '')
@@ -63,7 +70,7 @@ const explainHtml = explain
   )
   .join('\n')
 
-const name = `tabs-${id}`
+const name = `tabs-${id}${instance ? `-${instance}` : ''}`
 ---
 
 <div class="codetabs" data-example={id}>

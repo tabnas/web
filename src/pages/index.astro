@@ -165,9 +165,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <div class="code-cols">
       <div>
         <p class="code-label">1 · ABNF — as a person writes it</p>
-        <pre><code>{`val = add
-add = NR [ PL add ]
-PL  = "+"`}</code></pre>
+        <CodeTabs id="abnf-text" />
         <p class="code-note">
           <code>NR</code> is the built-in number token, <code>[ … ]</code> is
           optional, and <code>add</code> refers to itself to take a whole
@@ -176,22 +174,7 @@ PL  = "+"`}</code></pre>
       </div>
       <div>
         <p class="code-label">2 · The same grammar, as data</p>
-        <pre><code>{`{
-  "options": {
-    "fixed": { "token": { "#PL": "+" } },
-    "rule":  { "start": "val" }
-  },
-  "rule": {
-    "val": {
-      "open":  [ { "p": "add" } ],
-      "close": [ {} ]
-    },
-    "add": {
-      "open":  [ { "s": "#NR" } ],
-      "close": [ { "s": "#PL", "r": "add" }, {} ]
-    }
-  }
-}`}</code></pre>
+        <CodeTabs id="grammar-data" />
         <p class="code-note">
           <code>p</code> pushes a rule, <code>s</code> matches tokens,
           <code>r</code> repeats the rule at the same depth, and
@@ -206,24 +189,9 @@ PL  = "+"`}</code></pre>
       <p class="code-label">3 · Actions by reference — the <code>@ref</code> form</p>
       <div class="code-cols narrow">
         <div>
-          <pre><code>{`const tn = new Tabnas({ plugins: [abnf] })
-
-tn.abnf(\`
-  val = add
-  add = NR [ PL add ]
-  PL  = "+"
-\`, {
-  actions: {
-    // 'val' holds the running total.
-    '@val:o:add': (r) => { r.node.value = 0 },
-
-    // Each number adds to it.
-    '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
-  },
-})
-
-tn.parse('1+2+3').value     // => 6
-tn.parse('12+3+45').value   // => 60`}</code></pre>
+          {/* Same example as the hero, shown in full here — `instance` keeps
+              the two tab bars from sharing a radio group. */}
+          <CodeTabs id="abnf-actions" instance="full" />
         </div>
         <div>
           <p class="code-note wide">
@@ -257,29 +225,7 @@ tn.parse('12+3+45').value   // => 60`}</code></pre>
       <p class="code-label">4 · Actions inline — carried on the parse</p>
       <div class="code-cols narrow">
         <div>
-          <pre><code>{`const tn = new Tabnas()
-
-tn.grammar({
-  options: {
-    fixed: { token: { '#PL': '+' } },
-    rule: { start: 'val' },
-  },
-  rule: {
-    val: {
-      // Start the accumulator at zero.
-      open:  [ { p: 'add', a: (r) => { r.node = 0 } } ],
-      close: [ {} ],
-    },
-    add: {
-      // Add each number to it.
-      open:  [ { s: '#NR', a: (r) => { r.parent.node += r.o[0].val } } ],
-      close: [ { s: '#PL', r: 'add' }, {} ],
-    },
-  },
-})
-
-tn.parse('1+2+3')     // => 6
-tn.parse('12+3+45')   // => 60`}</code></pre>
+          <CodeTabs id="inline-actions" />
         </div>
         <div>
           <p class="code-note wide">
