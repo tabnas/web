@@ -1,0 +1,158 @@
+---
+// A code example shown three ways: TypeScript, Go, and prose.
+//
+// The sources are read from examples/<id>/ at build time — the SAME files
+// tools/test-examples.mjs executes and compares against expect.txt. So the
+// code on the page is the code that was run, and the two language versions
+// are known to produce identical output rather than merely claimed to.
+//
+//   <CodeTabs id="abnf-actions" label="ABNF in, a parser out" />
+//
+// Tabs are radio inputs, so switching works with CSS alone: no JavaScript,
+// and every version is present in the HTML for search and for reader mode.
+import { readFileSync, existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { codeToHtml } from 'shiki'
+
+interface Props {
+  id: string
+  label?: string
+  /** Trim to these line ranges, 1-based inclusive, e.g. [[1,12]]. */
+  lines?: [number, number][]
+}
+
+const { id, label, lines } = Astro.props
+
+const dir = join(process.cwd(), 'examples', id)
+const read = (p: string) => (existsSync(p) ? readFileSync(p, 'utf8') : '')
+
+function abridge(src: string) {
+  if (!lines) return src.trimEnd()
+  return lines
+    .map(([from, to]) => src.split('\n').slice(from - 1, to).join('\n'))
+    .join('\n')
+    .trimEnd()
+}
+
+const tsSrc = abridge(read(join(dir, 'ts.ts')))
+const goSrc = abridge(read(join(dir, 'go', 'main.go')))
+const explain = read(join(dir, 'explain.md')).trim()
+const expected = read(join(dir, 'expect.txt')).trim()
+
+if (!tsSrc) throw new Error(`CodeTabs: examples/${id}/ts.ts is missing or empty`)
+
+// Both themes are emitted; global CSS picks one by prefers-color-scheme.
+const hl = (code: string, lang: string) =>
+  codeToHtml(code, { lang, themes: { light: 'github-light', dark: 'github-dark' } })
+
+const tsHtml = await hl(tsSrc, 'ts')
+const goHtml = goSrc ? await hl(goSrc, 'go') : ''
+
+// Minimal markdown for the explain prose: paragraphs plus `code` spans.
+const esc = (s: string) =>
+  s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string)
+const explainHtml = explain
+  .split(/\n{2,}/)
+  .map(
+    (p) =>
+      '<p>' +
+      esc(p.replace(/\n/g, ' '))
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') +
+      '</p>',
+  )
+  .join('\n')
+
+const name = `tabs-${id}`
+---
+
+<div class="codetabs" data-example={id}>
+  {label && <p class="code-label">{label}</p>}
+
+  <div class="tabbar" role="tablist" aria-label={`${id} code`}>
+    <input type="radio" name={name} id={`${name}-ts`} checked />
+    <label for={`${name}-ts`}>TypeScript</label>
+
+    {goHtml && <input type="radio" name={name} id={`${name}-go`} />}
+    {goHtml && <label for={`${name}-go`}>Go</label>}
+
+    {explainHtml && <input type="radio" name={name} id={`${name}-ex`} />}
+    {explainHtml && <label for={`${name}-ex`}>Explain</label>}
+
+    <div class="panes">
+      <div class="pane pane-ts" set:html={tsHtml} />
+      {goHtml && <div class="pane pane-go" set:html={goHtml} />}
+      {explainHtml && <div class="pane pane-ex prose" set:html={explainHtml} />}
+    </div>
+  </div>
+
+  {expected && (
+    <p class="code-out">
+      <span>output</span>
+      <code>{expected.replace(/\n/g, ' · ')}</code>
+    </p>
+  )}
+</div>
+
+<style>
+  .codetabs { margin: 0 0 1rem; }
+
+  /* Radio-driven tabs: the inputs sit before the panes so a sibling selector
+     can reveal the matching one. No JavaScript involved. */
+  .tabbar > input { position: absolute; opacity: 0; pointer-events: none; }
+
+  .tabbar > label {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-mute);
+    padding: 0.35rem 0.7rem;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+  }
+  .tabbar > label:hover { color: var(--ink); }
+  .tabbar > input:checked + label {
+    color: var(--ink);
+    background: var(--surface);
+    border-color: var(--border);
+  }
+  /* Keyboard focus must stay visible — the input itself is off-screen. */
+  .tabbar > input:focus-visible + label { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+  .panes { margin-top: -1px; }
+  .pane { display: none; }
+  .tabbar > input:nth-of-type(1):checked ~ .panes .pane-ts,
+  .tabbar > input:nth-of-type(2):checked ~ .panes .pane-go,
+  .tabbar > input:nth-of-type(3):checked ~ .panes .pane-ex { display: block; }
+
+  .pane :global(pre) {
+    margin: 0;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: 0 10px 10px 10px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  .pane.prose {
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: 0 10px 10px 10px;
+    background: var(--surface);
+  }
+  .pane.prose :global(p) { margin: 0 0 0.7rem; font-size: 0.88rem; color: var(--ink-soft); }
+  .pane.prose :global(p:last-child) { margin-bottom: 0; }
+  .pane.prose :global(code) { font-family: var(--font-mono); font-size: 0.85em; color: var(--ink); }
+
+  .code-out {
+    display: flex; gap: 0.5rem; align-items: baseline;
+    font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--ink-mute); margin: 0.5rem 0 0;
+  }
+  .code-out span { text-transform: uppercase; letter-spacing: 0.1em; }
+  .code-out code { color: var(--ink-soft); }
+</style>

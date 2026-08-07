@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import Heading from "../components/Heading.astro";
+import CodeTabs from "../components/CodeTabs.astro";
 import { PACKAGES, NPM, REPO, GODOC, GITHUB_ORG, SITE_TAGLINE, SPONSOR, AUTHOR } from "../consts";
 import emblem from "../assets/brand/mark.svg";
 
@@ -22,24 +23,11 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     </p>
     <!-- Abridged copy of example 3 below: the shortest thing that shows the
          actual argument — RFC 5234 ABNF in, behaviour bound by reference, a
-         value out. Comments and the second parse are dropped for the fold;
-         the full walkthrough is linked beneath. -->
+         value out. Sources live in examples/abnf-actions/ and are executed by
+         tools/test-examples.mjs, so the TS and Go versions are known to agree
+         rather than claimed to. -->
     <div class="hero-code">
-      <p class="code-label">ABNF in, a parser out</p>
-      <pre><code>{`const tn = new Tabnas({ plugins: [abnf] })
-
-tn.abnf(\`
-  val = add
-  add = NR [ PL add ]
-  PL  = "+"
-\`, {
-  actions: {
-    '@val:o:add': (r) => { r.node.value = 0 },
-    '@add:o:NR':  (r) => { r.parent.node.value += r.o[0].val },
-  },
-})
-
-tn.parse('1+2+3').value   // => 6`}</code></pre>
+      <CodeTabs id="abnf-actions" label="ABNF in, a parser out" lines={[[1, 18]]} />
       <p class="code-note">
         Valid RFC 5234 — nothing added to it. Behaviour binds out of band,
         through names the compiler already assigns.
