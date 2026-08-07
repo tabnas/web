@@ -102,7 +102,22 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
 </div>
 
 <style>
-  .codetabs { margin: 0 0 1rem; }
+  .codetabs {
+    margin: 0 0 1rem;
+    /* A very light, dull green — desaturated so syntax colours stay legible
+       against it, and distinct from the parchment page background. */
+    --codetabs-bg: #eef2ec;
+    /* An overflowing <pre> must scroll inside itself, never widen the page.
+       Without this the block ran past the viewport on narrow screens and the
+       left edge — rounded corner and all — was scrolled out of sight. */
+    min-width: 0;
+    max-width: 100%;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .codetabs { --codetabs-bg: #10261a; }
+  }
+  :root[data-theme="dark"] .codetabs { --codetabs-bg: #10261a; }
+  :root[data-theme="light"] .codetabs { --codetabs-bg: #eef2ec; }
 
   /* Radio-driven tabs: the inputs sit before the panes so a sibling selector
      can reveal the matching one. No JavaScript involved. */
@@ -130,11 +145,21 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
   /* Keyboard focus must stay visible — the input itself is off-screen. */
   .tabbar > input:focus-visible + label { outline: 2px solid var(--ring); outline-offset: 2px; }
 
-  .panes { margin-top: -1px; }
-  .pane { display: none; }
+  /* The TypeScript pane stays in normal flow whichever tab is showing, so it
+     alone sets the block's height. Go and Explain are laid over it and scroll
+     when they are longer — otherwise a longer Go version was simply cut off,
+     and switching tabs made the page jump. */
+  .panes { position: relative; margin-top: -1px; min-width: 0; }
+  .pane { visibility: hidden; }
+  .pane-go,
+  .pane-ex {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+  }
   .tabbar > input:nth-of-type(1):checked ~ .panes .pane-ts,
   .tabbar > input:nth-of-type(2):checked ~ .panes .pane-go,
-  .tabbar > input:nth-of-type(3):checked ~ .panes .pane-ex { display: block; }
+  .tabbar > input:nth-of-type(3):checked ~ .panes .pane-ex { visibility: visible; }
 
   .pane :global(pre) {
     margin: 0;
@@ -144,12 +169,19 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
     font-size: 0.82rem;
     line-height: 1.6;
     overflow-x: auto;
+    /* Shiki inlines its theme background; ours is the dull green below. */
+    background: var(--codetabs-bg) !important;
+    min-height: 100%;
+    box-sizing: border-box;
+    min-width: 0;
   }
   .pane.prose {
     padding: 1rem 1.15rem;
     border: 1px solid var(--border);
     border-radius: 0 10px 10px 10px;
-    background: var(--surface);
+    background: var(--codetabs-bg);
+    box-sizing: border-box;
+    min-height: 100%;
   }
   .pane.prose :global(p) { margin: 0 0 0.7rem; font-size: 0.88rem; color: var(--ink-soft); }
   .pane.prose :global(p:last-child) { margin-bottom: 0; }
@@ -157,9 +189,11 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
 
   .code-out {
     display: flex; gap: 0.5rem; align-items: baseline;
+    flex-wrap: wrap; min-width: 0;   /* a long output line wraps, never widens */
     font-family: var(--font-mono); font-size: 0.75rem;
     color: var(--ink-mute); margin: 0.5rem 0 0;
   }
+  .code-out code { overflow-wrap: anywhere; }
   .code-out span { text-transform: uppercase; letter-spacing: 0.1em; }
   .code-out code { color: var(--ink-soft); }
 </style>
