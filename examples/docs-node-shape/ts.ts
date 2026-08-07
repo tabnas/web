@@ -1,7 +1,7 @@
 // The shape every tree-building grammar produces.
-type Node = { rule: string; src: string; kids: Node[] }
+type TreeNode = { rule: string; src: string; kids: TreeNode[] }
 
-const node: Node = {
+const node: TreeNode = {
   rule: 'val',
   src: '1+2',
   kids: [

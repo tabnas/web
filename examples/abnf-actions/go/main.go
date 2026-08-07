@@ -16,7 +16,7 @@ func main() {
   PL  = "+"
 `, nil, abnf.ActionsMap{
 		"@val:o:add": {func(r *tabnas.Rule, ctx *tabnas.Context) {
-			r.Node = map[string]any{"value": float64(0)}
+			r.Node.(map[string]any)["value"] = float64(0)
 		}},
 		"@add:o:NR": {func(r *tabnas.Rule, ctx *tabnas.Context) {
 			node := r.Parent.Node.(map[string]any)
