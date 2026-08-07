@@ -1,0 +1,4 @@
+val closed with 6
+1+2+3   => 6
+val closed with 60
+12+3+45 => 60

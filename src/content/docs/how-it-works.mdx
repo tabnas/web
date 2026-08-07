@@ -1,0 +1,50 @@
+---
+title: How it works
+description: The ideas behind the engine — grammar as parser, a uniform tree, two runtimes.
+section: Explanation
+order: 1
+---
+
+import CodeTabs from "../../components/CodeTabs.astro";
+
+
+tabnas is built on a few deliberate choices. Understanding them explains why the
+API is small and why the same grammar behaves identically across languages.
+
+## The grammar is the parser
+
+Most parser tools generate code from a grammar, then ask you to keep the
+generated code in sync. tabnas doesn't generate anything: a grammar is a data
+structure the engine executes directly. That means:
+
+- No build step and nothing to fall out of sync.
+- You can build grammars at runtime (for example, compiled from ABNF).
+- You can inspect a live grammar — describe it, render it back to ABNF, or draw
+  it as a railroad diagram — because it's just data.
+
+## A uniform tree
+
+Parsing always produces the same node shape:
+
+<CodeTabs id="docs-node-shape" label="The node shape" />
+
+`rule` is the grammar rule that matched, `src` is the source it covered, and
+`kids` are the child nodes. Because the shape is invariant, tooling written for
+one grammar works for all of them.
+
+## One grammar, two runtimes
+
+The engine has two implementations: TypeScript (canonical) and Go (tracking).
+They compile the **same** grammar fixtures and must produce the **same** trees —
+this is enforced in CI. Practically, you can define a language once and run it
+in a Node service and a Go binary with confidence they agree.
+
+Some differences are intentional where a runtime's API can't mirror the other;
+those are documented per package.
+
+## Scope
+
+tabnas is the shortest path from "I have a grammar" to "I have a parser I can
+trust, everywhere I run." It is not a full compiler toolchain, and it isn't the
+fastest parser for every workload — it optimises for correctness, portability,
+and a grammar you can read.

@@ -1,0 +1,4 @@
+lt('depth', 3)    true
+eq('depth', 0)    true
+gt('depth', 3)    false
+exist('depth')    false

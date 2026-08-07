@@ -1,0 +1,2 @@
+@reset$,@object$ => {"a":1}
+@object$,@reset$ => (no value)

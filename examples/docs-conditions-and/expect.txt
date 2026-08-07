@@ -1,0 +1,3 @@
+depth=1 mode=strict  taken
+depth=1 mode=loose   skipped
+depth=0 mode=strict  skipped

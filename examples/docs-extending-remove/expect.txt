@@ -1,0 +1,3 @@
+rules left: elem map pair val
+{a:1}   accepted
+[1,2]   rejected

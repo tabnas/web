@@ -1,0 +1,99 @@
+---
+title: ABNF grammars
+description: Define a language fast using the RFC 5234 ABNF dialect.
+section: How-to
+order: 1
+---
+
+import CodeTabs from "../../components/CodeTabs.astro";
+
+
+The `@tabnas/abnf` plugin compiles [RFC 5234](https://www.rfc-editor.org/rfc/rfc5234)
+ABNF straight into a working grammar. It's the fastest way to define a language.
+
+<CodeTabs id="docs-abnf-greet" label="One line of ABNF" />
+
+## Dialect
+
+tabnas uses the RFC 5234 dialect: `=` for definitions and `/` for
+alternatives (not `::=` or `|`).
+
+- **Literals**: `"+"`, case-insensitive by default; `%s"Hi"` is case-sensitive.
+- **Optional**: `[ … ]`.
+- **Repetition**: `*element` (zero or more), `1*element` (one or more),
+  `2*4element` (bounded).
+- **Grouping**: `( … )`.
+- **Char ranges**: `%x30-39`.
+- **Built-in tokens** by bareword: `NR` (number), plus core rules like `ALPHA`
+  and `DIGIT`.
+
+## Left recursion
+
+Left-recursive rules are accepted directly. A left-recursion pass ([Paull's](https://en.wikipedia.org/wiki/Left_recursion#Removing_all_left_recursion) — Wikipedia describes the method without using the name)
+algorithm) rewrites both direct (`P = P a / b`) and indirect recursion into the
+iterative form the engine runs without re-entering a rule at the same position:
+
+```
+P = P a / b     →     P = b *(a)
+```
+
+Because it's a rewrite, the tree is flat rather than left-nested, and a
+**purely** left-recursive rule (no base branch) is an error. See the
+[@tabnas/abnf README](https://github.com/tabnas/abnf#readme) for the full
+details and caveats.
+
+## Actions
+
+Attach behaviour with `@ref` action references, passed as `actions` and keyed
+by rule and phase. There are two forms:
+
+- `'@add:o:NR'` — an **alternate** action: runs when the `add` rule opens on an
+  `NR` token. The trailing mark is the alternate's leading discriminator.
+- `'@add:bo'` — a **rule-phase** hook: before-open. Also `ao`, `bc` and `ac`
+  for after-open, before-close and after-close.
+
+<CodeTabs id="docs-abnf-actions" label="Actions by alternate mark" />
+
+`r.parent` is `val` for every repetition: a tail self-reference like
+`[ PL add ]` compiles to a same-depth repeat of `add`, not a nested push.
+
+`r` is the rule instance and `r.o` the tokens matched in the open phase, so
+`r.o[0].val` is the value of the first — a real number, courtesy of the lexer.
+
+### Finding the marks
+
+An alternate mark comes from the alternate's leading discriminator, which the
+compiler assigns — so don't guess at the name, ask for it:
+
+```bash
+tabnas-abnf --marks -f grammar.abnf
+```
+
+```
+val  o:add  p:add
+val  c:_  (empty)
+add  o:NR  s:#NR
+add  c:PL  s:#PL
+add  c:_  (empty)
+```
+
+`markListing(spec)` gives the same listing from code. Reading it also tells
+you the shape the compiler produced: `val o:add p:add` says `val` pushes
+`add` as a child rule, and `add c:PL s:#PL` says `add` repeats itself from
+its close phase when a `+` follows — the tail self-reference `[ PL add ]`
+compiled to a same-depth repeat, exactly what a hand-written grammar
+declares as `{ s: '#PL', r: 'add' }`.
+
+Requires `@tabnas/abnf` 0.3.0 or later (and `@tabnas/parser` 0.5.0). Earlier
+versions compiled the tail into generated option/group rules, nesting each
+repetition; 0.2.x additionally dissolved pure aliases like `val = add`.
+
+### Parents and generated rules
+
+For a tail self-reference, `r.parent` is the wrapping rule for **every**
+repetition — accumulating onto `r.parent.node` is the intended idiom, the
+same as in a hand-written rule table.
+
+Other sugar still desugars into generated group rules: inside `( … )` or
+`*( … )` a rule's `parent` at runtime may be a `_gen*` rule you didn't
+write. The mark listing shows the compiled rule set when in doubt.

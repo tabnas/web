@@ -1,0 +1,151 @@
+---
+title: Conditions and counters
+description: Pick an alternate on state rather than tokens — with a predicate, a counter, or a declarative check.
+section: Tutorials
+order: 6
+---
+
+import CodeTabs from "../../components/CodeTabs.astro";
+
+
+Alternates are chosen by their tokens. When two cases look identical to the
+lexer, the difference has to come from somewhere else — how deep you are, what
+the enclosing rule is, whether something has already been seen.
+
+That is what `c` is for. This tutorial covers the three ways to write one, and
+how counters read before anything has been counted.
+
+## A condition is a predicate
+
+`c` is checked when an alternate's tokens match. If it returns false, the
+alternate is skipped and the next one is tried:
+
+<CodeTabs id="docs-conditions-predicate" label="A condition is a predicate" />
+
+Everything on [the rule instance](/docs/rule-instance) is available: `r.o0` for
+the token that opened this rule, `r.parent`, `r.child`, `r.n`, `r.u`.
+
+## Counters
+
+`n` on an alternate sets or increments a named counter, and counters
+**propagate to pushed and repeated rules** — so a count made at the top is
+visible all the way down:
+
+<CodeTabs id="docs-conditions-counters" label="Add one, or reset to zero" />
+
+Setting `0` **resets**; any other number adds. `n: { pk: 0 }` in the JSON
+grammar is a reset, and reading it as a no-op will mislead you.
+
+The rule instance has comparison helpers:
+
+| Helper | True when |
+|---|---|
+| `r.eq('k', n)` | the counter equals `n` |
+| `r.lt('k', n)` `r.lte` | below / at most `n` |
+| `r.gt('k', n)` `r.gte` | above / at least `n` |
+
+## An unset counter reads as zero
+
+A counter that has never been incremented has counted nothing, so it compares
+as `0`:
+
+<CodeTabs id="docs-conditions-unset" label="Nothing counted yet" />
+
+That keeps the permissive direction you want — a rule that never counts is not
+blocked by a limit it knows nothing about — while leaving exactly one of `<`,
+`=`, `>` true, so a guard means what it says wherever you put it.
+
+`eq('k', 0)` is therefore true both for a counter set to `0` and for one never
+set. When the difference matters, ask directly:
+
+<CodeTabs id="docs-conditions-exist" label="Never set, or counted zero?" />
+
+> **Changed in 0.6.** Previously an unset counter compared as **true against
+> every helper**, so `lt('depth',3)` and `gt('depth',3)` were both true and a
+> `$gte` guard fired on the very first token, before anything had been counted.
+>
+> An alternate gated on `{ 'n.k': { $gt: 0 } }` used to match on **two**
+> grounds: the counter was positive, *or* it was unset and the comparison
+> passed regardless. Only the second is gone. If you relied on both, add the
+> unset case as its own alternate — do not swap the condition, or you lose the
+> positive-counter branch you actually wanted:
+>
+> ```ts
+> { s: '#CB', c: { 'n.k': { $gt: 0 } },        b: 1 }   // keep this
+> { s: '#CB', c: { 'n.k': { $exist: false } }, b: 1 }   // add this if you
+>                                                        // relied on fail-open
+> ```
+>
+> Paths that are not counters are unaffected: an absent `o0` or a `u.*` you
+> never set is genuine absence, not zero.
+
+## A depth limit, done properly
+
+Nesting is allowed while `depth` is below the limit. Past it, neither push
+alternate matches, and the unconditional guard behind them is reached:
+
+<CodeTabs id="docs-conditions-depth" label="A depth limit, done properly" />
+
+Note the order: the two push alternates carry the condition, and the guard is
+*after* them. Alternates are tried in order, so the first one that matches
+wins — put the guard first and it claims the token before the push alternates
+are ever considered.
+
+A `$gte` guard first now also works, since an unset `depth` reads as `0` and
+`0 >= MAX` is false at the opening brace. Before 0.6 it did not: `$gte` passed
+unconditionally while the counter was unset, so every parse failed on the first
+token. Ordering the permissive alternates first is still the clearer habit —
+it does not depend on how the counter reads when nothing has been counted.
+
+## Declarative conditions
+
+`c` also takes an **object**, which is a check against a path on the rule
+instance. This keeps a grammar as data — no closure, so it still serialises:
+
+<CodeTabs id="docs-conditions-declarative" label="A guard with no closure in it" />
+
+The key is a dot-path resolved against `r`, so `n.depth` is the counter,
+`u.mode` is your own scratch value, `o0.tin` is the opening token.
+
+| Form | Meaning |
+|---|---|
+| `{ 'n.depth': { $lt: 3 } }` | below |
+| `$lte` `$gt` `$gte` | at most / above / at least |
+| `{ 'u.mode': 'strict' }` | a bare value is `$eq` |
+| `{ 'u.mode': { $ne: 'loose' } }` | not equal |
+
+Several keys are **ANDed** — every one must hold:
+
+<CodeTabs id="docs-conditions-and" label="Every key must hold" />
+
+### The two halves behave differently
+
+This is worth pinning down, because the asymmetry is invisible in the syntax:
+
+<CodeTabs id="docs-conditions-halves" label="The asymmetry, measured" />
+
+So counters compare as numbers from zero, `$eq` on a non-counter path fails
+closed, and the ordered ops fail open only for paths that are not counters.
+Use `$exist` when you mean "only if this was explicitly set" — on a counter
+that is the sole way to tell "never counted" from "counted zero".
+
+## Which form to use
+
+| If you want | Use |
+|---|---|
+| A grammar that stays serialisable | the object form |
+| A grammar an agent emitted, checkable before running | the object form |
+| Anything the object form can't express | a function |
+
+The object form covers comparisons against rule state, which is most guards.
+Anything involving two paths, arithmetic, or a call into your own code needs a
+function — and the grammar becomes code at that point.
+
+## Next
+
+- [The rule instance](/docs/rule-instance) — every path the object form can
+  reach.
+- [Choose between alternates](/how-to/choose-between-alternates) — order,
+  lookahead and group tags, the other ways to pick a branch.
+- [Give good parse errors](/how-to/parse-errors) — the `e` alternate the guard
+  above uses.

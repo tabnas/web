@@ -1,0 +1,2 @@
+42 => 42
+user ref containing '$' refused: true

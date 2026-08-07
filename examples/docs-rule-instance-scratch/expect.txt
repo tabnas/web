@@ -1,0 +1,2 @@
+item sees u.onlyHere:   false
+item sees k.everywhere: 2
