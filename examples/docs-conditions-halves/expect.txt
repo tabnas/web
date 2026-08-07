@@ -1,0 +1,4 @@
+{ 'u.flag': 1 }               skipped
+{ 'n.never': { $gte: 99 } }   skipped
+{ 'n.never': { $lt: 1 } }     taken
+{ 'u.never': { $gte: 99 } }   taken

@@ -1,0 +1,138 @@
+---
+title: Builtin actions
+description: Build a value with `$`-suffixed action names instead of code — and keep the grammar as pure data.
+section: Tutorials
+order: 5
+---
+
+import CodeTabs from "../../components/CodeTabs.astro";
+
+
+An action is normally a function. Functions are the reason a grammar stops
+being data: it can no longer be serialised, diffed, stored, or accepted from
+somewhere you don't trust.
+
+The engine ships a set of actions referenced **by name**. A grammar using only
+those is pure JSON with no code in it — and still builds a real value. This
+tutorial builds a small JSON-shaped parser that way, with not one function in
+the grammar.
+
+## The naming rule
+
+A ref is a string starting with `@`. A trailing `$` marks it as an engine
+builtin:
+
+<CodeTabs id="docs-builtin-naming" label="A builtin, and a reserved namespace" />
+
+The `$` namespace is **reserved** — `grammar()` refuses a user ref containing
+`$`, so a builtin can never be shadowed by something a grammar brought with it.
+
+## The value builders
+
+Seven of them. This is the whole set you need for JSON-shaped data:
+
+| Builtin | What it does |
+|---|---|
+| `@object$` | put a fresh empty object in `r.node` |
+| `@array$` | put a fresh empty array in `r.node` |
+| `@value$` | resolve the matched scalar token into `r.node` |
+| `@key$` | capture the matched key token into `r.u.key` |
+| `@setval$` | `r.node[r.u.key] = r.child.node` |
+| `@push$` | append `r.child.node` to the array in `r.node` |
+| `@reset$` | clear `r.node` back to "no value" |
+
+`@key$` and `@setval$` are a pair: the first stores the key on the way in, the
+second uses it on the way out, once the child has produced a value.
+
+## A whole grammar, as data
+
+<CodeTabs id="docs-builtin-grammar" label="Five rules, seven builtins, no functions" />
+
+Search that object for the word `function`. There isn't one.
+
+## Why it works: the seeded node
+
+The part that looks like magic is `@setval$` writing into `r.node` from inside
+`pair`, and the result appearing in the map.
+
+A pushed rule's node is **seeded from its parent**. `@object$` runs on `val`
+and puts an object in `val.node`; `val` pushes `map`, which inherits it;
+`map` pushes `pair`, which inherits it too. All three names refer to the same
+object, so `@setval$` writing a property from `pair` is writing into the object
+`val` will return.
+
+Once that clicks, the rest of the table reads straightforwardly:
+
+- `@key$` stores the key on `r.u` — the **non**-propagating bag, so a nested
+  pair cannot clobber an outer one's key.
+- `@setval$` runs in the *close* phase, because `r.child.node` does not exist
+  until the child has closed.
+- `@push$` skips a child with no value, so a trailing comma adds nothing.
+
+## Configuring a builtin
+
+Config rides on the alternate's `k`, keyed by the builtin's name:
+
+<CodeTabs id="docs-builtin-config" label="Config on `k`, keyed by builtin" />
+
+`from` is which open token to read (default `0`), `slot` is the `r.u` key to
+store under (default `'key'`). Both defaults are what the grammar above relies
+on, which is why it doesn't mention them.
+
+## Several actions on one alternate
+
+`a` takes an array, run in order:
+
+<CodeTabs id="docs-builtin-order" label="Run in order" />
+
+That is the idiom for a rule that must not inherit its parent's node: clear
+first, then build.
+
+## The catch: install mutates the spec
+
+`grammar()` resolves ref strings **in place**. After installing, the `a` fields
+hold functions, not strings:
+
+```ts
+typeof spec.rule.val.open[0].a       // => 'function'
+JSON.stringify(spec).includes('@object$')   // => false
+```
+
+So serialise **before** you install, or install a copy:
+
+<CodeTabs id="docs-builtin-roundtrip" label="Serialise first, then install" />
+
+Getting this the wrong way round produces a spec that silently loses every
+action — the grammar still installs, still parses, and returns `undefined`.
+
+## The other families
+
+Two more sets exist, and you are unlikely to write either by hand:
+
+- **Tree builders** — `@node$`, `@capture$`, `@bubble$`, `@fold$` build the
+  `{ rule, src, kids }` AST. This is what `@tabnas/abnf` emits, and it is why
+  an ABNF grammar can compile to pure data too.
+- **Probe dispatch** — `@probeInit$`, `@probeDecide$`, `@probePhase0$/1$/2$`
+  implement the optional-prefix disambiguation the ABNF compiler needs.
+
+Both are versioned by `BUILTIN_SCHEMA_VERSION`. A serialized grammar can
+declare the schema it was compiled against as `v`, and the engine refuses one
+that needs a newer version than it implements — so an old engine fails loudly
+rather than mis-parsing.
+
+## When to use code instead
+
+Builtins cover building values. They do not cover *computing* them. The moment
+you need arithmetic, validation, or a call into your own code, write a
+function — and accept that the grammar is now code.
+
+The useful middle ground is [named refs](/docs/actions#named-refs--code-bound-out-of-band):
+the grammar keeps ref *names*, and the functions are supplied separately at
+install time. The grammar text stays declarative; only the binding is code.
+
+## Next
+
+- [The rule instance](/docs/rule-instance) — what `r.node`, `r.u` and
+  `r.child` are.
+- [Attaching actions](/docs/actions) — the three ways, and when each is right.
+- [The rule table](/docs/rule-table) — every alternate field.

@@ -1,0 +1,5 @@
+"a"         accepted
+"a,bc,def"  accepted
+"a,,b"      rejected
+",a"        rejected
+"a,"        rejected

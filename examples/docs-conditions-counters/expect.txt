@@ -1,0 +1,4 @@
+n:{depth:1}  1      depth at the number = 0
+n:{depth:1}  (1)    depth at the number = 1
+n:{depth:1}  ((1))  depth at the number = 2
+n:{depth:0}  ((1))  depth at the number = 0

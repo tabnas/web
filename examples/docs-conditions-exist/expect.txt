@@ -1,0 +1,3 @@
+never set  exist: false  eq(depth,0): true
+set to 0   exist: true   eq(depth,0): true
+counted 1  exist: true   eq(depth,0): false

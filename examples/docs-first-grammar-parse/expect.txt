@@ -1,0 +1,2 @@
+rule=list src="a"
+rule=list src="a,bc,def"

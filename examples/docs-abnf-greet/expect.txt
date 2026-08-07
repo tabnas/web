@@ -1,0 +1,3 @@
+hi     greet "hi" kids=0
+hello  greet "hello" kids=0
+howdy  rejected
