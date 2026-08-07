@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import Heading from "../components/Heading.astro";
+import CodeTabs from "../components/CodeTabs.astro";
 import { PACKAGES, TIER_LABEL, REPO, GITHUB_ORG } from "../consts";
 import type { Tier } from "../consts";
 
@@ -84,22 +85,7 @@ const groups = ORDER.map((tier) => ({
         This is the form to emit. It is plain data, so you can validate it,
         diff it, and print it before anything runs.
       </p>
-      <pre><code>{`{
-  "options": {
-    "fixed": { "token": { "#PL": "+" } },   // custom fixed tokens
-    "rule":  { "start": "val" }             // where parsing begins
-  },
-  "rule": {
-    "val": {
-      "open":  [ { "p": "add" } ],
-      "close": [ {} ]
-    },
-    "add": {
-      "open":  [ { "s": "#NR" } ],
-      "close": [ { "s": "#PL", "r": "add" }, {} ]
-    }
-  }
-}`}</code></pre>
+      <CodeTabs id="agents-rule-table" label="A rule table, loaded and exercised" />
 
       <div class="table-wrap">
         <table>
@@ -141,12 +127,7 @@ const groups = ORDER.map((tier) => ({
         grammar that is <strong>pure JSON with no code in it</strong> — which is
         the safest thing you can hand to someone else.
       </p>
-      <pre><code>{`{ "rule": { "val": {
-  "open":  [ { "s": "#NR", "a": "@value$" } ],
-  "close": [ {} ]
-} } }
-
-// tn.parse('42')  =>  42`}</code></pre>
+      <CodeTabs id="agents-builtin-actions" label="A grammar with no code in it" />
       <div class="table-wrap">
         <table>
           <thead><tr><th>Builtin</th><th>Effect</th></tr></thead>
@@ -172,21 +153,7 @@ const groups = ORDER.map((tier) => ({
         Keep results on the node, not in a variable outside the parse, so
         the grammar stays reusable.
       </p>
-      <pre><code>{`tn.abnf(\`
-  val = add
-  add = NR [ PL add ]
-  PL  = "+"
-\`, {
-  actions: {
-    // 'val' holds the running total.
-    '@val:o:add': (r) => { r.node.value = 0 },
-
-    // Each number adds to it.
-    '@add:o:NR': (r) => { r.parent.node.value += r.o[0].val },
-  },
-})
-
-tn.parse('1+2+3').value   // => 6`}</code></pre>
+      <CodeTabs id="agents-named-refs" label="A rule-phase hook and an alternate mark" />
       <p class="note">
         Mark names are assigned by the compiler from each alternate's leading
         discriminator. <strong>Do not guess them.</strong> Ask:
@@ -199,16 +166,7 @@ tn.parse('1+2+3').value   // => 6`}</code></pre>
         but the grammar is now code and can no longer be serialised or safely
         shared.
       </p>
-      <pre><code>{`val: {
-  open:  [ { p: 'add', a: (r) => { r.node = 0 } } ],
-  close: [ {} ],
-},
-add: {
-  open:  [ { s: '#NR', a: (r) => { r.parent.node += r.o[0].val } } ],
-  close: [ { s: '#PL', r: 'add' }, {} ],
-}
-
-// tn.parse('1+2+3')  =>  6`}</code></pre>
+      <CodeTabs id="agents-inline-actions" label="Actions written onto the alternates" />
       <p>
         <code>r</code> is the rule instance, <code>r.node</code> the value it
         carries, <code>r.o</code> the tokens matched in the open phase (so
