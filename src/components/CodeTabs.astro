@@ -49,8 +49,24 @@ const expected = read(join(dir, 'expect.txt')).trim()
 if (!tsSrc) throw new Error(`CodeTabs: examples/${id}/ts.ts is missing or empty`)
 
 // Both themes are emitted; global CSS picks one by prefers-color-scheme.
-const hl = (code: string, lang: string) =>
-  codeToHtml(code, { lang, themes: { light: 'github-light', dark: 'github-dark' } })
+//
+// Both GitHub themes set comments in a grey chosen against their own
+// background. Ours is a dull green, and against it those greys fall to 4.09:1
+// (light) and 3.32:1 (dark) — under the 4.5:1 WCAG AA floor. Comments carry
+// the explanation in these examples, so they are the last text that should be
+// hard to read. Shiki inlines its colours per span, so the fix is to remap the
+// one offending value on the way out; everything else already clears AA.
+const CONTRAST_FIX: Record<string, string> = {
+  '#6e7781': '#656d76', // light comment: 4.09 -> 4.72 on #f0f4ee
+  '#6a737d': '#8b949e', // dark comment:  3.32 -> 5.20 on #10261a
+}
+const hl = async (code: string, lang: string) => {
+  const html = await codeToHtml(code, {
+    lang,
+    themes: { light: 'github-light-default', dark: 'github-dark' },
+  })
+  return html.replace(/#[0-9a-fA-F]{6}/g, (c) => CONTRAST_FIX[c.toLowerCase()] ?? c)
+}
 
 const tsHtml = await hl(tsSrc, 'ts')
 const goHtml = goSrc ? await hl(goSrc, 'go') : ''
@@ -106,7 +122,7 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
     margin: 0 0 1rem;
     /* A very light, dull green — desaturated so syntax colours stay legible
        against it, and distinct from the parchment page background. */
-    --codetabs-bg: #eef2ec;
+    --codetabs-bg: #f0f4ee;
     /* An overflowing <pre> must scroll inside itself, never widen the page.
        Without this the block ran past the viewport on narrow screens and the
        left edge — rounded corner and all — was scrolled out of sight. */
@@ -117,7 +133,7 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
     :root:not([data-theme="light"]) .codetabs { --codetabs-bg: #10261a; }
   }
   :root[data-theme="dark"] .codetabs { --codetabs-bg: #10261a; }
-  :root[data-theme="light"] .codetabs { --codetabs-bg: #eef2ec; }
+  :root[data-theme="light"] .codetabs { --codetabs-bg: #f0f4ee; }
 
   /* Radio-driven tabs: the inputs sit before the panes so a sibling selector
      can reveal the matching one. No JavaScript involved. */
@@ -186,6 +202,37 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
   .pane.prose :global(p) { margin: 0 0 0.7rem; font-size: 0.88rem; color: var(--ink-soft); }
   .pane.prose :global(p:last-child) { margin-bottom: 0; }
   .pane.prose :global(code) { font-family: var(--font-mono); font-size: 0.85em; color: var(--ink); }
+
+  /* Shiki emits BOTH themes: a `color` for light and a --shiki-dark custom
+     property for dark. Nothing swaps them on its own — the site has to. Since
+     we also override the background, missing this put the light theme's dark
+     grey text on our dark green background, which was unreadable. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .pane :global(.shiki),
+    :root:not([data-theme="light"]) .pane :global(.shiki span) {
+      color: var(--shiki-dark) !important;
+    }
+  }
+  :root[data-theme="dark"] .pane :global(.shiki),
+  :root[data-theme="dark"] .pane :global(.shiki span) {
+    color: var(--shiki-dark) !important;
+  }
+
+  /* On a phone, sideways scrolling inside a page that already scrolls
+     vertically is easy to miss entirely — a truncated line just looks like the
+     end of the line. Below the site's 720px breakpoint, wrap instead, and hang
+     the continuation so a wrapped line still reads as one statement. Shiki
+     wraps each source line in span.line, so the indent belongs there, not on
+     the <code> (which would only indent the first line of the whole block). */
+  @media (max-width: 720px) {
+    .pane :global(pre),
+    .pane :global(code) {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .pane :global(pre) { overflow-x: visible; }
+    .pane :global(.line) { display: block; text-indent: -2ch; padding-left: 2ch; }
+  }
 
   .code-out {
     display: flex; gap: 0.5rem; align-items: baseline;
