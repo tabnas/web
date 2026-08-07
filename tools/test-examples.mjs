@@ -28,6 +28,8 @@ const only = process.argv[2]
 const ids = readdirSync(EXAMPLES, { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name)
+  // Dot-directories are tooling (scratch space, editor state), not examples.
+  .filter((id) => !id.startsWith('.'))
   .filter((id) => !only || id === only)
   .sort()
 
