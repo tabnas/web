@@ -1,0 +1,81 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+
+// The org health dashboard, embedded live from where it is published.
+//
+// It is NOT rebuilt or mirrored here. tabnas/status regenerates it from the
+// GitHub API on every run and publishes to GitHub Pages, so a copy in this
+// repo would be stale the moment it was taken — and a health dashboard that
+// silently reports yesterday's state is worse than no dashboard. The iframe
+// means what you see is what the collector last published.
+const STATUS_URL = "https://tabnas.github.io/status/";
+---
+
+<Base
+  wide
+  title="Status"
+  description="Live health and compliance dashboard for every tabnas repository — CI, releases, version sync, and org standards."
+>
+  <article class="status-page">
+    <Heading level={1} id="status">Status</Heading>
+
+    <p class="lede">
+      Health and compliance for every repository in the org — CI, open work,
+      npm/Go version sync, and the org standards each repo is scored against.
+      Regenerated from the GitHub API on a daily schedule; nothing here is
+      hand-maintained.
+    </p>
+
+    <p class="direct">
+      <a href={STATUS_URL} target="_blank" rel="noopener">
+        Open the dashboard directly
+      </a>
+      <span class="why">— the embed below is the same page</span>
+    </p>
+
+    <div class="embed">
+      <iframe
+        src={STATUS_URL}
+        title="tabnas org status dashboard"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+      ></iframe>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .lede { color: var(--ink-soft); max-width: 62ch; }
+
+  .direct { margin: 1rem 0 0.75rem; font-size: 0.9rem; }
+  .direct a { color: var(--primary); }
+  .direct .why { color: var(--ink-mute); }
+
+  /* A fixed tall viewport rather than a fluid aspect ratio: the dashboard is a
+     wide table whose height depends on repo count, and cross-origin framing
+     means we cannot measure its content to size the frame. Too short and the
+     reader scrolls a scrollbar inside a scrollbar, which is the worst version
+     of this. */
+  .embed {
+    margin: 0 0 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;          /* keeps the frame inside the rounded corner */
+    background: var(--surface);
+  }
+  .embed iframe {
+    display: block;
+    width: 100%;
+    height: min(85vh, 900px);
+    min-height: 32rem;
+    border: 0;
+  }
+
+  /* On a phone the dashboard's table cannot usefully fit; give the frame more
+     of the viewport so at least a few columns are readable, and let the reader
+     jump out to the full page. */
+  @media (max-width: 720px) {
+    .embed iframe { height: 80vh; min-height: 26rem; }
+  }
+</style>
