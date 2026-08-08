@@ -19,8 +19,11 @@ npm run build          # astro build + pagefind search index, into dist/
 npm run check          # test-examples, build, tsc, and a dry-run deploy
 ```
 
-There is no CI workflow in this repo and no unit-test suite, so `npm run check`
-is the gate — run it yourself before merging.
+**`npm run check` is the gate, and you have to run it yourself.** A pull request
+here does get two automated checks — CodeQL, from GitHub's *default setup*, and
+a Cloudflare build — but neither runs this repo's tests: one is a security scan,
+the other a build. Nothing on the server executes the examples. So green checks
+on a PR are not evidence the site works; `npm run check` is.
 
 ## Deployment is automatic
 
