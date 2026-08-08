@@ -17,6 +17,7 @@ import Base from "../layouts/Base.astro";
     <div class="presets" id="presets">
       <span class="lbl">Presets:</span>
       <span id="preset-buttons"></span>
+      <button class="reset" id="reset">Reset</button>
       <button class="share" id="share">Copy share link</button>
     </div>
   </div>
@@ -363,6 +364,28 @@ import Base from "../layouts/Base.astro";
     } catch {}
   }
 
+  function reset() {
+    // Drop any shared-link state FIRST. The hash is the thing a reader most
+    // often wants rid of — arriving via someone's link and wanting the stock
+    // playground back — and leaving it in place would restore that grammar on
+    // the next load, making Reset look like it had done nothing.
+    history.replaceState(null, "", location.pathname + location.search);
+
+    // setMode stashes the current textareas into sources before switching, so
+    // it has to run BEFORE the defaults are written, or it would overwrite
+    // them with whatever the reader had typed.
+    setMode("abnf", false);
+    sources.abnf = { ...PRESETS.addition.abnf };
+    sources.spec = { ...PRESETS.addition.spec };
+    restore();
+
+    // A shared rule table leaves the run gate closed; the default grammar is
+    // ours, so it opens again.
+    blocked = false;
+    confirmEl.hidden = true;
+    run();
+  }
+
   function load() {
     const hash = location.hash.slice(1);
     if (hash) {
@@ -412,6 +435,8 @@ import Base from "../layouts/Base.astro";
     confirmEl.hidden = true;
     run();
   });
+
+  $("reset").addEventListener("click", reset);
 
   for (const b of document.querySelectorAll<HTMLButtonElement>(".mode")) {
     b.addEventListener("click", () => setMode(b.dataset.mode as Mode));
@@ -467,9 +492,26 @@ import Base from "../layouts/Base.astro";
     border-radius: 999px; padding: 0.35rem 0.8rem;
   }
   .presets button:hover { color: var(--primary); border-color: var(--border-strong); }
-  .presets .share { margin-left: auto; color: var(--primary); border-style: dashed; }
+  .presets .share { color: var(--primary); border-style: dashed; }
+  .presets .reset { margin-left: auto; border-style: dashed; }
+  .presets .reset:hover { color: var(--error); border-color: var(--error); }
 
-  .pg { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1rem 0; align-items: start; }
+  /* The editor keeps at least half the width, always.
+     A grid track's automatic minimum is its CONTENT size, so with plain
+     `1fr 1fr` a wide result — a deeply nested syntax tree, a long error line —
+     grew its own track and squeezed the editor. Measured: a 60-term input drove
+     the editor from 49% down to 5% of the row (57px) and pushed the page into
+     horizontal overflow. minmax(50%, 1fr) floors the editor; minmax(0, 1fr)
+     lets the result track shrink below its content, which is what makes the
+     panes scroll instead of expanding. */
+  .pg {
+    display: grid;
+    grid-template-columns: minmax(50%, 1fr) minmax(0, 1fr);
+    gap: 1.25rem; margin: 1rem 0; align-items: start;
+  }
+  /* Belt and braces: without this a flex/grid child still refuses to go below
+     its content width in some engines. */
+  .editor, .result { min-width: 0; }
   label {
     display: block; font-family: var(--font-mono); font-size: 0.72rem;
     text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
@@ -528,7 +570,10 @@ import Base from "../layouts/Base.astro";
     font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55;
   }
 
-  .tree { font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; }
+  /* Scrolls rather than widening its column. Each .kids level adds margin and
+     padding, so a deep tree grows without bound; this was the pane that broke
+     the 50/50 split. */
+  .tree { font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; overflow-x: auto; }
   .kids { margin-left: 1.1rem; border-left: 1px solid var(--border); padding-left: 0.9rem; }
   .rule { color: var(--primary); font-weight: 600; }
   .src { color: var(--accent); }
