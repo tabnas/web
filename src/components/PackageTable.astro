@@ -28,8 +28,9 @@ const groups = TIER_ORDER.map((tier) => ({
 ---
 
 <p class="pkg-count">
-  {PACKAGES.length} packages. Versions are the ones current when this page was
-  built — <a href="/releases">releases</a> fetches the live tags.
+  {PACKAGES.length} packages. Versions here are recorded in the site source and
+  can lag a release — <a href="/releases">releases</a> reads the live version
+  from npm.
 </p>
 
 {groups.map((g) => (

@@ -1,64 +1,76 @@
-# Astro Starter Kit: Blog
+# tabnas/web
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/astro-blog-starter-template)
+Source of **[tabnas.dev](https://tabnas.dev)** — the project site and
+documentation for the tabnas parsing engine. An [Astro](https://astro.build)
+site deployed to Cloudflare Workers.
 
-![Astro Template Preview](https://github.com/withastro/astro/assets/2244813/ff10799f-a816-4703-b967-c78997e8323d)
+Unlike every other repo in the org this one ships no library: nothing here is
+published to npm or importable as a Go module. It *consumes* the published
+`@tabnas/*` packages, so the playground and every code example run the real
+engine rather than a mock.
 
-<!-- dash-content-start -->
-
-Create a blog with Astro and deploy it on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
-
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and OpenGraph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-- ✅ Built-in Observability logging
-
-<!-- dash-content-end -->
-
-## Getting Started
-
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
+## Quick start
 
 ```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/astro-blog-starter-template
+npm install
+npm run dev            # local dev server
+npm run test-examples  # run every example and compare against its expect.txt
+npm run build          # astro build + pagefind search index, into dist/
+npm run check          # test-examples, build, tsc, and a dry-run deploy
 ```
 
-A live public deployment of this template is available at [https://astro-blog-starter-template.templates.workers.dev](https://astro-blog-starter-template.templates.workers.dev)
+There is no CI workflow in this repo and no unit-test suite, so `npm run check`
+is the gate — run it yourself before merging.
 
-## 🚀 Project Structure
+## Deployment is automatic
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+**Merging to `main` is the deploy step.** Cloudflare builds and publishes the
+site from `main` through its own Git integration, so there is nothing to run
+and no workflow file to look for — the absence of `.github/workflows/` here
+does *not* mean deployment is manual.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Do not run `npm run deploy` (`wrangler deploy`) as part of shipping a change.
+It stays for manual recovery, and an agent session has no Cloudflare
+credentials in any case (`wrangler whoami` reports "not authenticated"). That
+is expected, not a broken environment.
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+See [`AGENTS.md`](AGENTS.md#deployment) for the full picture.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Layout
 
-## 🧞 Commands
+| Path | What it is |
+|---|---|
+| `src/pages/` | Routes — `.astro` and `.mdx` map to URLs. |
+| `src/content/docs/` | The documentation set, rendered by `src/pages/docs/[...slug].astro`. |
+| `src/components/` | Shared components. `CodeTabs.astro` renders the TypeScript / Go / Explain code blocks. |
+| `src/consts.ts` | Site constants, plus the `PACKAGES` registry behind `/docs/packages`. |
+| `examples/<id>/` | One directory per example: `ts.ts`, `go/main.go`, `expect.txt`, `explain.md`. |
+| `tools/test-examples.mjs` | Runs both language versions of every example and diffs against `expect.txt`. |
 
-All commands are run from the root of the project, from a terminal:
+## Examples are executed, not transcribed
 
-| Command                           | Action                                           |
-| :-------------------------------- | :----------------------------------------------- |
-| `npm install`                     | Installs dependencies                            |
-| `npm run dev`                     | Starts local dev server at `localhost:4321`      |
-| `npm run build`                   | Build your production site to `./dist/`          |
-| `npm run preview`                 | Preview your build locally, before deploying     |
-| `npm run astro ...`               | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help`         | Get help using the Astro CLI                     |
-| `npm run build && npm run deploy` | Deploy your production site to Cloudflare        |
-| `npm wrangler tail`               | View real-time logs for all Workers              |
+`CodeTabs` reads `examples/<id>/` at build time — the same files
+`tools/test-examples.mjs` runs. So the code on the page is the code that was
+run, and the TypeScript and Go versions are *known* to produce the same output
+rather than merely claimed to. Editing an example means editing the files in
+`examples/`, never the page.
 
-## 👀 Want to learn more?
+`tools/test-examples.mjs` is the gate: if it fails, the site is documenting
+something that does not work.
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Keep the tabnas deps current
 
-## Credit
+The site must run against the **currently published** package versions, pinned
+exactly (`"0.6.2"`, not `"^0.6.2"` — these are pre-1.0, where a caret range
+silently refuses the next minor and the site quietly falls behind). Bump the
+pins, `src/consts.ts` versions, and re-run `npm run test-examples` in the same
+commit.
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+This has bitten the site before: it sat on a stale `abnf` pin long enough to
+document a *fixed compiler bug* as intended behaviour. See
+[`AGENTS.md`](AGENTS.md) for that story and the full contributor guide.
+
+## Licence
+
+MIT, as with the rest of the org. This repo carries no `LICENSE` file of its
+own; it publishes nothing.
