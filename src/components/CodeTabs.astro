@@ -17,8 +17,20 @@ import { codeToHtml } from 'shiki'
 interface Props {
   id: string
   label?: string
-  /** Trim to these line ranges, 1-based inclusive, e.g. [[1,12]]. */
+  /**
+   * Trim the TypeScript source to these line ranges, 1-based inclusive,
+   * e.g. [[1,12]]. Applies to ts.ts ONLY — the Go file is a different length
+   * and a different shape, so the same range cuts it at an unrelated point.
+   * Use goLines to abridge Go.
+   */
   lines?: [number, number][]
+  /**
+   * Trim the Go source, independently of `lines`. Omit to show Go in full and
+   * let its pane scroll: that is the point of the overlay layout below, and it
+   * is what the reader needs, since a Go example that stops mid-statement is
+   * worse than a long one.
+   */
+  goLines?: [number, number][]
   /**
    * Suffix that keeps the radio group unique when one example appears twice on
    * a page — abridged in the hero, in full further down, say. Without it both
@@ -28,21 +40,21 @@ interface Props {
   instance?: string
 }
 
-const { id, label, lines, instance } = Astro.props
+const { id, label, lines, goLines, instance } = Astro.props
 
 const dir = join(process.cwd(), 'examples', id)
 const read = (p: string) => (existsSync(p) ? readFileSync(p, 'utf8') : '')
 
-function abridge(src: string) {
-  if (!lines) return src.trimEnd()
-  return lines
+function abridge(src: string, ranges?: [number, number][]) {
+  if (!ranges) return src.trimEnd()
+  return ranges
     .map(([from, to]) => src.split('\n').slice(from - 1, to).join('\n'))
     .join('\n')
     .trimEnd()
 }
 
-const tsSrc = abridge(read(join(dir, 'ts.ts')))
-const goSrc = abridge(read(join(dir, 'go', 'main.go')))
+const tsSrc = abridge(read(join(dir, 'ts.ts')), lines)
+const goSrc = abridge(read(join(dir, 'go', 'main.go')), goLines)
 const explain = read(join(dir, 'explain.md')).trim()
 const expected = read(join(dir, 'expect.txt')).trim()
 
@@ -60,12 +72,24 @@ const CONTRAST_FIX: Record<string, string> = {
   '#6e7781': '#656d76', // light comment: 4.09 -> 4.72 on #f0f4ee
   '#6a737d': '#8b949e', // dark comment:  3.32 -> 5.20 on #10261a
 }
+// Shiki separates its per-line spans with a literal newline:
+//   <span class="line">…</span>\n<span class="line">…</span>
+// The CSS below gives .line `display: block` so a wrapped line can hang its
+// continuation. Block display and a preserved newline BOTH break the line, so
+// together they render every code block double-spaced. Drop the newlines and
+// let display:block do the breaking. Blank lines arrive as an empty
+// <span class="line"></span>, which an empty block would collapse to zero
+// height, so the CSS gives those a zero-width space.
+const dropLineBreaks = (html: string) => html.replace(/\n(?=<span class="line")/g, '')
+
 const hl = async (code: string, lang: string) => {
   const html = await codeToHtml(code, {
     lang,
     themes: { light: 'github-light-default', dark: 'github-dark' },
   })
-  return html.replace(/#[0-9a-fA-F]{6}/g, (c) => CONTRAST_FIX[c.toLowerCase()] ?? c)
+  return dropLineBreaks(
+    html.replace(/#[0-9a-fA-F]{6}/g, (c) => CONTRAST_FIX[c.toLowerCase()] ?? c),
+  )
 }
 
 const tsHtml = await hl(tsSrc, 'ts')
@@ -218,12 +242,22 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
     color: var(--shiki-dark) !important;
   }
 
+  /* One block per source line, at every width. The newlines Shiki puts between
+     these spans are stripped in the component (see dropLineBreaks) — leaving
+     them in place alongside display:block is what double-spaced every code
+     block on iOS Safari and everywhere else. */
+  .pane :global(.line) { display: block; }
+  /* A blank source line is an EMPTY span. An empty block generates no line box
+     and would collapse to nothing, silently closing up the gaps the author
+     wrote. A zero-width space gives it one line's height. */
+  .pane :global(.line:empty)::before { content: "\200b"; }
+
   /* On a phone, sideways scrolling inside a page that already scrolls
      vertically is easy to miss entirely — a truncated line just looks like the
      end of the line. Below the site's 720px breakpoint, wrap instead, and hang
-     the continuation so a wrapped line still reads as one statement. Shiki
-     wraps each source line in span.line, so the indent belongs there, not on
-     the <code> (which would only indent the first line of the whole block). */
+     the continuation so a wrapped line still reads as one statement. The
+     indent belongs on span.line, not on the <code> (which would only indent
+     the first line of the whole block). */
   @media (max-width: 720px) {
     .pane :global(pre),
     .pane :global(code) {
@@ -231,7 +265,7 @@ const name = `tabs-${id}${instance ? `-${instance}` : ''}`
       overflow-wrap: anywhere;
     }
     .pane :global(pre) { overflow-x: visible; }
-    .pane :global(.line) { display: block; text-indent: -2ch; padding-left: 2ch; }
+    .pane :global(.line) { text-indent: -2ch; padding-left: 2ch; }
   }
 
   .code-out {
