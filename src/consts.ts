@@ -144,12 +144,7 @@ export const PACKAGES: {
     blurb: "Zig Object Notation, as used by build.zig.zon manifests." },
   { name: "feed", tier: "grammar", version: "0.6.2", npm: true, go: true,
     blurb: "RSS (0.90–2.0) and Atom (0.3, 1.0), normalised to one Atom-shaped result." },
-  // `npm: false` is current, not permanent. The Go module is published;
-  // the npm package is not, because npm's trusted publishing cannot
-  // create a package name that does not exist yet, and the first
-  // publish has to be made by a human with an npm credential. Flip this
-  // to true when @tabnas/chess is on the registry.
-  { name: "chess", tier: "grammar", version: "0.1.0", npm: false, go: true,
+  { name: "chess", tier: "grammar", version: "0.1.3", npm: true, go: true,
     blurb: "PGN and SAN — chess games and moves, tag pairs, variations and annotations." },
 
   // Syntax plugins that layer onto a host grammar.
