@@ -72,15 +72,22 @@ these as the fallback). Update them in the same commit.
 ## The chess board on /examples
 
 `/examples` shows a game played through `@tabnas/chess`, using the
-`<chess-game>` custom element from that repo's `web/` directory. Two things
-about it are unusual for this site:
+`<chess-view>` custom element from that repo's `web/` directory. Two things
+about it are worth knowing:
 
-- **`public/chess-game.js` is a vendored build artifact.** Cloudflare builds
-  the site from the registry, and `@tabnas/chess-game` is not published yet, so
-  it cannot be a dependency. Refresh it with
-  `cd ../chess/web && npm run build && cp dist/chess-game.js ../../web/public/chess-game.js`,
-  and keep the provenance banner at the top of the file. When the package does
-  publish, delete it and switch to an import.
+- **`public/chess-view.js` is a vendored build artifact.** Refresh it with
+  `cd ../chess/web && npm run build && cp dist/chess-view.js ../../web/public/chess-view.js`,
+  and keep the provenance banner at the top of the file. The element was
+  called `<chess-game>`, and the artifact `chess-game.js`, before 0.1.2.
+
+  The original reason for vendoring has expired — `@tabnas/chess-view` is on
+  the registry, so it *can* be a dependency now. It is not one yet because
+  the published version lags what the page needs: through 0.1.2 a parse
+  error still arrives wrapped in ANSI escape codes, which render as visible
+  junk in a browser, and that is fixed in 0.1.3. **Switch to a pinned
+  dependency and a bundled `import` once 0.1.3 is published** — verify by
+  typing nonsense into the board and checking the message reads as a
+  sentence.
 - **The theme is mirrored, not inherited.** The element's own `theme="auto"`
   follows `prefers-color-scheme`, but this site's theme is `data-theme` on
   `<html>`, which the reader can toggle against their OS. An inline script at

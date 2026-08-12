@@ -4,12 +4,15 @@
  * Refresh with:  cd ../chess/web && npm run build
  *                cp dist/chess-view.js ../../web/public/chess-view.js
  *
- * Still vendored, though the reason has expired: @tabnas/chess-view IS on
- * npm now, so the note this replaces — "once it publishes, replace this
- * with a dependency and an import" — is actionable. Left as a file for
- * the moment because swapping it for a dependency changes what the
- * Cloudflare build resolves, and that is worth doing on its own rather
- * than inside a content change.
+ * Still a file rather than a dependency, though the original reason has
+ * expired: @tabnas/chess-view IS on the registry now. The blocker is a
+ * version gap. Through 0.1.2 a parse error still carries ANSI escape
+ * codes, which a browser shows as junk — fixed in 0.1.3, which is what
+ * this file is. Pinning 0.1.3 in package.json before it publishes would
+ * desync the lockfile and break `npm ci` on the Cloudflare build.
+ *
+ * So: when 0.1.3 reaches npm, delete this and switch to a pinned
+ * dependency with a bundled import. See AGENTS.md.
  *
  * Was chess-game 0.1.0. The element is <chess-view> from 0.1.2 on.
  */
