@@ -170,6 +170,11 @@ Everything is pre-1.0 — pin exact versions.
 - boru (Go) — a typed, word-based query language with parser, type checker,
   formatter and LSP, built on parser, jsonic, abnf, csv and expr.
   https://github.com/boru-lang/boru
+- chess (TypeScript, ported to Go) — PGN and SAN chess notation, a grammar
+  plugin on the bare engine. The board on https://tabnas.dev/examples plays
+  a game through it. The plugin parses notation only; resolving `Nf3` to a
+  particular knight needs the position, so the board view supplies its own
+  legal move generator. https://github.com/tabnas/chess
 
 ## How-to guides
 

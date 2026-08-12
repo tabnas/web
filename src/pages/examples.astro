@@ -3,6 +3,27 @@ import Base from "../layouts/Base.astro";
 import Heading from "../components/Heading.astro";
 import { REPO, GITHUB_ORG } from "../consts";
 
+// Anderssen–Kieseritzky, London, 21 June 1851 — "the Immortal Game".
+//
+// A game score is a record of what happened, not an authored work, so the
+// moves carry no copyright; the annotations written ABOUT a game do, and
+// there are none here. An 1851 game puts it beyond argument either way.
+//
+// Every ply is checked against the legal move generator in chess/web —
+// 45 plies, ending in mate on d8 — so a typo here shows up as a flagged
+// move in the board rather than as a wrong position.
+const IMMORTAL = `[Event "Casual game"]
+[Site "London ENG"]
+[Date "1851.06.21"]
+[White "Adolf Anderssen"]
+[Black "Lionel Kieseritzky"]
+[Result "1-0"]
+
+1. e4 e5 2. f4 exf4 3. Bc4 Qh4+ 4. Kf1 b5 5. Bxb5 Nf6 6. Nf3 Qh6
+7. d3 Nh5 8. Nh4 Qg5 9. Nf5 c6 10. g4 Nf6 11. Rg1 cxb5 12. h4 Qg6
+13. h5 Qg5 14. Qf3 Ng8 15. Bxf4 Qf6 16. Nc3 Bc5 17. Nd5 Qxb2 18. Bd6 Bxg1
+19. e5 Qxa1+ 20. Ke2 Na6 21. Nxg7+ Kd8 22. Qf6+ Nxf6 23. Be7# 1-0`;
+
 // Real languages built on the engine. Package lists are read from each
 // project's own manifests — keep them accurate, or drop them.
 const PROJECTS = [
@@ -53,15 +74,69 @@ const PROJECTS = [
 <Base
   wide
   title="Examples"
-  description="Real languages built on the tabnas engine — aontu in TypeScript, boru in Go."
+  description="Real languages built on the tabnas engine — a chess game you can step through, aontu in TypeScript, boru in Go."
 >
   <article class="ex">
     <Heading level={1} id="examples">Examples</Heading>
     <p class="lede">
-      Two languages built on the engine, by way of showing what it is actually
-      for. One composes existing grammar plugins into a configuration language;
-      the other builds a full programming language and its toolchain.
+      One small language running in this page, and two large ones you can go
+      and read. The small one parses chess notation; of the others, one
+      composes existing grammar plugins into a configuration language, and the
+      other builds a full programming language and its toolchain.
     </p>
+
+    <section class="proj">
+      <Heading level={2} id="chess">chess</Heading>
+      <p class="tagline">PGN and SAN — the notation chess games are written in</p>
+
+      <dl class="meta">
+        <div><dt>Runtime</dt><dd>TypeScript · also ported to Go</dd></div>
+        <div>
+          <dt>Built with</dt>
+          <dd class="pkgs">
+            <a class="chip" href={REPO("parser")} target="_blank" rel="noopener">@tabnas/parser</a>
+          </dd>
+        </div>
+        <div>
+          <dt>Source</dt>
+          <dd><a href={REPO("chess")} target="_blank" rel="noopener">github.com/tabnas/chess</a></dd>
+        </div>
+      </dl>
+
+      <details class="src">
+        <summary>The input, in full</summary>
+        <pre>{IMMORTAL}</pre>
+      </details>
+
+      <div class="board">
+        <chess-game>{IMMORTAL}</chess-game>
+      </div>
+      <p class="caption">
+        Anderssen–Kieseritzky, London, 21 June 1851 — the Immortal Game. Use
+        the controls, the arrow keys, or click any move. The board, the move
+        list and the parser are one 34&nbsp;kB script with no other requests.
+      </p>
+
+      <p>
+        That text is the whole input: a PGN game, parsed by
+        <a href={REPO("chess")} target="_blank" rel="noopener">@tabnas/chess</a>
+        into tag pairs, moves and a result. Everything on the board comes from
+        the parse — the players and date above it are the tag pairs, and each
+        move comes back as structure rather than as a string:
+        <code>Nxg7+</code> is a knight, a capture, a destination of
+        <code>g7</code> and a check. That is what makes the move list
+        clickable and lets the board follow along.
+      </p>
+      <p>
+        It is also a good example of where a parser stops. <code>Nf3</code>
+        names a piece and a square but not <em>which</em> knight; only the
+        position knows, and the grammar has no position. So the plugin does not
+        pretend to have a board, and the component supplies the missing half: a
+        legal move generator that resolves each parsed move against the
+        position it is played in. Parsing the notation and playing the game are
+        two jobs, and only one of them is the engine's.
+      </p>
+    </section>
 
     {PROJECTS.map((p) => (
       <section class="proj">
@@ -121,6 +196,36 @@ const PROJECTS = [
   </article>
 </Base>
 
+{/* A built artifact from tabnas/chess, served from public/ — see the banner
+    at the top of that file for how to refresh it. `is:inline` keeps Astro
+    from trying to bundle a file it does not own. Registering <chess-game>
+    is the script's only effect; until it loads — or with JavaScript off —
+    the :not(:defined) rule below hides the element, and the reader still
+    has the game, because the PGN is on the page in its own right. */}
+<script is:inline src="/chess-game.js" defer></script>
+
+<script is:inline>
+  // The component's own theme="auto" follows prefers-color-scheme, but this
+  // site's theme is a data-theme attribute the reader can toggle against
+  // their OS. Mirror it, or someone on a light machine who picks dark here
+  // gets a bright board on a dark page. theme is read only by the shadow
+  // stylesheet, so setting it before the element upgrades is fine.
+  (() => {
+    const root = document.documentElement;
+    const sync = () => {
+      const theme = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      for (const el of document.querySelectorAll("chess-game")) {
+        el.setAttribute("theme", theme);
+      }
+    };
+    sync();
+    new MutationObserver(sync).observe(root, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+  })();
+</script>
+
 <style>
   .ex { max-width: 52rem; }
   .ex :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
@@ -149,6 +254,36 @@ const PROJECTS = [
     border: 1px solid var(--border); border-radius: 999px; padding: 0.15rem 0.6rem;
   }
   .chip:hover { color: var(--primary); border-color: var(--border-strong); }
+
+  /* The parsed game is on the board; this is what went in. Collapsed,
+     because a reader who wants the point can get it from the board, and
+     45 moves of notation ahead of it would bury the thing. */
+  .src { margin: 0 0 1rem; }
+  .src summary {
+    cursor: pointer; font-family: var(--font-mono); font-size: 0.8rem;
+    color: var(--ink-mute);
+  }
+  .src summary:hover { color: var(--primary); }
+  .src pre {
+    margin: 0.6rem 0 0; padding: 0.9rem 1.1rem; overflow-x: auto;
+    font-size: 0.8rem; line-height: 1.5; color: var(--ink-soft);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .board { margin: 0 0 0.6rem; }
+  .board :global(chess-game) { --size: 26rem; }
+
+  /* Before the custom element registers — and forever, with scripts off —
+     it is just its own text content, which is the same PGN the block
+     above already shows. Hide it rather than print the game twice; the
+     input is on the page either way. */
+  .board :global(chess-game:not(:defined)) { display: none; }
+
+  .caption {
+    font-size: 0.88rem; color: var(--ink-mute); max-width: 60ch;
+    margin: 0 0 1.5rem;
+  }
 
   @media (max-width: 640px) {
     .meta > div { grid-template-columns: 1fr; gap: 0.2rem; }
