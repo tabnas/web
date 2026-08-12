@@ -74,7 +74,7 @@ const PROJECTS = [
 <Base
   wide
   title="Examples"
-  description="Real languages built on the tabnas engine — a chess game you can step through, aontu in TypeScript, boru in Go."
+  description="Real languages built on the tabnas engine — a chess game you can step through and edit, aontu in TypeScript, boru in Go."
 >
   <article class="ex">
     <Heading level={1} id="examples">Examples</Heading>
@@ -109,12 +109,15 @@ const PROJECTS = [
       </details>
 
       <div class="board">
-        <chess-game>{IMMORTAL}</chess-game>
+        <chess-view source="edit">{IMMORTAL}</chess-view>
       </div>
       <p class="caption">
         Anderssen–Kieseritzky, London, 21 June 1851 — the Immortal Game. Use
-        the controls, the arrow keys, or click any move. The board, the move
-        list and the parser are one 34&nbsp;kB script with no other requests.
+        the controls, the arrow keys, or click any move. The notation below
+        the board is <strong>editable</strong>: change it and the board
+        re-parses as you type, so you can watch the grammar accept and
+        reject. The board, the move list and the parser are one
+        37&nbsp;kB script with no other requests.
       </p>
 
       <p>
@@ -198,11 +201,11 @@ const PROJECTS = [
 
 {/* A built artifact from tabnas/chess, served from public/ — see the banner
     at the top of that file for how to refresh it. `is:inline` keeps Astro
-    from trying to bundle a file it does not own. Registering <chess-game>
+    from trying to bundle a file it does not own. Registering <chess-view>
     is the script's only effect; until it loads — or with JavaScript off —
     the :not(:defined) rule below hides the element, and the reader still
     has the game, because the PGN is on the page in its own right. */}
-<script is:inline src="/chess-game.js" defer></script>
+<script is:inline src="/chess-view.js" defer></script>
 
 <script is:inline>
   // The component's own theme="auto" follows prefers-color-scheme, but this
@@ -214,7 +217,7 @@ const PROJECTS = [
     const root = document.documentElement;
     const sync = () => {
       const theme = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
-      for (const el of document.querySelectorAll("chess-game")) {
+      for (const el of document.querySelectorAll("chess-view")) {
         el.setAttribute("theme", theme);
       }
     };
@@ -272,13 +275,13 @@ const PROJECTS = [
   }
 
   .board { margin: 0 0 0.6rem; }
-  .board :global(chess-game) { --size: 26rem; }
+  .board :global(chess-view) { --size: 26rem; }
 
   /* Before the custom element registers — and forever, with scripts off —
      it is just its own text content, which is the same PGN the block
      above already shows. Hide it rather than print the game twice; the
      input is on the page either way. */
-  .board :global(chess-game:not(:defined)) { display: none; }
+  .board :global(chess-view:not(:defined)) { display: none; }
 
   .caption {
     font-size: 0.88rem; color: var(--ink-mute); max-width: 60ch;
