@@ -31,7 +31,7 @@
 - [@tabnas/jsonic](https://github.com/tabnas/jsonic): a relaxed JSON, and the usual base to extend from
 - [@tabnas/expr](https://github.com/tabnas/expr): Pratt-parser expressions with configurable precedence
 
-25 packages in total; the full list is at https://tabnas.dev/releases
+26 packages in total; the full list is at https://tabnas.dev/releases
 
 ## Notes for agents
 

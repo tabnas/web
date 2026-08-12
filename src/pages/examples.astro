@@ -103,6 +103,11 @@ const PROJECTS = [
         </div>
       </dl>
 
+      <details class="src">
+        <summary>The input, in full</summary>
+        <pre>{IMMORTAL}</pre>
+      </details>
+
       <div class="board">
         <chess-game>{IMMORTAL}</chess-game>
       </div>
@@ -113,12 +118,14 @@ const PROJECTS = [
       </p>
 
       <p>
-        The text above the board is the whole input: a PGN game, parsed by
+        That text is the whole input: a PGN game, parsed by
         <a href={REPO("chess")} target="_blank" rel="noopener">@tabnas/chess</a>
-        into tag pairs, moves and a result. Each move comes back as structure
-        rather than as a string — <code>Nxg7+</code> is a knight, a capture, a
-        destination of <code>g7</code> and a check — which is what makes the
-        move list on the right clickable and the board able to follow along.
+        into tag pairs, moves and a result. Everything on the board comes from
+        the parse — the players and date above it are the tag pairs, and each
+        move comes back as structure rather than as a string:
+        <code>Nxg7+</code> is a knight, a capture, a destination of
+        <code>g7</code> and a check. That is what makes the move list
+        clickable and lets the board follow along.
       </p>
       <p>
         It is also a good example of where a parser stops. <code>Nf3</code>
@@ -192,9 +199,9 @@ const PROJECTS = [
 {/* A built artifact from tabnas/chess, served from public/ — see the banner
     at the top of that file for how to refresh it. `is:inline` keeps Astro
     from trying to bundle a file it does not own. Registering <chess-game>
-    is the script's only effect, so until it loads — or with JavaScript off
-    — the element shows its own text content, which is the game. The
-    :not(:defined) rule below dresses that up as the PGN listing it is. */}
+    is the script's only effect; until it loads — or with JavaScript off —
+    the :not(:defined) rule below hides the element, and the reader still
+    has the game, because the PGN is on the page in its own right. */}
 <script is:inline src="/chess-game.js" defer></script>
 
 <script is:inline>
@@ -248,19 +255,30 @@ const PROJECTS = [
   }
   .chip:hover { color: var(--primary); border-color: var(--border-strong); }
 
+  /* The parsed game is on the board; this is what went in. Collapsed,
+     because a reader who wants the point can get it from the board, and
+     45 moves of notation ahead of it would bury the thing. */
+  .src { margin: 0 0 1rem; }
+  .src summary {
+    cursor: pointer; font-family: var(--font-mono); font-size: 0.8rem;
+    color: var(--ink-mute);
+  }
+  .src summary:hover { color: var(--primary); }
+  .src pre {
+    margin: 0.6rem 0 0; padding: 0.9rem 1.1rem; overflow-x: auto;
+    font-size: 0.8rem; line-height: 1.5; color: var(--ink-soft);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
   .board { margin: 0 0 0.6rem; }
   .board :global(chess-game) { --size: 26rem; }
 
-  /* Before the custom element registers, and forever if scripts are off,
-     the element is its own text content — so show it as the PGN listing
-     it is rather than as a paragraph of runaway prose. */
-  .board :global(chess-game:not(:defined)) {
-    display: block; white-space: pre-wrap;
-    font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5;
-    color: var(--ink-soft); background: var(--surface);
-    border: 1px solid var(--border); border-radius: 10px;
-    padding: 0.9rem 1.1rem; max-height: 20rem; overflow: auto;
-  }
+  /* Before the custom element registers — and forever, with scripts off —
+     it is just its own text content, which is the same PGN the block
+     above already shows. Hide it rather than print the game twice; the
+     input is on the page either way. */
+  .board :global(chess-game:not(:defined)) { display: none; }
 
   .caption {
     font-size: 0.88rem; color: var(--ink-mute); max-width: 60ch;
