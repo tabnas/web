@@ -199,13 +199,15 @@ const PROJECTS = [
   </article>
 </Base>
 
-{/* A built artifact from tabnas/chess, served from public/ — see the banner
-    at the top of that file for how to refresh it. `is:inline` keeps Astro
-    from trying to bundle a file it does not own. Registering <chess-view>
-    is the script's only effect; until it loads — or with JavaScript off —
-    the :not(:defined) rule below hides the element, and the reader still
-    has the game, because the PGN is on the page in its own right. */}
-<script is:inline src="/chess-view.js" defer></script>
+{/* @tabnas/chess-view, an ordinary pinned dependency — it was a vendored
+    file in public/ only for as long as it had to be. Importing it registers
+    <chess-view> and does nothing else; until the bundle loads — or with
+    JavaScript off — the :not(:defined) rule below hides the element, and
+    the reader still has the game, because the PGN is on the page in its own
+    right. */}
+<script>
+  import "@tabnas/chess-view";
+</script>
 
 <script is:inline>
   // The component's own theme="auto" follows prefers-color-scheme, but this

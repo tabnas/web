@@ -75,19 +75,13 @@ these as the fallback). Update them in the same commit.
 `<chess-view>` custom element from that repo's `web/` directory. Two things
 about it are worth knowing:
 
-- **`public/chess-view.js` is a vendored build artifact.** Refresh it with
-  `cd ../chess/web && npm run build && cp dist/chess-view.js ../../web/public/chess-view.js`,
-  and keep the provenance banner at the top of the file. The element was
-  called `<chess-game>`, and the artifact `chess-game.js`, before 0.1.2.
-
-  The original reason for vendoring has expired — `@tabnas/chess-view` is on
-  the registry, so it *can* be a dependency now. It is not one yet because
-  the published version lags what the page needs: through 0.1.2 a parse
-  error still arrives wrapped in ANSI escape codes, which render as visible
-  junk in a browser, and that is fixed in 0.1.3. **Switch to a pinned
-  dependency and a bundled `import` once 0.1.3 is published** — verify by
-  typing nonsense into the board and checking the message reads as a
-  sentence.
+- **`@tabnas/chess-view` is an ordinary pinned dependency**, imported from a
+  bundled `<script>` at the bottom of `examples.astro` — importing it is what
+  registers the element. Update it the way every other dependency is updated.
+  It was a vendored artifact in `public/` while the package was unpublished,
+  and then for one version longer, because 0.1.2 still wrote ANSI escape
+  codes into parse errors and a browser shows those as junk; 0.1.3 fixed it.
+  The element was called `<chess-game>` before 0.1.2.
 - **The theme is mirrored, not inherited.** The element's own `theme="auto"`
   follows `prefers-color-scheme`, but this site's theme is `data-theme` on
   `<html>`, which the reader can toggle against their OS. An inline script at
