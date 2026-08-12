@@ -16,7 +16,7 @@
 - [How to](https://tabnas.dev/how-to): task-oriented guides — includes, expressions, parameterised parsers, line-oriented formats, custom tokens, errors, debugging, testing
 - [Agents](https://tabnas.dev/agents): how to build with tabnas — the format to emit, the constraints, how to verify your work
 - [Playground](https://tabnas.dev/playground): run a grammar in the browser, as ABNF or as a rule table
-- [Examples](https://tabnas.dev/examples): real languages built on the engine
+- [Examples](https://tabnas.dev/examples): real languages built on the engine — a chess game parsed and replayed in the page, plus aontu and boru
 - [FAQ](https://tabnas.dev/faq): what it does, and what it won't do
 - [Releases](https://tabnas.dev/releases): every package and its current version
 - [Other parsers](https://tabnas.dev/comparisons): how it differs from ANTLR, Peggy, Chevrotain, nearley, tree-sitter

@@ -64,9 +64,33 @@ these as the fallback). Update them in the same commit.
 | `src/content/howto/` | How-to content collection, grouped by `group` (see `HOWTO_GROUPS` in `consts.ts`). |
 | `src/consts.ts` | Site metadata, nav, author, sponsor, how-to groups, and the full package table. |
 | `src/components/Heading.astro` | Heading + `#` anchor for hand-written `.astro` pages. |
+| `public/chess-game.js` | **Vendored build artifact**, not source. See below. |
 | `src/layouts/` | `Base`, `DocsLayout`, `BlogPost`, `MdxPage`. |
 | `src/styles/` | `tokens.css` (design tokens), `global.css`, per-page sheets. |
 | `ROADMAP.md` | The site plan. **Read it before changing content or tone.** |
+
+## The chess board on /examples
+
+`/examples` shows a game played through `@tabnas/chess`, using the
+`<chess-game>` custom element from that repo's `web/` directory. Two things
+about it are unusual for this site:
+
+- **`public/chess-game.js` is a vendored build artifact.** Cloudflare builds
+  the site from the registry, and `@tabnas/chess-game` is not published yet, so
+  it cannot be a dependency. Refresh it with
+  `cd ../chess/web && npm run build && cp dist/chess-game.js ../../web/public/chess-game.js`,
+  and keep the provenance banner at the top of the file. When the package does
+  publish, delete it and switch to an import.
+- **The theme is mirrored, not inherited.** The element's own `theme="auto"`
+  follows `prefers-color-scheme`, but this site's theme is `data-theme` on
+  `<html>`, which the reader can toggle against their OS. An inline script at
+  the bottom of `examples.astro` copies one onto the other.
+
+The game is Anderssen–Kieseritzky, London 1851. A game score records what was
+played and carries no copyright of its own — the annotations written about a
+game do, and there are none here — and an 1851 game settles it either way.
+Every ply is checked against the legal move generator in `chess/web`; a typo
+would show as a flagged move on the board rather than a wrong position.
 
 ## Tone: this is a project, not a product
 
