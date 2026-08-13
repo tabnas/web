@@ -105,6 +105,8 @@ export const PACKAGES: {
   // Grammar authoring and inspection.
   { name: "abnf", tier: "tooling", version: "0.4.2", npm: true, go: true,
     blurb: "Compile RFC 5234 ABNF straight into a working grammar." },
+  { name: "bnf", tier: "tooling", version: "0.1.5", npm: true, go: true,
+    blurb: "The shared BNF-family compiler behind abnf, ebnf and gbnf." },
   { name: "debug", tier: "tooling", version: "0.3.2", npm: true, go: true,
     blurb: "Inspect a live grammar — describe it, render it back as ABNF." },
   { name: "railroad", tier: "tooling", version: "0.3.2", npm: true, go: true,
@@ -146,6 +148,8 @@ export const PACKAGES: {
     blurb: "RSS (0.90–2.0) and Atom (0.3, 1.0), normalised to one Atom-shaped result." },
   { name: "chess", tier: "grammar", version: "0.1.3", npm: true, go: true,
     blurb: "PGN and SAN — chess games and moves, tag pairs, variations and annotations." },
+  { name: "gbnf", tier: "grammar", version: "0.1.4", npm: true, go: true,
+    blurb: "llama.cpp GBNF — check text against a constrained-decoding grammar, with no model." },
 
   // Syntax plugins that layer onto a host grammar.
   { name: "expr", tier: "plugin", version: "0.5.2", npm: true, go: true,

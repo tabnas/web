@@ -24,6 +24,25 @@ const IMMORTAL = `[Event "Casual game"]
 13. h5 Qg5 14. Qf3 Ng8 15. Bxf4 Qf6 16. Nc3 Bc5 17. Nd5 Qxb2 18. Bd6 Bxg1
 19. e5 Qxa1+ 20. Ke2 Na6 21. Nxg7+ Kd8 22. Qf6+ Nxf6 23. Be7# 1-0`;
 
+// A constrained-decoding grammar small enough to read whole, and five
+// samples that between them show both directions. Every verdict below was
+// checked against @tabnas/gbnf before it went on the page: the two accepts
+// pass, and the three rejects fail for three different reasons — an
+// alternative that is not in the rule, a missing terminal, and a second
+// space. That last one is the scannerless point made concrete.
+const GBNF_GRAMMAR = `root    ::= answer " (" conf ")"
+answer  ::= "yes" | "no"
+conf    ::= digit+ "%"
+digit   ::= [0-9]`;
+
+const GBNF_SAMPLES = [
+  "yes (90%)",
+  "no (5%)",
+  "maybe (50%)",
+  "yes (90)",
+  "yes  (90%)",
+].join("\n");
+
 // Real languages built on the engine. Package lists are read from each
 // project's own manifests — keep them accurate, or drop them.
 const PROJECTS = [
@@ -74,15 +93,16 @@ const PROJECTS = [
 <Base
   wide
   title="Examples"
-  description="Real languages built on the tabnas engine — a chess game you can step through and edit, aontu in TypeScript, boru in Go."
+  description="Real languages built on the tabnas engine — a chess game you can step through and edit, a GBNF grammar you can test in the page, aontu in TypeScript, boru in Go."
 >
   <article class="ex">
     <Heading level={1} id="examples">Examples</Heading>
     <p class="lede">
-      One small language running in this page, and two large ones you can go
-      and read. The small one parses chess notation; of the others, one
-      composes existing grammar plugins into a configuration language, and the
-      other builds a full programming language and its toolchain.
+      Two small languages running in this page, and two large ones you can go
+      and read. One parses chess notation, the other the grammars that
+      constrain what a language model may say. Of the large ones, one composes
+      existing grammar plugins into a configuration language, and the other
+      builds a full programming language and its toolchain.
     </p>
 
     <section class="proj">
@@ -138,6 +158,75 @@ const PROJECTS = [
         legal move generator that resolves each parsed move against the
         position it is played in. Parsing the notation and playing the game are
         two jobs, and only one of them is the engine's.
+      </p>
+    </section>
+
+    <section class="proj">
+      <Heading level={2} id="gbnf">gbnf</Heading>
+      <p class="tagline">GBNF — the grammars that constrain what a model may say</p>
+
+      <dl class="meta">
+        <div><dt>Runtime</dt><dd>TypeScript · also ported to Go, C ABI, Python</dd></div>
+        <div>
+          <dt>Built with</dt>
+          <dd class="pkgs">
+            <a class="chip" href={REPO("parser")} target="_blank" rel="noopener">@tabnas/parser</a>
+            <a class="chip" href={REPO("bnf")} target="_blank" rel="noopener">@tabnas/bnf</a>
+          </dd>
+        </div>
+        <div>
+          <dt>Source</dt>
+          <dd><a href={REPO("gbnf")} target="_blank" rel="noopener">github.com/tabnas/gbnf</a></dd>
+        </div>
+      </dl>
+
+      <div class="gbnf" data-gbnf>
+        <div class="gbnf-panes">
+          <label>
+            <span>grammar</span>
+            <textarea data-gbnf-grammar spellcheck="false" rows="4">{GBNF_GRAMMAR}</textarea>
+          </label>
+          <label>
+            <span>samples, one per line</span>
+            <textarea data-gbnf-samples spellcheck="false" rows="5">{GBNF_SAMPLES}</textarea>
+          </label>
+        </div>
+        <output data-gbnf-out class="gbnf-out"></output>
+      </div>
+      <p class="caption">
+        Both boxes are <strong>editable</strong>, and the verdicts re-run as
+        you type. Every character counts: GBNF is scannerless, so
+        <code>yes&nbsp;&nbsp;(90%)</code> is rejected for the second space.
+        Break the grammar itself and you get a compile error instead of
+        verdicts, which is the distinction the tool exists to keep.
+      </p>
+
+      <p>
+        GBNF is llama.cpp's notation for <strong>constrained decoding</strong>:
+        at each step the sampler masks every token that would leave the
+        grammar's language, so the model cannot emit malformed output.
+        XGrammar reads it too, and therefore so do vLLM and SGLang, along with
+        KoboldCpp, LocalAI and node-llama-cpp.
+      </p>
+      <p>
+        In all of them the grammar runs inside generation and nowhere else.
+        None can answer <em>does this string match my grammar?</em> without
+        loading a model, which leaves two questions open. Text produced
+        without the grammar was never checked against it. And a grammar can
+        compile, constrain a model perfectly, and still accept a different
+        language than its author meant. That is what this parses GBNF for:
+        the grammar becomes an ordinary tabnas grammar, so you can run
+        known-good samples through it before a model ever sees it.
+      </p>
+      <p>
+        It is also the front end that pushed the engine furthest. GBNF
+        describes input one character at a time while tabnas is a tokenising
+        parser, so the compiled grammar has to switch off every default
+        matcher and empty the ignore set. Those lexer settings are part of the
+        accepted language rather than a tuning choice, which is why the
+        package owns them and the shared
+        <a href={REPO("bnf")} target="_blank" rel="noopener">@tabnas/bnf</a>
+        compiler owns everything downstream of the IR.
       </p>
     </section>
 
@@ -207,6 +296,79 @@ const PROJECTS = [
     right. */}
 <script>
   import "@tabnas/chess-view";
+</script>
+
+{/* The gbnf demo. Bundled the same way as chess-view — ordinary pinned
+    dependencies, no vendored files. Without JavaScript the two textareas
+    still show the grammar and the samples as text, which is the whole
+    input; only the verdicts are missing, and the prose says what they are. */}
+<script>
+  import { Tabnas } from "@tabnas/parser";
+  import { gbnf } from "@tabnas/gbnf";
+
+  const root = document.querySelector("[data-gbnf]");
+  if (root) {
+    const grammarEl = root.querySelector("[data-gbnf-grammar]");
+    const samplesEl = root.querySelector("[data-gbnf-samples]");
+    const outEl = root.querySelector("[data-gbnf-out]");
+
+    // Engine diagnostics are coloured for a terminal and run to several
+    // lines. A verdict line is neither.
+    const oneLine = (e) =>
+      String(e && e.message ? e.message : e)
+        .split("\n")[0]
+        .replace(/\u001b\[[0-9;]*m/g, "");
+
+    const run = () => {
+      const src = grammarEl.value;
+      const samples = samplesEl.value.split("\n").filter((s) => "" !== s);
+
+      // A FRESH instance per compile, deliberately: a GBNF grammar's lexer
+      // settings are instance-wide, so reusing one across grammars would let
+      // the previous grammar's settings decide this grammar's language.
+      // Within one grammar the instance is reusable, and gbnf-check does the
+      // same — compile once, check every sample against it.
+      let tn;
+      try {
+        tn = new Tabnas({ plugins: [gbnf] });
+        tn.gbnf(src);
+      } catch (e) {
+        outEl.replaceChildren(row("compile", "grammar", oneLine(e)));
+        return;
+      }
+
+      const rows = samples.map((sample) => {
+        try {
+          tn.parse(sample);
+          return row("accept", sample, "");
+        } catch (e) {
+          return row("reject", sample, oneLine(e));
+        }
+      });
+      outEl.replaceChildren(...rows);
+    };
+
+    function row(kind, text, why) {
+      const el = document.createElement("div");
+      el.className = "gbnf-row gbnf-" + kind;
+      const tag = document.createElement("b");
+      tag.textContent =
+        "compile" === kind ? "grammar" : "accept" === kind ? "accept" : "reject";
+      const body = document.createElement("code");
+      body.textContent = "compile" === kind ? why : text;
+      el.append(tag, body);
+      if (why && "compile" !== kind) {
+        const note = document.createElement("small");
+        note.textContent = why;
+        el.append(note);
+      }
+      return el;
+    }
+
+    grammarEl.addEventListener("input", run);
+    samplesEl.addEventListener("input", run);
+    run();
+  }
 </script>
 
 <script is:inline>
@@ -290,7 +452,47 @@ const PROJECTS = [
     margin: 0 0 1.5rem;
   }
 
+  /* The gbnf demo. Two editable boxes and a verdict list, in the same
+     surface-and-border idiom as .meta and .src above. */
+  .gbnf { margin: 0 0 0.6rem; }
+  .gbnf-panes { display: grid; gap: 0.9rem; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .gbnf-panes label { display: grid; gap: 0.35rem; min-width: 0; }
+  .gbnf-panes span {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-mute);
+  }
+  .gbnf textarea {
+    width: 100%; resize: vertical;
+    font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+  }
+  .gbnf textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+  .gbnf-out { display: grid; gap: 0.3rem; margin-top: 0.9rem; }
+  .gbnf-out:empty { display: none; }
+  .gbnf-row {
+    display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .gbnf-row b {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .gbnf-row code { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink); }
+  .gbnf-row small {
+    grid-column: 2; font-size: 0.75rem; color: var(--ink-mute);
+  }
+  .gbnf-accept b { color: var(--ok, #1d6b3f); }
+  .gbnf-reject b, .gbnf-compile b { color: var(--no, #9a3324); }
+
   @media (max-width: 640px) {
     .meta > div { grid-template-columns: 1fr; gap: 0.2rem; }
+    .gbnf-panes { grid-template-columns: minmax(0, 1fr); }
+    .gbnf-row { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+    .gbnf-row small { grid-column: 1; }
   }
 </style>
