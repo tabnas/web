@@ -261,11 +261,43 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="this-site">9 · This site, machine-readable</Heading>
+      <Heading level={2} id="skills-and-mcp">9 · Skills and MCP</Heading>
       <p>
-        <a href="/llms.txt">llms.txt</a> indexes the site;
-        <a href="/llms-full.txt">llms-full.txt</a> is the full text. Source for
-        everything is under
+        Everything on this page is also packaged for an agent to install
+        rather than read. <a href="/skills">Skills</a> are five portable Agent
+        Skills — author a grammar, debug a parse, pin behaviour with fixtures,
+        build and upgrade plugins — and <a href="/mcp">MCP</a> is the server
+        that makes the commands they teach executable: parse, validate a
+        grammar before running it, explain a failure, run fixtures, read the
+        plugin catalogue. The same six operations are a <code>tabnas</code>
+        command-line tool, so a shell transcript and an agent transcript
+        describe the same run.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="this-site">10 · This site, machine-readable</Heading>
+      <ul>
+        <li>
+          <strong><a href="/llms.txt">llms.txt</a></strong> indexes the site
+          and <strong><a href="/llms-full.txt">llms-full.txt</a></strong> is
+          the full documentation text. Both are generated from the site's own
+          pages, so they cannot fall behind them.
+        </li>
+        <li>
+          <strong><a href="/versions.json">versions.json</a></strong> says
+          which package versions this documentation describes — worth reading
+          before trusting an example against whatever you have installed.
+        </li>
+        <li>
+          <strong><a href="/errors">/errors</a></strong> is every error code
+          the engine and its plugins can raise, one page per code at
+          <code>/errors/&lt;code&gt;</code>. A diagnostic's <code>code</code> is
+          therefore a URL you can follow.
+        </li>
+      </ul>
+      <p>
+        Source for everything is under
         <a href={GITHUB_ORG} target="_blank" rel="noopener">github.com/tabnas</a>.
       </p>
     </section>

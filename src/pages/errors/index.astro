@@ -1,0 +1,173 @@
+---
+import Base from "../../layouts/Base.astro";
+import Heading from "../../components/Heading.astro";
+import registry from "../../data/error-codes.json";
+import plugindata from "../../data/plugins.json";
+import pkg from "../../../package.json";
+import { REPO } from "../../consts";
+
+// Two engine versions are in play and conflating them would mislead: the
+// catalogue is generated from the parser repository's schema (which tracks
+// main), while the site's examples run against the version pinned in
+// package.json. They are usually the same and occasionally not, so the page
+// states both rather than picking one and being quietly wrong.
+const sitePin = (pkg.dependencies as Record<string, string>)["@tabnas/parser"];
+const catalogueVersion = registry.engine;
+const versionsAgree = sitePin === catalogueVersion;
+
+// The error reference. Every code the fleet can raise, in one place, so an
+// agent that has a `code` in a diagnostic has somewhere to look it up —
+// which is the whole reason the code, and not the message, is the contract.
+//
+// Both halves are GENERATED (tools/gen-ax-data.mjs, staleness-checked by
+// `npm run check`): the engine's nine base codes come from the parser repo's
+// schema/error-codes.json, and each plugin's own codes from its
+// tabnas.plugin.json descriptor. Nothing here is hand-listed.
+
+const engine = registry.codes;
+
+// Plugin codes, flattened to one row per code. A code is declared by exactly
+// one plugin today; if that ever stops being true the extra owners show up
+// here rather than being silently dropped.
+const owners = new Map<string, { name: string; repo: string }[]>();
+for (const p of plugindata.plugins) {
+  for (const code of p.errorCodes) {
+    if (!owners.has(code)) owners.set(code, []);
+    owners.get(code)!.push({ name: p.name, repo: p.repo });
+  }
+}
+const pluginCodes = [...owners.entries()]
+  .map(([code, by]) => ({ code, by }))
+  .sort((a, b) => a.code.localeCompare(b.code));
+
+const total = engine.length + pluginCodes.length;
+---
+
+<Base
+  wide
+  title="Error reference"
+  description="Every error code the tabnas engine and its grammar plugins can raise, what it means, and where it is declared."
+>
+  <article class="errors" data-pagefind-body>
+    <Heading level={1} id="errors">Error reference</Heading>
+    <p class="lede">
+      {total} error codes: {engine.length} raised by the engine itself, and{" "}
+      {pluginCodes.length} declared by individual grammar plugins. A tabnas
+      diagnostic always carries a <code>code</code>, and the code — never the
+      message text — is what stays the same across the TypeScript and Go
+      runtimes. Match on it.
+    </p>
+
+    <p class="note">
+      Generated from the engine's{" "}
+      <a href={`${REPO("parser")}/blob/main/schema/error-codes.json`} target="_blank" rel="noopener">
+        <code>schema/error-codes.json</code></a>{" "}
+      and from each plugin's <code>tabnas.plugin.json</code> descriptor —
+      nothing on this page is hand-listed.{" "}
+      {versionsAgree ? (
+        <>Engine {catalogueVersion}.</>
+      ) : (
+        <>
+          The catalogue comes from engine {catalogueVersion}; this site's
+          examples pin <code>@tabnas/parser</code> {sitePin}.
+        </>
+      )}{" "}
+      Machine-readable:{" "}
+      <a href="/versions.json"><code>/versions.json</code></a>.
+    </p>
+
+    <section class="group">
+      <Heading level={2} id="engine">Engine codes</Heading>
+      <p class="blurb">
+        Raised by the parsing engine itself, so any grammar can produce them.
+        <code>{"{placeholders}"}</code> in a message are filled from the failing
+        token and its details.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Code</th><th>Message</th></tr>
+          </thead>
+          <tbody>
+            {engine.map((c) => (
+              <tr>
+                <th scope="row"><a href={`/errors/${c.code}`}><code>{c.code}</code></a></th>
+                <td class="msg"><code>{c.message}</code></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="plugin">Plugin codes</Heading>
+      <p class="blurb">
+        Declared by one grammar plugin, in its own error catalogue. A plugin
+        raises these in addition to the engine codes above.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Code</th><th>Declared by</th></tr>
+          </thead>
+          <tbody>
+            {pluginCodes.map((c) => (
+              <tr>
+                <th scope="row"><a href={`/errors/${c.code}`}><code>{c.code}</code></a></th>
+                <td class="msg">
+                  {c.by.map((b) => (<code class="pkg">{b.name}</code>))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="reading">Reading a diagnostic</Heading>
+      <p class="blurb">
+        Every failing parse produces the same structured object — the same
+        fields in both runtimes, described by the engine's{" "}
+        <a href={`${REPO("parser")}/blob/main/schema/diagnostic.schema.json`} target="_blank" rel="noopener">
+          <code>diagnostic.schema.json</code></a>. The fields worth reading
+        first are <code>code</code> (what went wrong),{" "}
+        <code>row</code>/<code>col</code> (where), <code>expected</code> (which
+        tokens would have matched) and <code>ruleStack</code> (how the parser
+        got there).
+      </p>
+      <p class="blurb">
+        The <a href="/agents">agents guide</a> covers using these while
+        iterating on a grammar, and the{" "}
+        <a href="/skills"><code>debug-parse</code> skill</a> is the same
+        workflow packaged for an agent.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .errors { max-width: 60rem; }
+  .errors :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+  .note { color: var(--ink-mute); font-size: 0.9rem; max-width: 68ch; }
+  .blurb { color: var(--ink-soft); max-width: 68ch; }
+
+  .group { margin-top: 3rem; }
+  .errors :global(h2) { font-size: 1.5rem; margin: 0 0 0.85rem; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: 0.95rem; }
+  th:nth-child(1), td:nth-child(1) { width: 16rem; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
+    font-weight: 400; white-space: nowrap;
+  }
+  tbody th { font-weight: 400; white-space: nowrap; }
+  .msg { color: var(--ink-soft); }
+  .msg code { font-size: 0.85rem; }
+  .pkg { margin-right: 0.5rem; }
+</style>

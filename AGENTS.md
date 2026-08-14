@@ -262,10 +262,65 @@ has been removed** and the site is now fully static (`output: "static"`). If a
 `SITE_PASSWORD` secret is still configured on the Worker it is inert and should
 be deleted from the Cloudflare dashboard.
 
+## The agent-facing surfaces
+
+Five routes exist for agents rather than readers, and **all five are
+generated** — none of them is a page to hand-edit:
+
+| Route | Built from |
+|---|---|
+| `/skills` | `src/data/skills.json` ← the `tabnas/skills` repository |
+| `/mcp` | the same file's `mcp` entry ← `tabnas/skills`' `mcp.json` |
+| `/errors`, `/errors/<code>` | `src/data/error-codes.json` ← `parser/schema/error-codes.json`, plus `src/data/plugins.json` ← every `<repo>/tabnas.plugin.json` |
+| `/versions.json` | this repo's own `package.json` dependency pins |
+| `/llms.txt`, `/llms-full.txt` | `src/consts.ts` navigation + the `docs` and `howto` content collections |
+
+`src/data/*.json` is **committed and generated**, because neither source can be
+imported: `@tabnas/parser`'s npm package ships only `LICENSE` and `dist` (so
+`schema/` is not in it), and `tabnas/skills` is an Agent Plugins repository
+rather than a package. Regenerate from sibling checkouts with:
+
+```bash
+npm run gen-ax-data     # rewrite src/data/*.json from ../parser, ../skills, ../<plugins>
+npm run check-ax        # fail if they are stale, or if a nav page has no llms.txt line
+```
+
+`check-ax` runs as the first step of `npm run check`. It says nothing about
+staleness when the siblings are not checked out, so it does not fail a CI job
+that clones only this repo.
+
+Two rules worth keeping:
+
+- **Do not restate a version.** `/versions.json` and the docs banner read
+  `package.json`; `/errors` reads the version recorded in the generated
+  registry. Those are different facts — the catalogue tracks the parser
+  repository, the pin is what this site's examples run against — so where both
+  appear, the page states both rather than quietly picking one.
+- **A plugin's error message text is not copied here**, only the code and the
+  declaring package. The message lives in that plugin's own catalogue, and a
+  copy would be a second source of truth for something already generated once.
+
+If `@tabnas/mcp` is ever published it bundles the same schemas in its own
+`data/`; at that point `error-codes.json` can become a dependency import and
+half of `tools/gen-ax-data.mjs` goes away.
+
+### Hosting the MCP server is out of scope for this repo
+
+`astro.config.mjs` sets `output: "static"`, so the Worker serves assets only
+and cannot host an MCP endpoint. The hosted server is a **separate Worker**
+deployed from `tabnas/mcp` at `mcp.tabnas.dev` — that keeps this site's build
+simple and isolates the service's limits and observability. `/mcp` documents
+the hosted entry as not yet live; local stdio is the supported path, and the
+recommended one regardless.
+
 ## Things that will trip you up
 
 - **`@tabnas/markdown`'s README describes a CSV reader** — a copy-paste error in
   that repo. Don't propagate the wrong blurb into `src/consts.ts`.
+- **`public/llms.txt` no longer exists.** Both llms files are routes now
+  (`src/pages/llms.txt.ts`, `src/pages/llms-full.txt.ts`). A file put back in
+  `public/` would shadow the route and silently serve the stale copy —
+  `check-ax` fails if one reappears.
 - **The GitHub star widgets read 0** because the org repos are new. That is
   honest, not broken.
 - **Lookahead is not limited to two tokens.** The engine handles any number.

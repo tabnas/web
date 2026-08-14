@@ -1,0 +1,171 @@
+---
+import Base from "../../layouts/Base.astro";
+import Heading from "../../components/Heading.astro";
+import registry from "../../data/error-codes.json";
+import plugindata from "../../data/plugins.json";
+import pkg from "../../../package.json";
+import { REPO, NPM } from "../../consts";
+
+// One page per error code, so a diagnostic's `code` is a URL an agent can
+// follow: tabnas.dev/errors/<code>. Both sources are generated — see
+// tools/gen-ax-data.mjs — so this page cannot describe a code the fleet does
+// not actually declare, and cannot miss one it does.
+
+export async function getStaticPaths() {
+  const engine = new Map(registry.codes.map((c) => [c.code, c]));
+
+  // A plugin code has no message template here: the catalogue that carries
+  // the text lives in the plugin's own grammar, and copying it into the site
+  // would be a second source of truth for something already generated once.
+  // The owning package and its repository are what this page can state.
+  const owners = new Map<string, { name: string; repo: string; description: string }[]>();
+  for (const p of plugindata.plugins) {
+    for (const code of p.errorCodes) {
+      if (!owners.has(code)) owners.set(code, []);
+      owners.get(code)!.push({ name: p.name, repo: p.repo, description: p.description });
+    }
+  }
+
+  const codes = new Set([...engine.keys(), ...owners.keys()]);
+  return [...codes].sort().map((code) => ({
+    params: { code },
+    props: {
+      code,
+      engine: engine.get(code) ?? null,
+      owners: owners.get(code) ?? [],
+    },
+  }));
+}
+
+const { code, engine, owners } = Astro.props;
+
+const isEngine = engine !== null;
+
+// The catalogue's engine version and the site's pinned one are different
+// facts; see the note on /errors for why both are stated.
+const sitePin = (pkg.dependencies as Record<string, string>)["@tabnas/parser"];
+const versionsAgree = sitePin === registry.engine;
+---
+
+<Base
+  title={`${code} — error reference`}
+  description={
+    isEngine
+      ? `The tabnas engine error code ${code}: ${engine.message}`
+      : `The tabnas error code ${code}, declared by ${owners.map((o) => o.name).join(", ")}.`
+  }
+>
+  <article class="code-page" data-pagefind-body>
+    <p class="crumb"><a href="/errors">Error reference</a></p>
+    <Heading level={1} id={code}><code>{code}</code></Heading>
+
+    <p class="kind">
+      {isEngine
+        ? "Raised by the parsing engine, so any grammar can produce it."
+        : "Declared by a grammar plugin, in addition to the engine's own codes."}
+    </p>
+
+    {isEngine && (
+      <section class="block">
+        <Heading level={2} id="message">Message</Heading>
+        <pre><code>{engine.message}</code></pre>
+        {engine.hint && (
+          <>
+            <Heading level={2} id="hint">Hint</Heading>
+            <pre><code>{engine.hint}</code></pre>
+          </>
+        )}
+        <p class="note">
+          <code>{"{placeholders}"}</code> are filled from the failing token and
+          the details the grammar attached. The wording is informative and can
+          change between releases — <strong>the code is the contract</strong>,
+          and it is what both the TypeScript and Go runtimes guarantee.
+        </p>
+      </section>
+    )}
+
+    {owners.length > 0 && (
+      <section class="block">
+        <Heading level={2} id="declared-by">Declared by</Heading>
+        <ul class="owners">
+          {owners.map((o) => (
+            <li>
+              <code>{o.name}</code> — {o.description}
+              <span class="links">
+                <a href={REPO(o.repo)} target="_blank" rel="noopener">source</a>
+                <a href={NPM(o.repo)} target="_blank" rel="noopener">npm</a>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p class="note">
+          The message text for a plugin code lives in that plugin's own error
+          catalogue, alongside its grammar — this page does not copy it, so it
+          cannot fall out of step with the package you are running. The
+          plugin's <code>AGENTS.md</code> lists what raises each of its codes.
+        </p>
+      </section>
+    )}
+
+    <section class="block">
+      <Heading level={2} id="what-next">What to do with it</Heading>
+      <ol class="next">
+        <li>
+          Read the rest of the diagnostic: <code>row</code>/<code>col</code>{" "}
+          point at the input, <code>expected</code> lists the tokens that would
+          have matched, and <code>ruleStack</code> shows how the parser got
+          there.
+        </li>
+        <li>
+          Reproduce it on its own with{" "}
+          <code>tabnas diagnose --json</code>, which prints the whole object.
+        </li>
+        <li>
+          Work the grammar back from the failing alternate — the{" "}
+          <a href="/skills"><code>debug-parse</code> skill</a> is that
+          procedure written out, and{" "}
+          <a href="/docs/errors">the errors guide</a> covers raising good ones
+          from your own grammar.
+        </li>
+      </ol>
+    </section>
+
+    <p class="note generated">
+      Generated from{" "}
+      {isEngine ? (
+        <a href={`${REPO("parser")}/blob/main/schema/error-codes.json`} target="_blank" rel="noopener">
+          the engine's error registry</a>
+      ) : (
+        <span>the declaring package's <code>tabnas.plugin.json</code> descriptor</span>
+      )}.{" "}
+      {versionsAgree ? (
+        <>Engine {registry.engine}.</>
+      ) : (
+        <>Catalogue from engine {registry.engine}; this site pins {sitePin} (<a href="/versions.json">versions</a>).</>
+      )}
+    </p>
+  </article>
+</Base>
+
+<style>
+  .code-page { max-width: 46rem; }
+  .crumb { font-size: 0.9rem; color: var(--ink-mute); margin: 0 0 0.5rem; }
+  .code-page :global(h1) { font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0 0 0.75rem; }
+  .code-page :global(h1 code) { font-size: inherit; }
+  .code-page :global(h2) { font-size: 1.2rem; margin: 0 0 0.6rem; }
+  .kind { color: var(--ink-soft); font-size: 1.05rem; max-width: 62ch; }
+  .block { margin-top: 2.5rem; }
+  pre {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.8rem 1rem; overflow-x: auto;
+    white-space: pre-wrap; font-size: 0.9rem;
+  }
+  .note { color: var(--ink-mute); font-size: 0.9rem; max-width: 66ch; }
+  .note.generated { margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+  .owners { list-style: none; padding: 0; color: var(--ink-soft); }
+  .owners li { margin-bottom: 0.75rem; }
+  .links { display: block; margin-top: 0.2rem; }
+  .links a { margin-right: 0.75rem; font-size: 0.85rem; }
+  .next { color: var(--ink-soft); padding-left: 1.2rem; max-width: 66ch; }
+  .next li { margin-bottom: 0.6rem; }
+</style>

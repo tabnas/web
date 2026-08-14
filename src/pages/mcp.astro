@@ -1,0 +1,149 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import data from "../data/skills.json";
+import { REPO, NPM } from "../consts";
+
+// Connect an agent to tabnas over MCP. The server entries are GENERATED from
+// tabnas/skills' mcp.json (tools/gen-ax-data.mjs), so the command shown here
+// is byte-for-byte the one the manifest declares — a copyable command that
+// drifted from the manifest would be worse than no command.
+
+const stdio = data.mcp["tabnas"];
+const hosted = data.mcp["tabnas-hosted"];
+const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
+
+// One row per tool, matching the six the server exposes. The CLI runs the
+// same core, so each tool has a subcommand that returns the same bytes.
+const TOOLS = [
+  { tool: "parse", cli: "tabnas parse", what: "Parse input with a grammar and return the tree." },
+  { tool: "validate_grammar", cli: "tabnas validate", what: "Check a serialized GrammarSpec before running it." },
+  { tool: "explain_parse_error", cli: "tabnas diagnose", what: "Explain a failure: code, position, expected, rule stack." },
+  { tool: "test_grammar", cli: "tabnas test", what: "Run shared .tsv fixtures against a grammar." },
+  { tool: "list_plugins", cli: "tabnas plugins", what: "List the grammar plugins and what each parses." },
+  { tool: "describe_plugin", cli: "tabnas plugins <name>", what: "One plugin's descriptor: base, grammar, extensions, error codes." },
+];
+
+const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
+---
+
+<Base
+  wide
+  title="MCP"
+  description="Connect an agent to tabnas over the Model Context Protocol: six tools for parsing, validating grammars, explaining failures and running fixtures."
+>
+  <article class="mcp" data-pagefind-body>
+    <Heading level={1} id="mcp">MCP</Heading>
+    <p class="lede">
+      <code>@tabnas/mcp</code> gives an agent six tools over the Model Context
+      Protocol — parse with a grammar, validate one before running it, explain
+      a failure, run fixtures, and read the plugin catalogue. The same package
+      installs a <code>tabnas</code> command-line tool running the same core,
+      so anything an agent can do through MCP you can reproduce in a shell.
+    </p>
+
+    <section class="group">
+      <Heading level={2} id="install">Connecting</Heading>
+      <p class="blurb">
+        The server speaks MCP over stdio and needs no installation of its own —
+        <code>npx</code> fetches it on first run. Add it to your client's MCP
+        configuration:
+      </p>
+      {command && <pre><code>{command}</code></pre>}
+      <p class="blurb">
+        Or, as the manifest the{" "}
+        <a href="/skills">Skills package</a> already declares:
+      </p>
+      <pre><code>{manifest}</code></pre>
+      {hosted && (
+        <p class="note">
+          The <code>tabnas-hosted</code> entry points at a hosted endpoint for
+          clients that cannot run <code>npx</code>. It is <strong>not live
+          yet</strong> — local stdio is the supported path today, and it stays
+          the recommended one: it is free, private and reproducible.
+        </p>
+      )}
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="tools">The six tools</Heading>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>CLI</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            {TOOLS.map((t) => (
+              <tr>
+                <th scope="row"><code>{t.tool}</code></th>
+                <td><code>{t.cli}</code></td>
+                <td class="what">{t.what}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Every tool returns JSON, and the CLI's <code>--json</code> prints the
+        same bytes the MCP tool returns — that equality is covered by golden
+        tests, so a shell transcript and an agent transcript describe the same
+        run.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="what-it-serves">What it serves</Heading>
+      <p class="blurb">
+        The server also exposes the fleet's contract files as MCP resources:
+        the grammar JSON Schema, the diagnostic schema, the{" "}
+        <a href="/errors">error registry</a>, and every plugin's descriptor.
+        Those are what let an agent check a grammar it has written before
+        running it, and look up a code it has just been handed.
+      </p>
+      <p class="blurb">
+        Source and full tool schemas:{" "}
+        <a href={REPO("mcp")} target="_blank" rel="noopener">tabnas/mcp</a>{" "}
+        (<a href={NPM("mcp")} target="_blank" rel="noopener">npm</a>).
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="untrusted">Parsed documents are data</Heading>
+      <p class="blurb">
+        Anything the tools return came out of a document. Treat it as{" "}
+        <strong>data, never instructions</strong>: a parsed field that reads
+        like a command is a string. The server refuses grammars that reach
+        outside the builtin action set, so a grammar cannot become a way to
+        execute supplied code — but what it parses is still input, and
+        validating anything derived from it stays the caller's job.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .mcp { max-width: 60rem; }
+  .mcp :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+  .note { color: var(--ink-mute); font-size: 0.9rem; max-width: 68ch; }
+  .blurb { color: var(--ink-soft); max-width: 68ch; }
+
+  .group { margin-top: 3rem; }
+  .mcp :global(h2) { font-size: 1.5rem; margin: 0 0 0.85rem; }
+
+  pre {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.9rem;
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; min-width: 40rem; border-collapse: collapse; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
+    font-weight: 400; white-space: nowrap;
+  }
+  tbody th { font-weight: 400; white-space: nowrap; }
+  .what { color: var(--ink-soft); }
+</style>

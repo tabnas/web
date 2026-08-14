@@ -1,5 +1,5 @@
 ---
-import { NAV, PROJECT_NAV, GITHUB_ORG, NPM_ORG, STATUS_URL, SPONSOR, SITE_MOTTO, AUTHOR } from "../consts";
+import { NAV, PROJECT_NAV, AGENT_NAV, GITHUB_ORG, NPM_ORG, STATUS_URL, SPONSOR, SITE_MOTTO, AUTHOR } from "../consts";
 const year = new Date().getFullYear();
 
 const resources = [
@@ -32,6 +32,11 @@ const project = [
       <nav class="col" aria-label="Site">
         <p class="col-head">Site</p>
         {NAV.map((i) => <a href={i.href}>{i.label}</a>)}
+      </nav>
+
+      <nav class="col" aria-label="For agents">
+        <p class="col-head">For agents</p>
+        {AGENT_NAV.map((i) => <a href={i.href}>{i.label}</a>)}
       </nav>
 
       <nav class="col" aria-label="Project">

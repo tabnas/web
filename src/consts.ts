@@ -69,6 +69,42 @@ export const PROJECT_NAV: { href: string; label: string }[] = [
   { href: "/sponsors", label: "Sponsors" },
 ];
 
+// The agent-facing surfaces. Their own list because llms.txt is generated
+// from it: these are the pages an agent should be able to find without
+// already knowing they exist, so adding one must not mean remembering to
+// list it in a second place. `blurb` is the one-line framing llms.txt uses.
+export const AGENT_NAV: { href: string; label: string; blurb: string }[] = [
+  {
+    href: "/agents",
+    label: "Agents",
+    blurb:
+      "how to build with tabnas — the format to emit, the constraints, how to verify your work",
+  },
+  {
+    href: "/skills",
+    label: "Skills",
+    blurb:
+      "portable Agent Skills for authoring, debugging, testing and shipping grammars, as one Agent Plugins package",
+  },
+  {
+    href: "/mcp",
+    label: "MCP",
+    blurb:
+      "connect an agent over MCP — six tools, and the same six as a `tabnas` command-line tool",
+  },
+  {
+    href: "/errors",
+    label: "Error reference",
+    blurb:
+      "every error code the engine and its plugins raise; the code, not the message, is the cross-runtime contract",
+  },
+  {
+    href: "/versions.json",
+    label: "versions.json",
+    blurb: "machine-readable: which package versions this documentation describes",
+  },
+];
+
 // Social / external presence. Add handles as they're confirmed; the header
 // and footer render whatever is listed here.
 export const SOCIALS: { href: string; label: string; icon: string }[] = [
