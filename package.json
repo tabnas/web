@@ -41,9 +41,11 @@
     "astro": "astro",
     "build": "astro build && pagefind --site dist",
     "cf-typegen": "wrangler types",
-    "check": "npm run test-examples && astro build && tsc && wrangler deploy --dry-run",
+    "check": "npm run check-ax && npm run test-examples && astro build && tsc && wrangler deploy --dry-run",
+    "check-ax": "node tools/check-ax.mjs",
     "deploy": "wrangler deploy",
     "dev": "astro dev",
+    "gen-ax-data": "node tools/gen-ax-data.mjs",
     "preview": "astro build && wrangler dev",
     "test-examples": "node tools/test-examples.mjs"
   },

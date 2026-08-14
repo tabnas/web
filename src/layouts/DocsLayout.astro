@@ -5,6 +5,11 @@ import Footer from "../components/Footer.astro";
 import DocsSearch from "../components/DocsSearch.astro";
 import { getCollection } from "astro:content";
 import { SITE_TITLE } from "../consts";
+import pkg from "../../package.json";
+
+// The engine version the docs were built against — the site's own pin, not a
+// hand-kept number. /versions.json publishes the same fact machine-readably.
+const engineVersion = (pkg.dependencies as Record<string, string>)["@tabnas/parser"];
 
 interface Props {
   title: string;
@@ -96,6 +101,16 @@ const toc = headings
             <a class="pg next" href={`/docs/${next.id}`}><span>Next →</span>{next.title}</a>
           ) : <span />}
         </nav>
+
+        {/* Which engine this page describes. Read from the site's own
+            dependency pin, so it cannot claim a version the examples were
+            not built against. Outside the article element on purpose: it is
+            not doc text, and indexing it would put a version string in every
+            search result. */}
+        <p class="docs-version" data-pagefind-ignore>
+          Describes <code>@tabnas/parser</code> {engineVersion} ·
+          <a href="/versions.json">all pinned versions</a>
+        </p>
       </main>
 
       {toc.length > 0 && (
@@ -151,6 +166,8 @@ const toc = headings
       .prose :global(th) { background: var(--surface-2); }
 
       .pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+      .docs-version { margin-top: 1.5rem; font-size: 0.82rem; color: var(--ink-mute); }
+      .docs-version code { font-size: 0.8rem; }
       .pg {
         display: flex; flex-direction: column; gap: 0.15rem; text-decoration: none;
         border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem;
