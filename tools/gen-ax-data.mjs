@@ -48,13 +48,26 @@ function errorCodes() {
 
   // Keep only what the site renders, and keep it sorted, so an unrelated
   // change to the generator's source cannot reorder the committed file.
-  const codes = Object.keys(raw.codes || {})
-    .sort()
-    .map((code) => ({
-      code,
-      message: raw.codes[code].message ?? '',
-      hint: raw.codes[code].hint ?? '',
-    }))
+  //
+  // BOTH catalogues in the registry, not just `codes`. The engine also has a
+  // `goOnly` block — today just `internal`, raised when the Go engine
+  // recovers a panic from a plugin callback or matcher, with no TypeScript
+  // counterpart. It was being dropped here, so an agent holding a real Go
+  // diagnostic got nothing at /errors/internal. A code the fleet can raise
+  // and the reference cannot explain is the exact gap this file exists to
+  // close, so the runtime is carried through as a field rather than the code
+  // being silently omitted.
+  const pick = (code, entry, runtime) => ({
+    code,
+    message: entry.message ?? '',
+    hint: entry.hint ?? '',
+    runtime,
+  })
+
+  const codes = [
+    ...Object.keys(raw.codes || {}).map((c) => pick(c, raw.codes[c], 'both')),
+    ...Object.keys(raw.goOnly || {}).map((c) => pick(c, raw.goOnly[c], 'go')),
+  ].sort((a, b) => a.code.localeCompare(b.code))
 
   return {
     $comment:
@@ -104,6 +117,21 @@ function plugins() {
       base: d.base ?? null,
       extensions: d.extensions ?? [],
       errorCodes: Array.isArray(d.errorCodes) ? [...d.errorCodes].sort() : [],
+      // The uniform C ABI (ADR-12), when the repo carries one. Kept as its
+      // own field and NEVER merged into errorCodes: these are call-level
+      // codes from a shared library's JSON reply, not parse diagnostics, and
+      // `internal` means something different in each. Flattening the two
+      // namespaces would tell a reader that a failed FFI call and a recovered
+      // plugin panic are the same event.
+      clib: d.clib
+        ? {
+            library: d.clib.library ?? '',
+            abi: d.clib.abi ?? '',
+            errorCodes: Array.isArray(d.clib.errorCodes)
+              ? [...d.clib.errorCodes].sort()
+              : [],
+          }
+        : null,
       repository: d.repository ?? '',
     })
   }

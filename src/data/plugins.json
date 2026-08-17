@@ -10,6 +10,16 @@
         ".abnf"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasabnf",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/abnf"
     },
     {
@@ -21,6 +31,7 @@
         ".bnf"
       ],
       "errorCodes": [],
+      "clib": null,
       "repository": "https://github.com/tabnas/bnf"
     },
     {
@@ -33,6 +44,16 @@
         ".h"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasc",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/c"
     },
     {
@@ -44,6 +65,16 @@
         ".pgn"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnaschess",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/chess"
     },
     {
@@ -55,6 +86,16 @@
         ".css"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnascss",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/css"
     },
     {
@@ -69,6 +110,16 @@
         "csv_extra_field",
         "csv_missing_field"
       ],
+      "clib": {
+        "library": "libtabnascsv",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/csv"
     },
     {
@@ -78,6 +129,7 @@
       "base": null,
       "extensions": [],
       "errorCodes": [],
+      "clib": null,
       "repository": "https://github.com/tabnas/debug"
     },
     {
@@ -87,6 +139,7 @@
       "base": null,
       "extensions": [],
       "errorCodes": [],
+      "clib": null,
       "repository": "https://github.com/tabnas/directive"
     },
     {
@@ -98,6 +151,16 @@
         ".ebnf"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasebnf",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/ebnf"
     },
     {
@@ -107,6 +170,7 @@
       "base": "@tabnas/jsonic",
       "extensions": [],
       "errorCodes": [],
+      "clib": null,
       "repository": "https://github.com/tabnas/expr"
     },
     {
@@ -119,6 +183,16 @@
         ".atom"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasfeed",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/feed"
     },
     {
@@ -130,6 +204,7 @@
         ".gbnf"
       ],
       "errorCodes": [],
+      "clib": null,
       "repository": "https://github.com/tabnas/gbnf"
     },
     {
@@ -139,6 +214,7 @@
       "base": null,
       "extensions": [],
       "errorCodes": [],
+      "clib": null,
       "repository": "https://github.com/tabnas/hoover"
     },
     {
@@ -153,6 +229,16 @@
         "duplicate_section",
         "unterminated_section"
       ],
+      "clib": {
+        "library": "libtabnasini",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/ini"
     },
     {
@@ -164,6 +250,16 @@
         ".json"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasjson",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/json"
     },
     {
@@ -178,6 +274,16 @@
         "json5_empty",
         "json5_no_value"
       ],
+      "clib": {
+        "library": "libtabnasjson5",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/json5"
     },
     {
@@ -189,6 +295,16 @@
         ".jsonc"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasjsonc",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/jsonc"
     },
     {
@@ -200,6 +316,16 @@
         ".jsonic"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasjsonic",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/jsonic"
     },
     {
@@ -211,6 +337,16 @@
         ".jsonl"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasjsonl",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/jsonl"
     },
     {
@@ -223,6 +359,16 @@
         ".markdown"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasmarkdown",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/markdown"
     },
     {
@@ -235,6 +381,7 @@
         "multisource_cycle",
         "multisource_not_found"
       ],
+      "clib": null,
       "repository": "https://github.com/tabnas/multisource"
     },
     {
@@ -244,6 +391,7 @@
       "base": null,
       "extensions": [],
       "errorCodes": [],
+      "clib": null,
       "repository": "https://github.com/tabnas/path"
     },
     {
@@ -255,6 +403,16 @@
         ".proto"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasproto",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/proto"
     },
     {
@@ -266,6 +424,16 @@
         ".toml"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnastoml",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/toml"
     },
     {
@@ -298,6 +466,16 @@
         "xml_invalid_tag",
         "xml_mismatched_tag"
       ],
+      "clib": {
+        "library": "libtabnasxml",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/xml"
     },
     {
@@ -310,6 +488,16 @@
         ".yml"
       ],
       "errorCodes": [],
+      "clib": {
+        "library": "libtabnasyaml",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/yaml"
     },
     {
@@ -327,6 +515,16 @@
         "zon_ident",
         "zon_number"
       ],
+      "clib": {
+        "library": "libtabnaszon",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
       "repository": "https://github.com/tabnas/zon"
     }
   ]
