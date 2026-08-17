@@ -40,7 +40,35 @@ const pluginCodes = [...owners.entries()]
   .map(([code, by]) => ({ code, by }))
   .sort((a, b) => a.code.localeCompare(b.code));
 
-const total = engine.length + pluginCodes.length;
+// The C ABI's own codes (ADR-12). A THIRD namespace, deliberately kept apart
+// from the two above: these come back in the JSON reply of a libtabnas*
+// shared library, and they describe the CALL rather than the input. `internal`
+// exists in two of the three namespaces meaning different things — a
+// recovered plugin panic in the engine, a failed FFI call here — which is
+// exactly why the lists are not merged.
+const abiLibraries = plugindata.plugins.filter((p) => p.clib);
+const abiOwners = new Map<string, string[]>();
+for (const p of abiLibraries) {
+  for (const code of p.clib!.errorCodes) {
+    if (!abiOwners.has(code)) abiOwners.set(code, []);
+    abiOwners.get(code)!.push(p.name);
+  }
+}
+const abiCodes = [...abiOwners.keys()].sort();
+
+// One ABI version across the whole fleet is the invariant ADR-12 buys.
+// Deriving the set rather than assuming a single value means a split shows up
+// on the page instead of being quietly averaged away.
+const abiVersions = [...new Set(abiLibraries.map((p) => p.clib!.abi))].sort();
+
+// Distinct codes, not the sum of the three lists: a code carried by more than
+// one namespace has one page, and claiming otherwise would overstate by
+// exactly the overlap the page is trying to explain.
+const distinct = new Set([
+  ...engine.map((c) => c.code),
+  ...pluginCodes.map((c) => c.code),
+  ...abiCodes,
+]).size;
 ---
 
 <Base
@@ -51,10 +79,11 @@ const total = engine.length + pluginCodes.length;
   <article class="errors" data-pagefind-body>
     <Heading level={1} id="errors">Error reference</Heading>
     <p class="lede">
-      {total} error codes: {engine.length} raised by the engine itself, and{" "}
-      {pluginCodes.length} declared by individual grammar plugins. A tabnas
-      diagnostic always carries a <code>code</code>, and the code — never the
-      message text — is what stays the same across the TypeScript and Go
+      {distinct} error codes in three namespaces: {engine.length} raised by the
+      engine itself, {pluginCodes.length} declared by individual grammar
+      plugins, and {abiCodes.length} returned by the C shared libraries. A
+      tabnas diagnostic always carries a <code>code</code>, and the code — never
+      the message text — is what stays the same across the TypeScript and Go
       runtimes. Match on it.
     </p>
 
@@ -91,7 +120,10 @@ const total = engine.length + pluginCodes.length;
           <tbody>
             {engine.map((c) => (
               <tr>
-                <th scope="row"><a href={`/errors/${c.code}`}><code>{c.code}</code></a></th>
+                <th scope="row">
+                  <a href={`/errors/${c.code}`}><code>{c.code}</code></a>
+                  {"go" === c.runtime && <span class="tag" title="Go runtime only — TypeScript has no counterpart">Go only</span>}
+                </th>
                 <td class="msg"><code>{c.message}</code></td>
               </tr>
             ))}
@@ -124,6 +156,52 @@ const total = engine.length + pluginCodes.length;
         </table>
       </div>
     </section>
+
+    {abiCodes.length > 0 && (
+      <section class="group">
+        <Heading level={2} id="abi">C ABI codes</Heading>
+        <p class="blurb">
+          A different namespace, and worth reading as one. These are not parse
+          diagnostics: they come back in the JSON reply of a{" "}
+          <code>libtabnas&lt;format&gt;</code> shared library, and they describe
+          the <em>call</em> — a bad pointer, a handle you already freed — rather
+          than the input you passed. All{" "}
+          {abiLibraries.length} libraries return the same four, because the ABI
+          is uniform by decision
+          {1 === abiVersions.length ? (
+            <> (<code>{abiVersions[0]}</code>)</>
+          ) : (
+            <> (versions in the fleet right now: {abiVersions.map((v) => (<code>{v}</code>))} — they are meant to agree)</>
+          )}.
+        </p>
+        <p class="blurb">
+          The distinction that actually costs people time: a library returns{" "}
+          <code>{'{"ok":true,"accept":false}'}</code> when your input is outside
+          the format. That is an <strong>answer</strong>, not an error, and it
+          carries no code from this table. A code from this table means the call
+          itself was wrong.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Code</th><th>Returned by</th></tr>
+            </thead>
+            <tbody>
+              {abiCodes.map((code) => (
+                <tr>
+                  <th scope="row"><a href={`/errors/${code}`}><code>{code}</code></a></th>
+                  <td class="msg">
+                    {abiOwners.get(code)!.length === abiLibraries.length
+                      ? <span>every clib ({abiLibraries.length})</span>
+                      : abiOwners.get(code)!.map((n) => (<code class="pkg">{n}</code>))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )}
 
     <section class="group">
       <Heading level={2} id="reading">Reading a diagnostic</Heading>
@@ -170,4 +248,10 @@ const total = engine.length + pluginCodes.length;
   .msg { color: var(--ink-soft); }
   .msg code { font-size: 0.85rem; }
   .pkg { margin-right: 0.5rem; }
+  .tag {
+    margin-left: 0.5rem; font-family: var(--font-mono); font-size: 0.65rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute);
+    border: 1px solid var(--border); border-radius: 3px; padding: 0.05rem 0.3rem;
+    vertical-align: middle;
+  }
 </style>

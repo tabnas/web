@@ -3,49 +3,70 @@
   "engine": "0.8.7",
   "codes": [
     {
+      "code": "cancel",
+      "message": "parse cancelled",
+      "hint": "The parse was cancelled by the caller's parse.budget.onCheck callback\n(or exceeded its configured budget) before completing.",
+      "runtime": "both"
+    },
+    {
       "code": "end_of_source",
       "message": "unexpected end of source",
-      "hint": "Unexpected end of source."
+      "hint": "Unexpected end of source.",
+      "runtime": "both"
+    },
+    {
+      "code": "internal",
+      "message": "internal error: {src}",
+      "hint": "The parser failed unexpectedly; this is a bug in tabnas\nor a plugin, not in your input.",
+      "runtime": "go"
     },
     {
       "code": "invalid_ascii",
       "message": "invalid ascii escape: {src}",
-      "hint": "The escape sequence {src} does not encode a valid ASCII character."
+      "hint": "The escape sequence {src} does not encode a valid ASCII character.",
+      "runtime": "both"
     },
     {
       "code": "invalid_unicode",
       "message": "invalid unicode escape: {src}",
-      "hint": "The escape sequence {src} does not encode a valid unicode code point."
+      "hint": "The escape sequence {src} does not encode a valid unicode code point.",
+      "runtime": "both"
     },
     {
       "code": "unexpected",
       "message": "unexpected character(s): {src}",
-      "hint": "The character(s) {src} do not match any rule alternative active at\nthis position."
+      "hint": "The character(s) {src} do not match any rule alternative active at\nthis position.",
+      "runtime": "both"
     },
     {
       "code": "unknown",
       "message": "unknown error: {code}",
-      "hint": "Unknown error code: {code}\nDetails:\n{details}"
+      "hint": "Unknown error code: {code}\nDetails:\n{details}",
+      "runtime": "both"
     },
     {
       "code": "unknown_rule",
       "message": "unknown rule: {rulename}",
-      "hint": "No rule named {rulename} is defined."
+      "hint": "No rule named {rulename} is defined.",
+      "runtime": "both"
     },
     {
       "code": "unprintable",
       "message": "unprintable character: {src}",
-      "hint": "The character {src} (code point below 32) is not allowed inside a\nstring literal."
+      "hint": "The character {src} (code point below 32) is not allowed inside a\nstring literal.",
+      "runtime": "both"
     },
     {
       "code": "unterminated_comment",
       "message": "unterminated comment: {src}",
-      "hint": "This comment is never closed."
+      "hint": "This comment is never closed.",
+      "runtime": "both"
     },
     {
       "code": "unterminated_string",
       "message": "unterminated string: {src}",
-      "hint": "This string has no end quote."
+      "hint": "This string has no end quote.",
+      "runtime": "both"
     }
   ]
 }

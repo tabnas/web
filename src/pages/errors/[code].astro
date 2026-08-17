@@ -26,20 +26,54 @@ export async function getStaticPaths() {
     }
   }
 
-  const codes = new Set([...engine.keys(), ...owners.keys()]);
+  // The C ABI's codes (ADR-12): a third namespace, and the reason this page
+  // can no longer assume a code belongs to exactly one place. `internal` is
+  // both an engine code (the Go runtime recovering a panic from a plugin
+  // callback) and an ABI code (a call into a libtabnas* shared library that
+  // failed) — genuinely different events that happen to share a name. One
+  // page with a section for each, both naming the envelope the code arrives
+  // in, is the only arrangement here that does not mislead half its readers.
+  const abi = new Map<string, string[]>();
+  for (const p of plugindata.plugins) {
+    for (const c of p.clib?.errorCodes ?? []) {
+      if (!abi.has(c)) abi.set(c, []);
+      abi.get(c)!.push(p.name);
+    }
+  }
+  const abiTotal = plugindata.plugins.filter((p) => p.clib).length;
+
+  const codes = new Set([...engine.keys(), ...owners.keys(), ...abi.keys()]);
   return [...codes].sort().map((code) => ({
     params: { code },
     props: {
       code,
       engine: engine.get(code) ?? null,
       owners: owners.get(code) ?? [],
+      abiBy: abi.get(code) ?? [],
+      abiTotal,
     },
   }));
 }
 
-const { code, engine, owners } = Astro.props;
+const { code, engine, owners, abiBy, abiTotal } = Astro.props;
 
 const isEngine = engine !== null;
+const isAbi = abiBy.length > 0;
+const isGoOnly = isEngine && "go" === engine.runtime;
+
+// Does this code cross ENVELOPES? Only the C ABI is a different envelope; an
+// engine code and a plugin code both arrive in a parse diagnostic.
+//
+// The distinction is load-bearing, and getting it wrong was easy: two codes in
+// the fleet are claimed by more than one namespace, and only one of them is a
+// genuine ambiguity. `internal` is an engine diagnostic (the Go runtime
+// recovering a plugin panic) AND an ABI code (a failed FFI call) — unrelated
+// events sharing a name. `unterminated_comment` is an engine code that
+// @tabnas/xml also declares, which is a plugin raising the engine's code for
+// the engine's reason, not a second meaning. A banner counting namespaces
+// would tell readers of the second one that it "means two different things",
+// which is false and worse than saying nothing.
+const crossesEnvelopes = isAbi && (isEngine || owners.length > 0);
 
 // The catalogue's engine version and the site's pinned one are different
 // facts; see the note on /errors for why both are stated.
@@ -52,7 +86,9 @@ const versionsAgree = sitePin === registry.engine;
   description={
     isEngine
       ? `The tabnas engine error code ${code}: ${engine.message}`
-      : `The tabnas error code ${code}, declared by ${owners.map((o) => o.name).join(", ")}.`
+      : isAbi && 0 === owners.length
+        ? `The tabnas C ABI error code ${code}, returned by the libtabnas* shared libraries.`
+        : `The tabnas error code ${code}, declared by ${owners.map((o) => o.name).join(", ")}.`
   }
 >
   <article class="code-page" data-pagefind-body>
@@ -60,10 +96,26 @@ const versionsAgree = sitePin === registry.engine;
     <Heading level={1} id={code}><code>{code}</code></Heading>
 
     <p class="kind">
-      {isEngine
-        ? "Raised by the parsing engine, so any grammar can produce it."
-        : "Declared by a grammar plugin, in addition to the engine's own codes."}
+      {isEngine && (isGoOnly
+        ? "Raised by the Go engine only — the TypeScript runtime has no counterpart."
+        : "Raised by the parsing engine, so any grammar can produce it.")}
+      {!isEngine && owners.length > 0 &&
+        "Declared by a grammar plugin, in addition to the engine's own codes."}
+      {!isEngine && 0 === owners.length && isAbi &&
+        "Returned by the C shared libraries. Not a parse diagnostic: it describes the call, not your input."}
     </p>
+
+    {crossesEnvelopes && (
+      <p class="collision">
+        <strong>This code means two different things</strong> depending on where
+        you read it. Both are below. Which one you have is settled by the shape
+        of what you are holding: a parse diagnostic carries{" "}
+        <code>row</code>, <code>col</code> and <code>ruleStack</code>; a C ABI
+        reply is a JSON document whose top level is{" "}
+        <code>{'{"ok":false,"error":{…}}'}</code>. They are not related events
+        and share only a name.
+      </p>
+    )}
 
     {isEngine && (
       <section class="block">
@@ -78,8 +130,10 @@ const versionsAgree = sitePin === registry.engine;
         <p class="note">
           <code>{"{placeholders}"}</code> are filled from the failing token and
           the details the grammar attached. The wording is informative and can
-          change between releases — <strong>the code is the contract</strong>,
-          and it is what both the TypeScript and Go runtimes guarantee.
+          change between releases — <strong>the code is the contract</strong>.
+          {isGoOnly
+            ? " This one is guaranteed by the Go runtime only: the TypeScript engine has no equivalent, so a cross-runtime check must not expect it."
+            : " It is what both the TypeScript and Go runtimes guarantee."}
         </p>
       </section>
     )}
@@ -107,27 +161,92 @@ const versionsAgree = sitePin === registry.engine;
       </section>
     )}
 
+    {isAbi && (
+      <section class="block">
+        <Heading level={2} id="c-abi">In the C ABI</Heading>
+        <p class="kind">
+          {abiBy.length === abiTotal
+            ? `Returned by all ${abiTotal} per-format shared libraries — the ABI is uniform, so every clib can return it.`
+            : `Returned by ${abiBy.length} of the ${abiTotal} per-format shared libraries.`}
+        </p>
+        <p class="note">
+          It arrives as the whole reply, not inside a diagnostic:
+        </p>
+        <pre><code>{`{"ok":false,"error":{"code":"${code}","message":"…"}}`}</code></pre>
+        <p class="note">
+          <strong>This says your call was wrong, not your input.</strong> A
+          library that read your input and decided it is outside the format
+          replies <code>{'{"ok":true,"accept":false}'}</code> instead — a
+          rejection is an answer, and it carries no code from this namespace.
+          If you are here because a parse "failed", check which of the two you
+          actually got before treating it as an error.
+        </p>
+        <p class="note">
+          The five-symbol ABI and its guarantees are in{" "}
+          <a href={`${REPO("parser")}/blob/main/go/clib/include/tabnas.h`} target="_blank" rel="noopener">
+            <code>tabnas.h</code></a>; the decision behind it is ADR-12 in the{" "}
+          <a href={REPO("admin")} target="_blank" rel="noopener">admin</a>{" "}
+          repository.
+        </p>
+      </section>
+    )}
+
     <section class="block">
       <Heading level={2} id="what-next">What to do with it</Heading>
-      <ol class="next">
-        <li>
-          Read the rest of the diagnostic: <code>row</code>/<code>col</code>{" "}
-          point at the input, <code>expected</code> lists the tokens that would
-          have matched, and <code>ruleStack</code> shows how the parser got
-          there.
-        </li>
-        <li>
-          Reproduce it on its own with{" "}
-          <code>tabnas diagnose --json</code>, which prints the whole object.
-        </li>
-        <li>
-          Work the grammar back from the failing alternate — the{" "}
-          <a href="/skills"><code>debug-parse</code> skill</a> is that
-          procedure written out, and{" "}
-          <a href="/docs/errors">the errors guide</a> covers raising good ones
-          from your own grammar.
-        </li>
-      </ol>
+
+      {(isEngine || owners.length > 0) && (
+        <ol class="next">
+          <li>
+            Read the rest of the diagnostic: <code>row</code>/<code>col</code>{" "}
+            point at the input, <code>expected</code> lists the tokens that would
+            have matched, and <code>ruleStack</code> shows how the parser got
+            there.
+          </li>
+          <li>
+            Reproduce it on its own with{" "}
+            <code>tabnas diagnose --json</code>, which prints the whole object.
+          </li>
+          <li>
+            Work the grammar back from the failing alternate — the{" "}
+            <a href="/skills"><code>debug-parse</code> skill</a> is that
+            procedure written out, and{" "}
+            <a href="/docs/errors">the errors guide</a> covers raising good ones
+            from your own grammar.
+          </li>
+        </ol>
+      )}
+
+      {/* A pure C ABI code has no diagnostic to read and no grammar to work
+          back from: `tabnas diagnose` would send the reader somewhere with
+          nothing in it. The steps that apply are about the call. */}
+      {isAbi && (
+        <ol class="next">
+          {crossesEnvelopes && (
+            <li>
+              First settle which <code>{code}</code> you have — the steps above
+              are for the diagnostic; these are for the library reply.
+            </li>
+          )}
+          <li>
+            Check the <code>message</code> beside the code: unlike a parse
+            diagnostic it is not templated, and for a call-level failure it
+            usually names the argument at fault.
+          </li>
+          <li>
+            Confirm the call shape against{" "}
+            <a href={`${REPO("parser")}/blob/main/go/clib/include/tabnas.h`} target="_blank" rel="noopener">
+              <code>tabnas.h</code></a>. Lengths are explicit byte counts and
+            buffers are not read as NUL-terminated strings; every returned{" "}
+            <code>char*</code> must be released with <code>tabnas_free</code>,
+            and every handle with <code>tabnas_grammar_free</code>.
+          </li>
+          <li>
+            If you are writing the binding rather than using one, the four
+            maintained loaders (Rust, Python, JVM, .NET) already implement this
+            contract and are graded against every clib in the fleet.
+          </li>
+        </ol>
+      )}
     </section>
 
     <p class="note generated">
@@ -137,6 +256,9 @@ const versionsAgree = sitePin === registry.engine;
           the engine's error registry</a>
       ) : (
         <span>the declaring package's <code>tabnas.plugin.json</code> descriptor</span>
+      )}
+      {isEngine && isAbi && (
+        <span>, and from the <code>clib</code> block of each descriptor that carries one</span>
       )}.{" "}
       {versionsAgree ? (
         <>Engine {registry.engine}.</>
@@ -161,6 +283,11 @@ const versionsAgree = sitePin === registry.engine;
     white-space: pre-wrap; font-size: 0.9rem;
   }
   .note { color: var(--ink-mute); font-size: 0.9rem; max-width: 66ch; }
+  .collision {
+    color: var(--ink-soft); font-size: 0.95rem; max-width: 66ch;
+    border-left: 2px solid var(--border); padding: 0.1rem 0 0.1rem 1rem;
+    margin-top: 1.25rem;
+  }
   .note.generated { margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1rem; }
   .owners { list-style: none; padding: 0; color: var(--ink-soft); }
   .owners li { margin-bottom: 0.75rem; }
