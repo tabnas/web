@@ -247,11 +247,22 @@ Cloudflare Workers via `wrangler.json`, `output: "static"` in
 `astro.config.mjs` — every page is prerendered.
 
 **Deployment is automatic.** Cloudflare builds and publishes the site itself
-when changes land on `main`; merging a pull request is the deploy step. Do not
-run `npm run deploy` (`wrangler deploy`) as part of shipping a change — the
-script stays for manual recovery, and an agent session has no Cloudflare
-credentials anyway (`wrangler whoami` reports "not authenticated", and there is
-no `CLOUDFLARE_API_TOKEN`). That is expected, not a broken environment.
+when changes land on `main`; merging a pull request is the deploy step.
+
+Do not run `npm run deploy` (`wrangler deploy`) **by hand** as part of shipping
+a change. It is not a disabled script: `npm run deploy` IS the Builds
+pipeline's deploy command, so it is what runs on every merge — from
+Cloudflare's builder, against a clean checkout that just ran `npm run build`.
+Run it from your working tree and you publish whatever `dist/` is sitting
+there, which may be weeks old; `dist/` is gitignored and nothing keeps it
+fresh. The script stays for manual recovery, and an agent session usually has
+no Cloudflare credentials (`wrangler whoami` reporting "not authenticated" is
+expected, not a broken environment).
+
+The Worker is **`tabnas-web`**, and `wrangler.json` carries its triggers —
+`tabnas.dev` and `www.tabnas.dev` as custom domains. Keep them there. They
+lived only in the dashboard until 2026-08-19, which meant nothing in this repo
+recorded what actually served the site.
 
 So "publish this" means: build clean, merge to `main`, and check the live site
 a few minutes later.

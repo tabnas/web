@@ -32,10 +32,17 @@ site from `main` through its own Git integration, so there is nothing to run
 and no workflow file to look for — the absence of `.github/workflows/` here
 does *not* mean deployment is manual.
 
-Do not run `npm run deploy` (`wrangler deploy`) as part of shipping a change.
-It stays for manual recovery, and an agent session has no Cloudflare
-credentials in any case (`wrangler whoami` reports "not authenticated"). That
-is expected, not a broken environment.
+Do not run `npm run deploy` (`wrangler deploy`) **by hand** as part of
+shipping a change. Note it is not an inert script: `npm run deploy` is
+the Builds pipeline's own deploy command, so it is exactly what runs on
+every merge — just from Cloudflare's builder, against a clean checkout,
+rather than from your working tree. Running it locally publishes
+whatever `dist/` you happen to have, which is how a stale build reaches
+production.
+
+It stays for manual recovery, and an agent session usually has no
+Cloudflare credentials (`wrangler whoami` reporting "not authenticated"
+is expected, not a broken environment).
 
 See [`AGENTS.md`](AGENTS.md#deployment) for the full picture.
 
