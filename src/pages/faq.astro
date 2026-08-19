@@ -80,6 +80,20 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           </dd>
         </div>
         <div>
+          <dt>Can I connect an agent without installing anything?</dt>
+          <dd>
+            Yes, but installing is better. <code>npx --yes @tabnas/mcp mcp</code>
+            runs the <a href="/mcp">MCP server</a> locally and is the supported
+            path — free, private, unlimited, and reproducible. For clients that
+            cannot spawn a process, the same tools are served over streamable
+            HTTP at <code>mcp.tabnas.dev/mcp</code>. It is bounded (a body cap
+            and a per-IP rate limit, both stated by its
+            <code>/.well-known/mcp</code>), and it keeps nothing: see{" "}
+            <a href="/privacy">privacy</a>. Both answer byte-for-byte
+            identically, because there is one implementation behind them.
+          </dd>
+        </div>
+        <div>
           <dt>Do I have to write a lexer?</dt>
           <dd>
             Mostly, yes. tabnas draws a hard line between lexing and parsing and
