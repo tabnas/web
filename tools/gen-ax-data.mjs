@@ -8,6 +8,7 @@
 //   ../parser/schema/error-codes.json  -> src/data/error-codes.json
 //   ../skills/skills/<name>/SKILL.md   -> src/data/skills.json
 //   ../skills/mcp.json                 -> src/data/skills.json (.mcp)
+//   ../mcp/ts/src/tools.ts             -> src/data/mcp-tools.json
 //
 // Why bundled rather than imported:
 //   - @tabnas/parser's npm package ships only LICENSE + dist, so schema/ is
@@ -245,6 +246,42 @@ function skills() {
   }
 }
 
+// --- the MCP tool set -------------------------------------------------------
+
+// The names of the tools @tabnas/mcp actually exposes, read from the one
+// place that decides them: ts/src/tools.ts in the mcp sibling.
+//
+// WHY THIS EXISTS. /mcp carried a hand-typed table of six tools. Phase 5
+// added a seventh (`compare_grammars`) and the page was never updated, so
+// the site advertised six tools for weeks while the server served seven —
+// the heading, the lede and the meta description all wrong, and nothing
+// anywhere to notice. Derive, never hand-maintain.
+//
+// Only the SET of names is generated. Each row's prose and its CLI
+// equivalent are editorial and stay authored in mcp.astro; that page
+// asserts its rows against this list at build time, so an added or removed
+// tool fails the build instead of silently shipping.
+function mcpTools() {
+  const file = join(FLEET, 'mcp', 'ts', 'src', 'tools.ts')
+  if (!existsSync(file)) return null
+
+  const src = readFileSync(file, 'utf8')
+  const from = src.indexOf('export const TOOLS = [')
+  const to = src.indexOf('] as const', from)
+  if (from < 0 || to < 0) {
+    throw new Error('gen-ax-data: could not find the TOOLS array in ' + file)
+  }
+
+  // Scoped to the TOOLS slice on purpose: RESOURCES below it also has `name`
+  // keys, and they are filenames, not tools.
+  const names = [...src.slice(from, to).matchAll(/^\s*name: '([a-z_]+)',$/gm)]
+    .map((m) => m[1])
+  if (0 === names.length) {
+    throw new Error('gen-ax-data: TOOLS array parsed to zero tools')
+  }
+  return { tools: names }
+}
+
 // --- write or check ---------------------------------------------------------
 
 function emit(name, value) {
@@ -272,6 +309,7 @@ function emit(name, value) {
 emit('error-codes.json', errorCodes())
 emit('plugins.json', plugins())
 emit('skills.json', skills())
+emit('mcp-tools.json', mcpTools())
 
 for (const note of notes) console.log(`  ${note}`)
 if (problems.length) {

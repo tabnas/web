@@ -1,0 +1,11 @@
+{
+  "tools": [
+    "parse",
+    "validate_grammar",
+    "explain_parse_error",
+    "test_grammar",
+    "list_plugins",
+    "describe_plugin",
+    "compare_grammars"
+  ]
+}
