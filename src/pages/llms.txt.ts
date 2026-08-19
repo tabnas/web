@@ -38,6 +38,7 @@ const BLURBS: Record<string, string> = {
   "/releases": "every package and its current version",
   "/comparisons": "how it differs from ANTLR, Peggy, Chevrotain, nearley, tree-sitter",
   "/sponsors": "who pays for it",
+  "/privacy": "what the hosted MCP endpoint records (shape only) and never records (your documents)",
 };
 
 // The packages worth naming individually. The rest are counted, with a link

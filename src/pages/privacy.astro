@@ -1,0 +1,127 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { REPO } from "../consts";
+
+// The privacy policy for mcp.tabnas.dev.
+//
+// It exists because the hosted endpoint makes a promise in its own
+// /.well-known/mcp response — "Document content is never logged, stored, or
+// used for training" — and a promise a service makes about itself, published
+// nowhere a person can read it, is not a policy. Phase 4's exit criteria ask
+// for this page by name.
+//
+// Keep it matched to what ts/src/worker.ts and ts/src/budget.ts actually do.
+// If the telemetry shape changes there, it changes here in the same commit.
+const ENDPOINT = "mcp.tabnas.dev";
+---
+
+<Base
+  title="Privacy"
+  description="What the hosted tabnas MCP endpoint records, what it never records, and why running locally avoids the question entirely."
+>
+  <article class="privacy" data-pagefind-body>
+    <Heading level={1} id="privacy">Privacy</Heading>
+
+    <p class="lede">
+      This covers the hosted MCP endpoint at <code>{ENDPOINT}</code>. It is
+      the only tabnas service that receives your data at all.
+    </p>
+
+    <section class="group">
+      <Heading level={2} id="short">The short version</Heading>
+      <p>
+        <strong>Document content is never logged, never stored, and never
+        used for training.</strong> The endpoint parses what you send, returns
+        the answer, and keeps nothing. There is no database, no object store
+        and no session — every request is self-contained, which is what makes
+        that promise cheap to keep rather than a matter of trust.
+      </p>
+      <p>
+        If that is not enough for you, <strong>run it locally</strong>. It is
+        the same code with the same answers, and the recommended path
+        regardless:
+      </p>
+      <pre><code>npx --yes @tabnas/mcp mcp</code></pre>
+      <p>
+        Locally there is no network hop, no operator, and nothing on this page
+        applies.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="recorded">What is recorded</Heading>
+      <p>
+        Shape only, per request, for keeping the service working:
+      </p>
+      <ul>
+        <li><strong>Tool name</strong> — e.g. <code>parse</code>.</li>
+        <li>
+          <strong>A size bucket</strong> — one of <code>&lt;=1k</code>,
+          <code>&lt;=16k</code>, <code>&lt;=64k</code>,
+          <code>&lt;=256k</code>. Deliberately a bucket and never a byte
+          count: an exact document length is a weak fingerprint of the
+          document, and this service does not hold facts about content.
+        </li>
+        <li><strong>Duration</strong> in milliseconds.</li>
+        <li>
+          <strong>Status and error code</strong> — whether the tool answered
+          yes or no, and which documented code it returned.
+        </li>
+      </ul>
+      <p>
+        That list is exhaustive. It is defined in one place —
+        <code>Telemetry</code> in <code>ts/src/budget.ts</code> — and the test
+        suite asserts a parsed secret does not appear in an emitted record.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="never">What is never recorded</Heading>
+      <ul>
+        <li>The documents, grammars, fixtures or options you send.</li>
+        <li>The trees, diagnostics or reports returned to you.</li>
+        <li>Any byte of request or response body, in any form.</li>
+      </ul>
+      <p>
+        No content is used to train anything, by us or by anyone else. There
+        is no mechanism by which it could be: it is not retained long enough
+        to be collected.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="cloudflare">What Cloudflare sees</Heading>
+      <p>
+        The endpoint runs on Cloudflare Workers, so Cloudflare operates the
+        network path and applies its own standard protections. Being the
+        network, it necessarily handles your request in transit and sees the
+        connecting IP address. Per-IP rate limiting uses that address to
+        count requests; the count is what is kept, not a log of who you are.
+      </p>
+      <p>
+        This is the unavoidable cost of a hosted endpoint, and the reason
+        local stdio is the recommended path rather than a fallback.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="site">The website</Heading>
+      <p>
+        <code>tabnas.dev</code> is a static site. No analytics, no tracking
+        pixels, no advertising, no cookies set by us. Search runs entirely in
+        your browser.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="changes">Changes</Heading>
+      <p>
+        This page is version-controlled with the code it describes, in{" "}
+        <a href={REPO} target="_blank" rel="noopener">the tabnas repositories</a>.
+        A change to what the service records is a change to this page in the
+        same commit — the history is the changelog.
+      </p>
+    </section>
+  </article>
+</Base>

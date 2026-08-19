@@ -67,6 +67,7 @@ export const PROJECT_NAV: { href: string; label: string }[] = [
   { href: "/releases", label: "Releases" },
   { href: "/comparisons", label: "Other parsers" },
   { href: "/sponsors", label: "Sponsors" },
+  { href: "/privacy", label: "Privacy" },
 ];
 
 // The agent-facing surfaces. Their own list because llms.txt is generated
@@ -90,7 +91,7 @@ export const AGENT_NAV: { href: string; label: string; blurb: string }[] = [
     href: "/mcp",
     label: "MCP",
     blurb:
-      "connect an agent over MCP — six tools, and the same six as a `tabnas` command-line tool",
+      "connect an agent over MCP — seven tools, and the same seven as a `tabnas` command-line tool",
   },
   {
     href: "/errors",
