@@ -1,8 +1,12 @@
 {
-	"name": "web",
+	"name": "tabnas-web",
 	"compatibility_date": "2025-10-08",
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "./dist/_worker.js/index.js",
+	"routes": [
+		{ "pattern": "tabnas.dev", "custom_domain": true },
+		{ "pattern": "www.tabnas.dev", "custom_domain": true }
+	],
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
