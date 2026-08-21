@@ -6,13 +6,14 @@
     "description": "Tabnas parser-fleet skills and MCP servers: author, debug, test and ship grammars for the tabnas engine.",
     "license": "MIT"
   },
+  "marketplace": "tabnas",
   "mcp": {
     "tabnas": {
       "type": "stdio",
       "command": [
         "npx",
         "--yes",
-        "@tabnas/mcp@0.1.13",
+        "@tabnas/mcp@0.1.14",
         "mcp"
       ]
     },
@@ -28,7 +29,20 @@
       "useWhen": "Use when creating a new @tabnas/<format> plugin repo, bootstrapping a parser for a new file format on the tabnas engine, or deciding whether to base a plugin on jsonic, ABNF or the bare engine.",
       "license": "MIT",
       "compatibility": "Requires a local checkout of the tabnas fleet (the zon scaffold plus the engine repos it references) and the gh CLI for creating the new repository.",
-      "references": []
+      "references": [],
+      "sections": [
+        "1 · What the template gives you (copy as-is, retune lightly)",
+        "2 · Pick the right base",
+        "3 · Create the repo",
+        "4 · The grammar is data: single source + embed",
+        "5 · The three version constants",
+        "6 · The descriptor: tabnas.plugin.json",
+        "7 · The standard AGENTS.md sections",
+        "8 · The parity contract",
+        "9 · Verify your work",
+        "Gotchas that cost time",
+        "Untrusted input"
+      ]
     },
     {
       "name": "create-grammar",
@@ -38,6 +52,17 @@
       "compatibility": "",
       "references": [
         "alternates-and-tokens.md"
+      ],
+      "sections": [
+        "1 · Collect samples first",
+        "2 · Choose your base",
+        "3 · Declare your tokens",
+        "4 · Write the rules",
+        "5 · Validate the grammar",
+        "6 · Parse the samples",
+        "7 · Iterate on the diagnostic",
+        "8 · Pin the behaviour",
+        "Untrusted input"
       ]
     },
     {
@@ -46,7 +71,16 @@
       "useWhen": "Use when a parse throws, when a grammar rejects input that should be valid, when an error points at the wrong place, or when you need to interpret a tabnas error code or diagnostic object.",
       "license": "MIT",
       "compatibility": "Steps beyond the CLI need a local tabnas checkout or an installed @tabnas/parser; the deeper rungs of the ladder additionally use the dev-only @tabnas/debug and @tabnas/railroad packages.",
-      "references": []
+      "references": [],
+      "sections": [
+        "1 · Get the structured diagnostic",
+        "2 · Look the code up",
+        "3 · Read the rendered message too",
+        "4 · The debugging ladder",
+        "5 · The usual suspects",
+        "What the engine will not do",
+        "Untrusted input"
+      ]
     },
     {
       "name": "test-a-grammar",
@@ -54,7 +88,15 @@
       "useWhen": "Use when adding tests for a grammar or plugin, pinning a bug fix as a fixture, converting bare ERROR rows to code-pinned ones, or verifying that two runtimes agree on the same inputs.",
       "license": "MIT",
       "compatibility": "",
-      "references": []
+      "references": [],
+      "sections": [
+        "The fixture format",
+        "Expected values",
+        "Running fixtures",
+        "What to cover",
+        "Beyond fixtures: test the grammar itself",
+        "Untrusted input"
+      ]
     },
     {
       "name": "upgrade-a-plugin",
@@ -62,7 +104,17 @@
       "useWhen": "Use when modernising a plugin repository, bumping its @tabnas/parser engine version, fixing descriptor or fixture drift, or converting bare ERROR fixtures to code-pinned ones.",
       "license": "MIT",
       "compatibility": "Requires a local checkout of the tabnas fleet, including the admin repo (for the ax audit tasks) and the plugin being upgraded.",
-      "references": []
+      "references": [],
+      "sections": [
+        "1 · Audit before touching anything",
+        "2 · Refresh the descriptor",
+        "3 · Close the error-code coverage gap",
+        "4 · Fix fixture-layout drift",
+        "5 · Bump the engine",
+        "6 · DIVERGENCE.md discipline",
+        "7 · Done means green",
+        "Untrusted input"
+      ]
     }
   ]
 }

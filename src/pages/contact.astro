@@ -1,0 +1,134 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import {
+  AUTHOR,
+  CONTACT_EMAIL,
+  DISCUSSIONS,
+  ISSUES,
+  GITHUB_ORG,
+  REPO,
+  SPONSOR,
+} from "../consts";
+
+// Where to send each kind of message.
+//
+// /community already covers taking part in the project. This page answers the
+// narrower question — "how do I reach whoever runs this" — which is what a
+// reader checking whether a project is real, or an agent asked to find a
+// contact, is actually looking for. One email address, published once in
+// consts.ts, and the GitHub routes that are better for anything public.
+const CONDUCT = "https://github.com/tabnas/web/blob/main/CODE_OF_CONDUCT.md";
+const CONTRIBUTING = "https://github.com/tabnas/web/blob/main/CONTRIBUTING.md";
+---
+
+<Base
+  title="Contact"
+  description="How to reach the tabnas project: GitHub Discussions for questions, per-repository issues for bugs, and email to the maintainer for security reports, conduct reports and anything private."
+>
+  <article class="contact" data-pagefind-body>
+    <Heading level={1} id="contact">Contact</Heading>
+
+    <p class="lede">
+      <i>tabnas</i> is maintained by
+      {" "}<a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>.
+      Most conversations belong in public on GitHub, where the answer helps
+      the next person to ask; email is for the things that should not be
+      public.
+    </p>
+
+    <section class="group">
+      <Heading level={2} id="email">Email</Heading>
+      <p class="address">
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+      </p>
+      <p>
+        This is the address the project's
+        {" "}<a href={CONDUCT} target="_blank" rel="noopener">Code of Conduct</a>
+        {" "}publishes, and it reaches the maintainer directly. Use it for
+        security reports, conduct reports, sponsorship, licensing questions,
+        and anything else you would rather not put in a public issue.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="questions">Questions and ideas</Heading>
+      <p>
+        <a href={DISCUSSIONS} target="_blank" rel="noopener">GitHub Discussions</a>
+        {" "}on the engine repository. "How do I parse this", "is this the
+        right tool for X", "here is a grammar I wrote" — all of it belongs
+        there. Discussions are searchable, so an answer given once keeps
+        working.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="bugs">Bugs and feature requests</Heading>
+      <p>
+        File an issue on the repository that owns the behaviour: a wrong parse
+        tree from the engine goes to
+        {" "}<a href={ISSUES} target="_blank" rel="noopener">tabnas/parser</a>,
+        a grammar that mis-reads a file goes to that grammar's repository, and
+        anything about this website goes to
+        {" "}<a href={`${REPO("web")}/issues`} target="_blank" rel="noopener">tabnas/web</a>.
+        Every repository is under
+        {" "}<a href={GITHUB_ORG} target="_blank" rel="noopener">github.com/tabnas</a>.
+      </p>
+      <p>
+        A failing case is the most useful thing you can send: the input, the
+        grammar, and what you expected. The fleet's fixtures are tab-separated
+        rows of exactly that, so a good report often becomes a test unchanged.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="security">Security</Heading>
+      <p>
+        Report a suspected vulnerability by email rather than in a public
+        issue, and say what you did, what happened, and what you expected. The
+        engine's threat surface is smaller than most parsers' — a grammar is
+        data, and the MCP server refuses grammars that reach outside the
+        built-in action set, so "validate this grammar" never becomes "run
+        this code" — but parsers are input-handling code and input-handling
+        code has bugs.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="contributing">Contributing</Heading>
+      <p>
+        Read <a href={CONTRIBUTING} target="_blank" rel="noopener">CONTRIBUTING.md</a>,
+        then open a pull request. Patches written with an AI agent are welcome
+        on the same terms as any other — <a href="/community">community</a>
+        {" "}explains the policy, and every repository ships an
+        <code>AGENTS.md</code> so an agent can orient itself without guessing.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="expectations">What to expect</Heading>
+      <p>
+        One maintainer, working on this alongside other things. A first
+        contribution or a first question gets a prompt reply; a deep bug
+        report may take longer, and an idea that does not fit the project's
+        scope will get a straight no rather than silence. The
+        {" "}<a href="/faq">FAQ</a> says what is out of scope, so you can check
+        before writing.
+      </p>
+      <p>
+        {SPONSOR.blurb} Sponsorship enquiries are welcome at the address
+        above; see <a href="/sponsors">sponsors</a> for what it pays for.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .contact { max-width: 52rem; }
+  .contact :global(h1) { font-size: clamp(2rem, 4.5vw, 2.8rem); margin: 0 0 1rem; }
+  .contact :global(h2) { font-size: 1.35rem; margin: 0 0 0.75rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+  .group { margin-top: 2.75rem; }
+  .group p { color: var(--ink-soft); max-width: 68ch; }
+  .address { font-size: 1.15rem; font-family: var(--font-mono); }
+</style>

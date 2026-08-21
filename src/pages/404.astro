@@ -1,0 +1,66 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { ENTRY_POINTS } from "../worker";
+
+// The page a browser gets for a path that does not exist.
+//
+// A caller that is not a browser gets the same recovery routes as markdown or
+// as a JSON error object, assembled by src/worker.ts from the same
+// ENTRY_POINTS list this page renders — so whichever representation a client
+// negotiates, it is told the same things.
+//
+// Astro emits this to dist/404.html; the Worker fetches it from the ASSETS
+// binding and returns it with a 404 status.
+---
+
+<Base
+  title="Page not found"
+  description="No page at that address on tabnas.dev. The site index, the documentation hub and the machine-readable endpoints, so you can find what you were looking for."
+>
+  <article class="notfound">
+    <Heading level={1} id="not-found">404 — no page at that address</Heading>
+
+    <p class="lede">
+      Nothing is published here. Either the address is wrong, or a page that
+      used to be at it has moved.
+    </p>
+
+    <section class="group">
+      <Heading level={2} id="where-to-look">Where to look instead</Heading>
+      <ul>
+        {ENTRY_POINTS.map(([href, what]) => (
+          <li>
+            <a href={href}><code>{href}</code></a> — {what}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="for-programs">If you are a program</Heading>
+      <p>
+        This response is a real <code>404</code>, not a 200 with an
+        application shell — every path that does not exist says so in the
+        status line. The body is negotiated: ask for
+        <code>text/markdown</code> or send no preference and you get the list
+        above as markdown; ask for <code>application/json</code>, or request
+        any path under <code>/api/</code> or ending in <code>.json</code>, and
+        you get an error object with a <code>code</code>, a
+        <code>message</code> and a <code>hint</code>. The shape is in
+        <a href="/openapi.json"><code>/openapi.json</code></a>.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .notfound { max-width: 46rem; }
+  .notfound :global(h1) { font-size: clamp(1.9rem, 4vw, 2.6rem); margin: 0 0 1rem; }
+  .notfound :global(h2) { font-size: 1.25rem; margin: 0 0 0.75rem; }
+  .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 60ch; }
+  .group { margin-top: 2.5rem; }
+  .group p { color: var(--ink-soft); max-width: 68ch; }
+  ul { padding-left: 1.2rem; color: var(--ink-soft); }
+  li { margin-bottom: 0.5rem; }
+</style>

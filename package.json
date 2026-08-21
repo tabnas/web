@@ -16,38 +16,44 @@
     "@astrojs/mdx": "4.3.13",
     "@astrojs/rss": "4.0.14",
     "@astrojs/sitemap": "3.6.1",
-    "@tabnas/abnf": "0.4.5",
-    "@tabnas/bnf": "0.1.8",
+    "@tabnas/abnf": "0.4.6",
+    "@tabnas/bnf": "0.1.9",
     "@tabnas/chess-view": "0.1.4",
-    "@tabnas/expr": "0.5.6",
-    "@tabnas/gbnf": "0.1.6",
-    "@tabnas/json": "0.5.4",
-    "@tabnas/jsonic": "0.6.4",
-    "@tabnas/parser": "0.8.10",
+    "@tabnas/expr": "0.5.7",
+    "@tabnas/gbnf": "0.1.7",
+    "@tabnas/json": "0.5.6",
+    "@tabnas/jsonic": "0.6.5",
+    "@tabnas/parser": "0.8.11",
     "astro": "5.16.9",
     "typescript": "5.9.3"
   },
   "devDependencies": {
+    "ajv": "^8.20.0",
+    "linkedom": "^0.18.13",
     "pagefind": "^1.5.2",
     "rehype-autolink-headings": "7.1.0",
     "rehype-slug": "6.0.0",
-    "wrangler": "4.88.0"
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
+    "wrangler": "4.88.0",
+    "yaml": "^2.9.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "private": true,
   "scripts": {
     "astro": "astro",
-    "build": "astro build && pagefind --site dist",
+    "build": "astro build && pagefind --site dist && node tools/gen-markdown.mjs",
     "cf-typegen": "wrangler types",
-    "check": "npm run check-ax && npm run test-examples && astro build && tsc && wrangler deploy --dry-run",
+    "check": "npm run check-ax && npm run test-examples && npm run build && tsc && npm test && wrangler deploy --dry-run",
     "check-ax": "node tools/check-ax.mjs",
     "deploy": "wrangler deploy",
     "dev": "astro dev",
     "gen-ax-data": "node tools/gen-ax-data.mjs",
-    "preview": "astro build && wrangler dev",
-    "test-examples": "node tools/test-examples.mjs"
+    "preview": "npm run build && wrangler dev",
+    "test-examples": "node tools/test-examples.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "type": "module"
 }

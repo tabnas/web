@@ -1,0 +1,182 @@
+---
+// JSON-LD identity for the site, emitted on every page.
+//
+// Four nodes, one graph. A program that wants to know what this site is —
+// what the software does, who publishes it, how to reach them — reads this
+// rather than inferring it from prose:
+//
+//   #software      SoftwareApplication: the engine itself, free, MIT, with
+//                  its author, repository and the languages it ships in.
+//   #organization  Organization: who publishes it, and how to make contact.
+//   #website       WebSite: this site, published by that organization.
+//   <url>#webpage  WebPage: the page being served, and what it is about.
+//
+// Everything here restates a fact the site already states in prose, from the
+// same constants the prose is built from, so the two cannot disagree. The one
+// field that is conditional is the organization's postal address: the project
+// has never published one, so `ORG.address` is null and the field is omitted
+// rather than invented. Set it in consts.ts and it appears.
+//
+// No SearchAction: the docs search is a client-side Pagefind index with no
+// query-parameter entry point, and declaring a search URL that does not
+// resolve would be a claim this site cannot honour.
+import {
+  SITE_TITLE,
+  SITE_TAGLINE,
+  SITE_DESCRIPTION,
+  SITE_MOTTO,
+  AUTHOR,
+  ORG,
+  SPONSOR,
+  GITHUB_ORG,
+  NPM_ORG,
+} from "../consts";
+import { SITE_URL } from "../openapi";
+import { markdownTwin } from "../worker";
+import pkg from "../../package.json";
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: URL;
+}
+
+const { title, description, canonical } = Astro.props;
+
+const engine = (pkg.dependencies as Record<string, string>)["@tabnas/parser"];
+const twin = markdownTwin(canonical.pathname);
+const MIT = "https://opensource.org/licenses/MIT";
+
+const author = {
+  "@type": "Person",
+  "@id": `${SITE_URL}/#author`,
+  name: AUTHOR.name,
+  url: AUTHOR.url,
+  sameAs: [AUTHOR.url, AUTHOR.github],
+};
+
+const organization = {
+  "@type": "Organization",
+  "@id": `${SITE_URL}/#organization`,
+  name: ORG.name,
+  alternateName: SITE_MOTTO,
+  url: SITE_URL,
+  description: ORG.description,
+  email: ORG.email,
+  logo: {
+    "@type": "ImageObject",
+    url: `${SITE_URL}/brand/tabnas-emblem-512.png`,
+    width: 512,
+    height: 512,
+  },
+  founder: author,
+  sameAs: ORG.sameAs,
+  funder: { "@type": "Organization", name: SPONSOR.name, url: SPONSOR.url },
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      contactType: "technical support",
+      url: `${GITHUB_ORG}/parser/issues`,
+      email: ORG.email,
+      availableLanguage: ["English"],
+    },
+    {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      url: `${SITE_URL}/contact`,
+      email: ORG.email,
+      availableLanguage: ["English"],
+    },
+  ],
+  ...(ORG.address ? { address: { "@type": "PostalAddress", ...ORG.address } } : {}),
+};
+
+const software = {
+  "@type": "SoftwareApplication",
+  "@id": `${SITE_URL}/#software`,
+  name: SITE_TITLE,
+  alternateName: SITE_MOTTO,
+  description: SITE_DESCRIPTION.replace(/\s+/g, " ").trim(),
+  abstract: SITE_TAGLINE,
+  url: SITE_URL,
+  applicationCategory: "DeveloperApplication",
+  applicationSubCategory: "Parsing engine",
+  operatingSystem: "Any",
+  softwareVersion: engine,
+  programmingLanguage: ["TypeScript", "Go"],
+  runtimePlatform: ["Node.js", "Go", "Browser"],
+  codeRepository: GITHUB_ORG,
+  downloadUrl: NPM_ORG,
+  softwareHelp: { "@type": "CreativeWork", url: `${SITE_URL}/docs` },
+  license: MIT,
+  isAccessibleForFree: true,
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+    category: "Free open source software",
+  },
+  author,
+  publisher: { "@id": `${SITE_URL}/#organization` },
+  maintainer: author,
+  sameAs: [GITHUB_ORG, NPM_ORG],
+  keywords: [
+    "parser",
+    "parsing engine",
+    "grammar",
+    "ABNF",
+    "RFC 5234",
+    "extensible parser",
+    "compile target for agents",
+    "TypeScript",
+    "Go",
+    "MCP",
+  ],
+};
+
+const website = {
+  "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
+  name: SITE_TITLE,
+  alternateName: `${SITE_TITLE} — ${SITE_TAGLINE}`,
+  url: SITE_URL,
+  description: SITE_DESCRIPTION.replace(/\s+/g, " ").trim(),
+  inLanguage: "en",
+  license: MIT,
+  publisher: { "@id": `${SITE_URL}/#organization` },
+  about: { "@id": `${SITE_URL}/#software` },
+};
+
+const webpage = {
+  "@type": "WebPage",
+  "@id": `${canonical.href}#webpage`,
+  url: canonical.href,
+  name: title,
+  description,
+  isPartOf: { "@id": `${SITE_URL}/#website` },
+  about: { "@id": `${SITE_URL}/#software` },
+  inLanguage: "en",
+  // Every page has a markdown representation at the same URL under
+  // `Accept: text/markdown`, and at the path plus `.md`.
+  ...(twin
+    ? {
+        encoding: {
+          "@type": "MediaObject",
+          encodingFormat: "text/markdown",
+          contentUrl: new URL(twin, canonical).href,
+        },
+      }
+    : {}),
+};
+
+const graph = {
+  "@context": "https://schema.org",
+  "@graph": [organization, software, website, webpage],
+};
+
+// A closing tag inside a JSON string would end the script element early.
+const json = JSON.stringify(graph, null, 2).replace(/</g, "\\u003c");
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

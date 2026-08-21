@@ -1,0 +1,231 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { operationList, SITE_URL, MCP_URL } from "../openapi";
+import { errorRegistry } from "../errors";
+import mcpTools from "../data/mcp-tools.json";
+
+// What this site serves to a program, in one place.
+//
+// The endpoint table is GENERATED from src/openapi.ts — the same object
+// /openapi.json and /openapi.yaml serialise — so the page cannot list an
+// endpoint the spec does not describe, or miss one it does. The prose around
+// it is authored: the negotiation rules and the error contract are the part a
+// generator cannot explain.
+//
+// The honest framing matters here. tabnas is not a hosted parsing service and
+// this is not an API you send documents to. The engine runs in your process;
+// what this site publishes is its catalogue — versions, packages, error codes,
+// how to connect over MCP — plus every documentation page as markdown.
+const operations = operationList();
+const site = operations.filter((o) => o.server === SITE_URL);
+const service = operations.filter((o) => o.server !== SITE_URL);
+const codeCount = errorRegistry().codes.length;
+
+const TAGS: Record<string, string> = {
+  index: "Start here",
+  catalogue: "Catalogues",
+  content: "Content",
+  mcp: "MCP",
+};
+---
+
+<Base
+  wide
+  title="API"
+  description="The tabnas.dev machine-readable surface: an OpenAPI 3.1 document at /openapi.json, JSON catalogues for versions, packages and error codes, the MCP handshake, markdown content negotiation on every page, and the shape of an error response."
+>
+  <article class="api" data-pagefind-body>
+    <Heading level={1} id="api">The tabnas API</Heading>
+
+    <p class="lede">
+      Everything <code>tabnas.dev</code> serves to a program, described by an
+      OpenAPI 3.1 document at
+      {" "}<a href="/openapi.json"><code>/openapi.json</code></a> (or
+      {" "}<a href="/openapi.yaml"><code>/openapi.yaml</code></a>). Every
+      operation is a <code>GET</code>, none of them needs a key, and none of
+      them is rate limited.
+    </p>
+
+    <p class="scope">
+      <strong>What this is not:</strong> tabnas does not parse your documents
+      over HTTP. The engine runs in your own process — that is the point of it
+      — and this site publishes the catalogue around it: which versions the
+      documentation describes, what the packages are, every error code the
+      engine can raise, and how to connect an agent over MCP. The one endpoint
+      that executes anything is the hosted MCP server below, and running it
+      locally is still the recommendation.
+    </p>
+
+    <section class="group">
+      <Heading level={2} id="endpoints">Endpoints</Heading>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Endpoint</th><th>Operation</th><th>What it returns</th></tr>
+          </thead>
+          <tbody>
+            {site.map((o) => (
+              <tr>
+                <th scope="row"><code>{o.method} {o.path}</code></th>
+                <td><code>{o.operationId}</code></td>
+                <td class="what">{o.summary} <span class="tag">{TAGS[o.tag] ?? o.tag}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Each operation carries a unique <code>operationId</code>, typed
+        parameters and a response schema in
+        {" "}<a href="/openapi.json"><code>/openapi.json</code></a>, so a tool
+        that turns an OpenAPI document into callable functions can do so
+        without further description.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="markdown">Any page, as markdown</Heading>
+      <p class="blurb">
+        Every page on this site is content-negotiated. Ask for markdown and
+        the same URL answers with markdown instead of HTML — no navigation, no
+        styling, no scripts — and the response carries
+        {" "}<code>Vary: Accept</code> so a cache keeps the two apart
+        (<a href="https://acceptmarkdown.com" target="_blank" rel="noopener">acceptmarkdown.com</a>).
+      </p>
+      <pre><code>{`curl -H "Accept: text/markdown" ${SITE_URL}/docs/quickstart`}</code></pre>
+      <p class="blurb">
+        The same bytes are at the path plus <code>.md</code>, for callers that
+        would rather not set a header — <code>{SITE_URL}/docs/quickstart.md</code>,
+        and <code>{SITE_URL}/index.md</code> for the home page. Each twin opens
+        with a small YAML frontmatter block carrying the page's title,
+        description and canonical URL.
+      </p>
+      <p class="blurb">
+        If you want the whole documentation set in one request instead, that is
+        {" "}<a href="/llms-full.txt"><code>/llms-full.txt</code></a>; the index
+        of what is here is <a href="/llms.txt"><code>/llms.txt</code></a>.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="errors">When something is wrong</Heading>
+      <p class="blurb">
+        A path that does not exist returns a real <code>404</code> — never a
+        200 with an application shell. What is in the body depends on what you
+        asked for: <code>application/json</code>, any path under
+        {" "}<code>/api/</code>, and any path ending <code>.json</code> or
+        {" "}<code>.yaml</code> get an error object; a browser gets the
+        {" "}<a href="/404">404 page</a>; anything else gets markdown carrying
+        the same links.
+      </p>
+      <pre><code>{JSON.stringify(
+        {
+          error: {
+            status: 404,
+            code: "not_found",
+            message: "Not Found",
+            hint: "Nothing is published at /api/v1/parse. This site is documentation for the tabnas parsing engine; start from /llms.txt for the machine-readable index, or /openapi.json for the endpoints that return JSON.",
+            documentation: `${SITE_URL}/api`,
+            openapi: `${SITE_URL}/openapi.json`,
+            resources: { "llms.txt": `${SITE_URL}/llms.txt` },
+          },
+        },
+        null,
+        2,
+      )}</code></pre>
+      <p class="blurb">
+        <code>code</code> is stable and safe to branch on: it is one of
+        {" "}<code>not_found</code>, <code>method_not_allowed</code> (the site
+        is read-only, so anything other than <code>GET</code>,
+        {" "}<code>HEAD</code> or <code>OPTIONS</code> gets one) and
+        {" "}<code>not_acceptable</code> (you asked for a representation that
+        does not exist for that URL). <code>hint</code> is written to tell you
+        what to do next, and <code>resources</code> lists the site's entry
+        points so one failed request is enough to recover.
+      </p>
+      <p class="blurb">
+        Errors <em>from the engine</em> are a different thing entirely: a
+        parse failure carries a diagnostic whose <code>code</code> is the
+        contract across both runtimes. All {codeCount} of them are at
+        {" "}<a href="/errors.json"><code>/errors.json</code></a>, one at a time
+        at <code>/errors/&lt;code&gt;.json</code>, and with prose at
+        {" "}<a href="/errors">/errors</a>.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="mcp">The MCP endpoint</Heading>
+      <p class="blurb">
+        {mcpTools.tools.length} tools that actually run the engine — parse,
+        validate a grammar, explain a failure, run fixtures, read the plugin
+        catalogue, compare two grammar versions — are served over the Model
+        Context Protocol from a separate service at <code>{MCP_URL}</code>,
+        deployed from the <code>tabnas/mcp</code> repository. Start from
+        {" "}<a href="/.well-known/mcp"><code>/.well-known/mcp</code></a> on this
+        domain, which names both transports; <a href="/mcp">/mcp</a> has each
+        tool's contract.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Endpoint</th><th>Operation</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            {service.map((o) => (
+              <tr>
+                <th scope="row"><code>{o.method} {o.server}{o.path}</code></th>
+                <td><code>{o.operationId}</code></td>
+                <td class="what">{o.summary}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Local stdio stays the recommended path: <code>npx --yes @tabnas/mcp mcp</code>
+        {" "}is the same code, unbounded and private. The hosted endpoint is
+        bounded by a body cap and a per-IP rate limit, both reported by its own
+        {" "}<code>/.well-known/mcp</code>.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .api { max-width: 60rem; }
+  .api :global(h1) { font-size: clamp(2rem, 4.5vw, 2.8rem); margin: 0 0 1rem; }
+  .api :global(h2) { font-size: 1.4rem; margin: 0 0 0.85rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 64ch; }
+  .scope {
+    color: var(--ink-soft); max-width: 68ch;
+    border-left: 2px solid var(--border-strong);
+    padding-left: 1rem;
+  }
+  .scope strong { color: var(--ink); }
+  .group { margin-top: 3rem; }
+  .blurb { color: var(--ink-soft); max-width: 68ch; }
+  .note { color: var(--ink-mute); font-size: 0.9rem; max-width: 68ch; }
+
+  pre {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.85rem;
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
+    font-weight: 400; white-space: nowrap;
+  }
+  tbody th { font-weight: 400; white-space: nowrap; }
+  .what { color: var(--ink-soft); }
+  .tag {
+    display: block; margin-top: 0.3rem;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-mute); white-space: nowrap;
+  }
+</style>

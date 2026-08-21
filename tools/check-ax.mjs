@@ -70,12 +70,26 @@ for (const href of navigable) {
 
 const PAGES = [
   ['src/pages/skills.astro', '/skills'],
+  ['src/pages/skills/[name].astro', '/skills/<name>'],
   ['src/pages/mcp.astro', '/mcp'],
   ['src/pages/errors/index.astro', '/errors'],
   ['src/pages/errors/[code].astro', '/errors/<code>'],
+  ['src/pages/errors.json.ts', '/errors.json'],
+  ['src/pages/errors/[code].json.ts', '/errors/<code>.json'],
+  ['src/pages/packages.json.ts', '/packages.json'],
   ['src/pages/versions.json.ts', '/versions.json'],
   ['src/pages/llms.txt.ts', '/llms.txt'],
   ['src/pages/llms-full.txt.ts', '/llms-full.txt'],
+  ['src/pages/api.astro', '/api'],
+  ['src/pages/openapi.json.ts', '/openapi.json'],
+  ['src/pages/openapi.yaml.ts', '/openapi.yaml'],
+  ['src/pages/robots.txt.ts', '/robots.txt'],
+  ['src/pages/.well-known/mcp.ts', '/.well-known/mcp'],
+  // The 404 body and the trust anchors an agent checks before recommending
+  // anything. src/worker.ts serves the first and links the rest.
+  ['src/pages/404.astro', '/404'],
+  ['src/pages/about.astro', '/about'],
+  ['src/pages/contact.astro', '/contact'],
 ]
 for (const [file, route] of PAGES) {
   if (!existsSync(join(ROOT, file))) {
@@ -85,10 +99,29 @@ for (const [file, route] of PAGES) {
 
 // llms.txt is generated now; a leftover static copy in public/ would shadow
 // the route and silently serve the stale one.
-for (const stale of ['public/llms.txt', 'public/llms-full.txt']) {
+for (const stale of [
+  'public/llms.txt',
+  'public/llms-full.txt',
+  'public/robots.txt',
+  'public/openapi.json',
+  'public/openapi.yaml',
+  'public/.well-known/mcp',
+]) {
   if (existsSync(join(ROOT, stale))) {
     problems.push(`${stale} shadows the generated route — delete it`)
   }
+}
+
+// --- 4. the 404 recovery routes agree -----------------------------------------
+
+// src/worker.ts writes the markdown and JSON 404 bodies; src/pages/404.astro
+// renders the HTML one. Both read ENTRY_POINTS from the Worker, so the only
+// way they can disagree is if the page stops importing it.
+const notFoundPage = readFileSync(join(ROOT, 'src', 'pages', '404.astro'), 'utf8')
+if (!notFoundPage.includes('ENTRY_POINTS')) {
+  problems.push(
+    '404.astro no longer renders ENTRY_POINTS — the HTML and markdown 404s would diverge',
+  )
 }
 
 if (problems.length) {
