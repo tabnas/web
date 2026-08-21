@@ -87,7 +87,10 @@ Rewritten around the `/why` motivation: the homepage, `SITE_TAGLINE` and
 | `/why` | The long-form motivation and the algorithm. The source document. |
 | `/docs` | Diátaxis — Start / Tutorials / How-to / Reference / Explanation, with Pagefind search |
 | `/how-to` | Task-oriented guides, at top level. An intro and index page, plus one page per problem |
-| `/agents` | Half the thesis, and a build guide written for an agent |
+| `/agents` | Half the thesis: the installable distributions (skills, MCP, CLI) and a build guide written for an agent |
+| `/skills`, `/skills/<name>` | The Agent Skills catalogue and a page per skill — generated from `tabnas/skills` |
+| `/mcp` | Connect an agent over MCP: the tools and their contracts, both transports, the registry entry, the CLI |
+| `/errors`, `/errors/<code>` | Every error code the fleet can raise — generated |
 | `/playground` | Client-side engine — ABNF or rule table, tree and value |
 | `/examples` | Real languages on the engine: aontu (TS), boru (Go) |
 | `/faq` | Questions, including scope: what the project won't do |
@@ -96,10 +99,11 @@ Rewritten around the `/why` motivation: the homepage, `SITE_TAGLINE` and
 | `/community` | How the project works, contributing, AI-friendly policy |
 | `/sponsors` | Voxgig, and what sponsorship pays for |
 
-Navigation: Why, Docs, How to, Agents, Playground, Examples, FAQ, Community —
-`/agents` sits high because it carries half the thesis, not because agents are
-fashionable. The footer carries Releases, Other parsers, Sponsors,
-Contributing, Code of Conduct.
+Navigation: Why, Docs, How to, Agents, Playground, Examples, Status, FAQ,
+Community — `/agents` sits high because it carries half the thesis, not
+because agents are fashionable. The footer carries the agent surfaces
+(Skills, MCP, the error reference, versions.json) plus Releases, Other
+parsers, Sponsors, Contributing, Code of Conduct.
 
 **On `/how-to` versus the docs How-to section.** The task-oriented quadrant is
 big enough to be a section of its own, and it is the part a working reader

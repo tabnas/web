@@ -275,12 +275,12 @@ be deleted from the Cloudflare dashboard.
 
 ## The agent-facing surfaces
 
-Five routes exist for agents rather than readers, and **all five are
-generated** — none of them is a page to hand-edit:
+These routes exist for agents rather than readers, and **all of them are
+generated** — none is a page to hand-edit:
 
 | Route | Built from |
 |---|---|
-| `/skills` | `src/data/skills.json` ← the `tabnas/skills` repository |
+| `/skills`, `/skills/<name>` | `src/data/skills.json` ← the `tabnas/skills` repository (frontmatter, section outlines, marketplace name) |
 | `/mcp` | the same file's `mcp` entry ← `tabnas/skills`' `mcp.json` |
 | `/errors`, `/errors/<code>` | `src/data/error-codes.json` ← `parser/schema/error-codes.json`, plus `src/data/plugins.json` ← every `<repo>/tabnas.plugin.json` |
 | `/versions.json` | this repo's own `package.json` dependency pins |
@@ -319,10 +319,10 @@ half of `tools/gen-ax-data.mjs` goes away.
 
 `astro.config.mjs` sets `output: "static"`, so the Worker serves assets only
 and cannot host an MCP endpoint. The hosted server is a **separate Worker**
-deployed from `tabnas/mcp` at `mcp.tabnas.dev` — that keeps this site's build
-simple and isolates the service's limits and observability. `/mcp` documents
-the hosted entry as not yet live; local stdio is the supported path, and the
-recommended one regardless.
+deployed from `tabnas/mcp` at `mcp.tabnas.dev` (live since 2026-08-19) — that
+keeps this site's build simple and isolates the service's limits and
+observability. Local stdio is the recommended path everywhere the hosted
+entry is mentioned.
 
 ## Things that will trip you up
 
@@ -338,5 +338,3 @@ recommended one regardless.
   `parser/doc/architecture.md` used to claim "only two-token lookahead" and
   that got copied onto this site more than once; the upstream doc now states
   the rule correctly, but the wrong version is still in circulation.
-- **`llms.txt` / `llms-full.txt`** in `public/` are hand-maintained. Update
-  them when page structure changes materially.

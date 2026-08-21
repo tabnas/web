@@ -7,14 +7,19 @@ import mcpTools from "../data/mcp-tools.json";
 import skillsData from "../data/skills.json";
 
 // Derived, never typed: this page said "six operations" for weeks after
-// compare_grammars shipped. mcp-tools.json is generated from the mcp repo.
+// compare_grammars shipped. mcp-tools.json is generated from the mcp repo;
+// skills.json from the skills repo — so the counts, the skill names and the
+// install command below cannot drift from what actually ships.
 const TOOL_WORDS = ["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
 const nTools = TOOL_WORDS[mcpTools.tools.length] ?? String(mcpTools.tools.length);
+const nSkills = TOOL_WORDS[skillsData.skills.length] ?? String(skillsData.skills.length);
 const hostedUrl = skillsData.mcp["tabnas-hosted"]?.url;
+const stdio = skillsData.mcp["tabnas"];
+const stdioCommand = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
 import type { Tier } from "../consts";
 
 const AGENTS_MD = (name: string) => `${REPO(name)}/blob/main/AGENTS.md`;
-const ORDER: Tier[] = ["engine", "tooling", "grammar", "plugin", "cli"];
+const ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "plugin", "cli"];
 const groups = ORDER.map((tier) => ({
   tier,
   label: TIER_LABEL[tier],
@@ -25,15 +30,16 @@ const groups = ORDER.map((tier) => ({
 <Base
   wide
   title="Agents"
-  description="How to build a parser with tabnas: the rule table format, the constraints to design around, how to verify your work, and where each package's AGENTS.md lives."
+  description="How to build a parser with tabnas — and the distributions an agent installs to do it: Agent Skills, an MCP server, and the tabnas CLI, plus the rule table format, the constraints, and how to verify your work."
 >
   <article class="ag">
     <Heading level={1} id="building-with-tabnas">Building with tabnas</Heading>
     <p class="lede">
       Written for an agent that has arrived here to build something. It covers
-      the grammar format you should emit, the constraints the engine imposes,
-      how to check your work, and where the per-package instructions live.
-      A human wanting the argument for any of this should read
+      the distributions you can install — {nSkills} skills, an MCP server, a
+      CLI — the grammar format you should emit, the constraints the engine
+      imposes, how to check your work, and where the per-package instructions
+      live. A human wanting the argument for any of this should read
       <a href="/why">why tabnas</a> instead.
     </p>
 
@@ -55,7 +61,79 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="install">2 · Install</Heading>
+      <Heading level={2} id="skills-and-mcp">2 · Install the workflow: skills, MCP, CLI</Heading>
+      <p>
+        Everything the rest of this page teaches is also packaged for you to
+        install rather than read. Three surfaces, one shared implementation:
+      </p>
+      <ul>
+        <li>
+          <strong><a href="/skills">The skills</a></strong> — {nSkills}
+          portable <a href="https://agentskills.io/" target="_blank" rel="noopener">Agent
+          Skills</a> that carry the working procedures:
+          {skillsData.skills.map((s, i) => (
+            <>
+              <a href={`/skills/${s.name}`}><code>{s.name}</code></a>{i < skillsData.skills.length - 1 ? ", " : ". "}
+            </>
+          ))}
+          Each has its own page here, and each is plain markdown a platform
+          without plugin support can read straight from
+          <a href={REPO("skills")} target="_blank" rel="noopener">the repository</a>.
+        </li>
+        <li>
+          <strong><a href="/mcp">The MCP server</a></strong> —
+          <code>@tabnas/mcp</code> makes the commands the skills teach
+          executable: {nTools} tools to parse, validate a grammar before
+          running it, explain a failure, run fixtures, read the plugin
+          catalogue, and compare a grammar change against the one it replaces.
+          It is <code>dev.tabnas/mcp</code> in the
+          <a href="https://registry.modelcontextprotocol.io/v0/servers?search=tabnas" target="_blank" rel="noopener">official
+          MCP Registry</a>, so a client that resolves servers from the
+          registry finds both transports declared there.
+        </li>
+        <li>
+          <strong>The <code>tabnas</code> CLI</strong> — the same package,
+          the same {nTools} operations in a shell. <code>--json</code> prints
+          byte-for-byte what the MCP tool returns (golden tests hold the two
+          front-ends to it), so a shell transcript and an agent transcript
+          describe the same run.
+        </li>
+      </ul>
+
+      <Heading level={3} id="install-claude-code">In Claude Code</Heading>
+      <p>
+        One plugin delivers all of it — the {nSkills} skills plus both MCP
+        server entries. Two commands, and the second is not optional: adding a
+        marketplace registers a catalogue and installs nothing.
+      </p>
+      <pre><code>{`/plugin marketplace add tabnas/skills\n/plugin install tabnas@tabnas`}</code></pre>
+
+      <Heading level={3} id="install-any-mcp-client">In any MCP client</Heading>
+      <p>
+        Add the stdio server to your client's MCP configuration — it needs no
+        install step of its own; <code>npx</code> fetches it on first run:
+      </p>
+      <pre><code>{stdioCommand}</code></pre>
+      <p>
+        If your client cannot spawn a process, the same {nTools} tools are
+        served over streamable HTTP at <code>{hostedUrl}</code> — bounded by a
+        body cap and a per-IP rate limit, both reported by its
+        <code>/.well-known/mcp</code>. Local stdio is the recommended path:
+        free, private, unlimited. <a href="/mcp">MCP</a> has the manifest
+        JSON, each tool's contract, and the hosted endpoint's bounds.
+      </p>
+
+      <Heading level={3} id="install-cli">In a shell</Heading>
+      <pre><code>{`npm install -g @tabnas/mcp    # installs the tabnas command`}</code></pre>
+      <p>
+        <code>tabnas parse | validate | diagnose | test | plugins | compare</code>,
+        each mirroring one MCP tool. The skills teach the CLI spellings, so
+        they work with or without a server connected.
+      </p>
+    </section>
+
+    <section>
+      <Heading level={2} id="install">3 · Install the engine</Heading>
       <pre><code>{`npm install @tabnas/parser @tabnas/abnf`}</code></pre>
       <pre><code>{`go get github.com/tabnas/parser/go`}</code></pre>
       <p class="note">
@@ -65,13 +143,15 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="do-not-start-from-scratch">3 · Do not start from scratch</Heading>
+      <Heading level={2} id="do-not-start-from-scratch">4 · Do not start from scratch</Heading>
       <p>
         This is the step most worth spending time on. Extension is the cheapest
         path and the one the engine is designed for: if something close to your
         format already parses, start there and add rules. JSONC is JSON plus
         comments; jsonic is JSONC with the quoting relaxed. Check the
-        <a href="/releases">package list</a> before writing anything.
+        <a href="/releases">package list</a> before writing anything — or ask
+        the <code>list_plugins</code> MCP tool (<code>tabnas plugins</code>),
+        which answers from each plugin's own descriptor.
       </p>
       <ul>
         <li>Parsing a JSON dialect? Start from <a href={REPO("jsonic")} target="_blank" rel="noopener">jsonic</a> and remove or add rules.</li>
@@ -88,7 +168,7 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="the-rule-table">4 · The rule table</Heading>
+      <Heading level={2} id="the-rule-table">5 · The rule table</Heading>
       <p>
         This is the form to emit. It is plain data, so you can validate it,
         diff it, and print it before anything runs.
@@ -121,7 +201,7 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="actions-without-code">5 · Actions, ideally without code</Heading>
+      <Heading level={2} id="actions-without-code">6 · Actions, ideally without code</Heading>
       <p>
         A grammar that only recognises input returns nothing. Actions build the
         result. There are three ways to attach them, and you should prefer them
@@ -133,7 +213,8 @@ const groups = ORDER.map((tier) => ({
         The engine ships <code>$</code>-suffixed builtins, merged into the ref
         map when the grammar loads. Referenced by name, they let you emit a
         grammar that is <strong>pure JSON with no code in it</strong> — which is
-        the safest thing you can hand to someone else.
+        the safest thing you can hand to someone else, and the only kind of
+        grammar the MCP tools will accept.
       </p>
       <CodeTabs id="agents-builtin-actions" label="A grammar with no code in it" />
       <div class="table-wrap">
@@ -184,7 +265,7 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="constraints">6 · Constraints to design around</Heading>
+      <Heading level={2} id="constraints">7 · Constraints to design around</Heading>
       <p>These are the things that will bite. All of them are by design.</p>
       <ul>
         <li>
@@ -227,14 +308,42 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="verify">7 · Verify your work</Heading>
+      <Heading level={2} id="verify">8 · Verify your work</Heading>
       <p>
         A grammar that looks right and parses one happy-path input is not
-        evidence. Before reporting success:
+        evidence. The MCP tools and the CLI from
+        <a href="#skills-and-mcp">section 2</a> exist for exactly this loop.
+        Before reporting success:
       </p>
       <ul>
+        <li>
+          <strong>Validate before running.</strong>
+          <code>tabnas validate --grammar g.json</code> (the
+          <code>validate_grammar</code> tool) checks a serialized grammar
+          against the engine's JSON Schema and loads it in a fresh instance —
+          so a malformed table fails as a named error, not a misparse.
+        </li>
         <li>Parse several known-good inputs and assert the <em>values</em>, not just that it didn't throw.</li>
         <li>Parse known-bad inputs and confirm they're rejected. A grammar that accepts everything is a common failure.</li>
+        <li>
+          <strong>Read the diagnostic, not the message.</strong> On a failure,
+          <code>tabnas diagnose</code> (<code>explain_parse_error</code>)
+          returns code, position, expected tokens and the rule stack; the
+          <code>code</code> is a URL at <a href="/errors">/errors</a>.
+        </li>
+        <li>
+          <strong>Pin behaviour with fixtures.</strong> Write
+          <code>.tsv</code> rows — input, expected value or
+          <code>ERROR:&lt;code&gt;</code> — and run them with
+          <code>tabnas test --spec fixtures.tsv</code>
+          (<code>test_grammar</code>). One file runs against both runtimes.
+        </li>
+        <li>
+          <strong>Changing a grammar others already use?</strong>
+          <code>tabnas compare</code> (<code>compare_grammars</code>) reports
+          what a change provably keeps, what it observably changes, and with
+          what confidence — evidence, never a bare verdict.
+        </li>
         <li>Run <code>tabnas-abnf --marks</code> if an action didn't fire.</li>
         <li>Use <a href={REPO("debug")} target="_blank" rel="noopener">@tabnas/debug</a> to describe the live grammar and render it back to ABNF — if the round-trip isn't what you meant, the grammar isn't either.</li>
         <li>Use <a href={REPO("railroad")} target="_blank" rel="noopener">@tabnas/railroad</a> to draw it when the structure is hard to hold in your head.</li>
@@ -243,7 +352,7 @@ const groups = ORDER.map((tier) => ({
     </section>
 
     <section>
-      <Heading level={2} id="agents-md">8 · Per-package instructions</Heading>
+      <Heading level={2} id="agents-md">9 · Per-package instructions</Heading>
       <p>
         Every package repository ships an <code>AGENTS.md</code> with its
         layout, conventions, test commands, and the non-obvious things to know
@@ -265,32 +374,6 @@ const groups = ORDER.map((tier) => ({
         fixtures, so a change that doesn't really work fails loudly. Agent-written
         contributions are welcome and need no disclosure — see
         <a href="/community#this-project-is-ai-friendly">community</a>.
-      </p>
-    </section>
-
-    <section>
-      <Heading level={2} id="skills-and-mcp">9 · Skills and MCP</Heading>
-      <p>
-        Everything on this page is also packaged for an agent to install
-        rather than read. <a href="/skills">Skills</a> are five portable Agent
-        Skills — author a grammar, debug a parse, pin behaviour with fixtures,
-        build and upgrade plugins — and <a href="/mcp">MCP</a> is the server
-        that makes the commands they teach executable: parse, validate a
-        grammar before running it, explain a failure, run fixtures, read the
-        plugin catalogue, and compare a grammar change against the one it
-        replaces. The same {nTools} operations are a <code>tabnas</code>
-        command-line tool, so a shell transcript and an agent transcript
-        describe the same run.
-      </p>
-      <p>
-        <strong>Run it locally.</strong> <code>npx --yes @tabnas/mcp mcp</code>
-        is the supported path: free, private, unlimited, and the same code as
-        everything else here. If your client cannot spawn a process, the same
-        {nTools} tools are served over streamable HTTP at{" "}
-        <code>{hostedUrl}</code> — bounded by a body cap and a per-IP rate
-        limit, both reported by its <code>/.well-known/mcp</code>, and
-        covered by a <a href="/privacy">privacy policy</a> that is short
-        because the service keeps nothing.
       </p>
     </section>
 

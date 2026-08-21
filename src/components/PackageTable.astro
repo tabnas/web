@@ -8,12 +8,13 @@
 // appears here the moment it is added, and cannot silently go missing.
 import { PACKAGES, TIER_LABEL, REPO, NPM, GODOC, type Tier } from "../consts";
 
-const TIER_ORDER: Tier[] = ["engine", "tooling", "grammar", "plugin", "cli"];
+const TIER_ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "plugin", "cli"];
 
 // A one-line orientation per group, so the table is not just a list of names.
 const TIER_NOTE: Record<Tier, string> = {
   engine: "The machine everything else plugs into.",
   tooling: "Write, inspect and draw grammars.",
+  agent: "Serve the fleet to an agent — the MCP server and the tabnas CLI, one implementation behind both.",
   grammar: "Ready-made languages and data formats. Each is a plugin, so you can extend one rather than start over.",
   plugin: "Syntax that layers onto a host grammar instead of standing alone.",
   cli: "Command-line entry points.",

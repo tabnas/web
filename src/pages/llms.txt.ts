@@ -21,6 +21,7 @@ import {
   REPO,
 } from "../consts";
 import pkg from "../../package.json";
+import skillsData from "../data/skills.json";
 
 // One-line framing per top-level page. Keyed by href so a page added to NAV
 // without a line here is caught by the test in tools/test-examples.mjs rather
@@ -55,6 +56,7 @@ const NOTES = [
   "Every package repository ships an `AGENTS.md`, and every grammar plugin a machine-readable `tabnas.plugin.json` descriptor.",
   "npm packages are under the `@tabnas/*` scope; Go modules under `github.com/tabnas/<name>/go`. Everything is pre-1.0 — pin exact versions.",
   "Every package ships tested, runnable README examples (`// =>` assertions are executed in CI).",
+  "The workflows this site teaches are installable. Agent Skills plus MCP server entries ship as one Agent Plugins package from https://github.com/tabnas/skills — in Claude Code: `/plugin marketplace add tabnas/skills`, then `/plugin install tabnas@tabnas` (both commands; the first alone installs nothing). The MCP server alone is `npx --yes @tabnas/mcp mcp` (stdio), `dev.tabnas/mcp` in the official MCP registry, or hosted at https://mcp.tabnas.dev/mcp for clients that cannot spawn a process.",
   "A minimal end-to-end example (ABNF): `val = add` / `add = NR [ PL add ]` / `PL = \"+\"` parses `1+2+3`. Add `'@val:o:add'` to zero a total on `val`'s node and `'@add:o:NR'` to do `r.parent.node.value += r.o[0].val` — the tail self-reference compiles to a same-depth repeat, so `r.parent` is `val` for every repetition — and `parse('1+2+3').value` is `6`.",
 ];
 
@@ -75,7 +77,21 @@ export const GET: APIRoute = async () => {
       .map((i) => line(i.href, i.label, BLURBS[i.href] ?? "")),
   ];
 
-  const agents = AGENT_NAV.map((i) => line(i.href, i.label, i.blurb));
+  // One line per installed-workflow skill, generated from the same data as
+  // /skills — so a skill added to the package appears here without a second
+  // edit. The blurb is the summary's first sentence; the page has the rest.
+  const agents = [
+    ...AGENT_NAV.map((i) => line(i.href, i.label, i.blurb)),
+    ...skillsData.skills.map((s) =>
+      line(
+        `/skills/${s.name}`,
+        `skill: ${s.name}`,
+        // First sentence only — a period must end a word (".tsv" is not a
+        // sentence boundary, and one summary contains it).
+        (s.summary.match(/^.*?\.(?=\s|$)/s)?.[0] ?? s.summary).trim(),
+      ),
+    ),
+  ];
 
   const packages = PACKAGES.filter((p) => HEADLINE.includes(p.name)).map(
     (p) => `- [@tabnas/${p.name}](${REPO(p.name)}): ${p.blurb}`,

@@ -4,7 +4,7 @@ import Heading from "../components/Heading.astro";
 import { PACKAGES, TIER_LABEL, NPM, REPO, GODOC, STATUS_URL, GITHUB_ORG } from "../consts";
 import type { Tier } from "../consts";
 
-const ORDER: Tier[] = ["engine", "tooling", "grammar", "plugin", "cli"];
+const ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "plugin", "cli"];
 const groups = ORDER.map((tier) => ({
   tier,
   label: TIER_LABEL[tier],
@@ -57,8 +57,8 @@ const groups = ORDER.map((tier) => ({
                   <td class="what">{p.blurb}</td>
                   <td class="links">
                     <a href={REPO(p.name)} target="_blank" rel="noopener">source</a>
-                    <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>
-                    <a href={GODOC(p.name)} target="_blank" rel="noopener">go</a>
+                    {p.npm && <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>}
+                    {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">go</a>}
                   </td>
                 </tr>
               ))}

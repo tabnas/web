@@ -70,6 +70,7 @@ for (const href of navigable) {
 
 const PAGES = [
   ['src/pages/skills.astro', '/skills'],
+  ['src/pages/skills/[name].astro', '/skills/<name>'],
   ['src/pages/mcp.astro', '/mcp'],
   ['src/pages/errors/index.astro', '/errors'],
   ['src/pages/errors/[code].astro', '/errors/<code>'],
