@@ -79,6 +79,12 @@ function machineContentType(pathname: string): string | null {
  * Files that describe this site to other programs. They are public by
  * definition, so they answer cross-origin — a page that wants to read the
  * OpenAPI document or the MCP manifest should not need a proxy to do it.
+ *
+ * Being on the machine surface is not enough on its own: `/api` matches
+ * `isMachinePath` (so that a probe at `/api/v1/whatever` gets a JSON error)
+ * but it is an ordinary HTML page with a markdown twin. The caller decides
+ * which it is by asking whether the path has a twin — see the tail of
+ * `fetch()`, where a page gets `Vary` and data gets CORS.
  */
 function isPublicData(pathname: string): boolean {
   return isMachinePath(pathname) || /\.(txt|md)$/i.test(pathname);
@@ -234,6 +240,11 @@ function jsonError(origin: string, error: ErrorBody, extra?: HeadersInit): Respo
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
       vary: "Accept",
+      // The whole point of this body is that a program can recover from it.
+      // Successful public JSON answers cross-origin; an error that does not
+      // is unreadable by a browser client at exactly the moment it needs the
+      // code and the links.
+      "access-control-allow-origin": "*",
       ...(extra ?? {}),
     },
   });
@@ -263,6 +274,7 @@ function markdownError(origin: string, error: ErrorBody, pathname: string): Resp
       "content-type": "text/markdown; charset=utf-8",
       "cache-control": "no-store",
       vary: "Accept",
+      "access-control-allow-origin": "*",
     },
   });
 }
@@ -367,6 +379,15 @@ export default {
     }
 
     // 2. Ordinary asset serving.
+    //
+    //    Note what does NOT happen here: a request for an existing page with
+    //    `Accept: application/json` is served the HTML rather than refused.
+    //    RFC 9110 §12.5.1 permits exactly that — "the server SHOULD return
+    //    406 ... but MAY instead disregard the Accept header field" — and
+    //    being lenient is the right call for a documentation site, where
+    //    plenty of tooling sends a careless Accept and wants the page. The
+    //    406 below is for the narrower case where the caller has ruled out
+    //    every representation that exists.
     const asset = await env.ASSETS.fetch(request);
 
     if (asset.status === 404) {
@@ -390,22 +411,26 @@ export default {
       });
     }
 
-    // 4. A machine-readable file was served. Give it the type and the CORS
-    //    header it cannot carry itself.
-    if (isPublicData(url.pathname)) {
-      const response = new Response(asset.body, { status: asset.status, headers: asset.headers });
+    // 4. Decorate what was served. A path with a markdown twin is a page and
+    //    gets marked negotiable, so a CDN keeps the two variants apart and a
+    //    reader can find the other one; anything else on the machine surface
+    //    is data, and gets the type and CORS header it cannot carry itself.
+    //
+    //    These are exclusive on purpose. /api is both by the letter of
+    //    `isMachinePath` — it is the API's own documentation page — and
+    //    answering it as data was dropping its `Vary: Accept`, which is
+    //    precisely the cache mix-up the negotiation exists to prevent.
+    if (!twin && !isPublicData(url.pathname)) return asset;
+
+    const response = new Response(asset.body, { status: asset.status, headers: asset.headers });
+    if (twin) {
+      response.headers.set("vary", "Accept, Accept-Encoding");
+      response.headers.append("link", `<${twin}>; rel="alternate"; type="text/markdown"`);
+    } else {
       const type = machineContentType(url.pathname);
       if (type) response.headers.set("content-type", type);
       response.headers.set("access-control-allow-origin", "*");
-      return response;
     }
-
-    // 5. A page was served. Mark it as negotiable so a CDN keeps the markdown
-    //    and HTML variants apart, and point at the twin for discovery.
-    if (!twin) return asset;
-    const response = new Response(asset.body, { status: asset.status, headers: asset.headers });
-    response.headers.set("vary", "Accept, Accept-Encoding");
-    response.headers.append("link", `<${twin}>; rel="alternate"; type="text/markdown"`);
     return response;
   },
 };

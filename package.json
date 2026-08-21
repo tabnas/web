@@ -28,6 +28,7 @@
     "typescript": "5.9.3"
   },
   "devDependencies": {
+    "ajv": "^8.20.0",
     "linkedom": "^0.18.13",
     "pagefind": "^1.5.2",
     "rehype-autolink-headings": "7.1.0",
@@ -38,7 +39,7 @@
     "yaml": "^2.9.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "private": true,
   "scripts": {

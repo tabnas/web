@@ -76,14 +76,13 @@ export function buildOpenApi(): Record<string, unknown> {
       description: "Documentation hub",
       url: `${SITE_URL}/docs`,
     },
+    // One server only. A root `servers` entry applies to every operation that
+    // does not override it, so listing the MCP host here advertised
+    // https://mcp.tabnas.dev/errors.json and friends — URLs that do not
+    // exist. The two operations that really are on that host carry their own
+    // `servers` override instead.
     servers: [
       { url: SITE_URL, description: "The documentation site. Read-only, unauthenticated." },
-      {
-        url: MCP_URL,
-        description:
-          "The hosted MCP endpoint. Streamable HTTP; bounded by a 256 KB body cap and a " +
-          "per-IP rate limit, both reported by its /.well-known/mcp.",
-      },
     ],
     tags: [
       { name: "index", description: "Where an agent starts: the site index and this document." },
@@ -233,7 +232,7 @@ export function buildOpenApi(): Record<string, unknown> {
             200: {
               description: "The entry.",
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/ErrorCode" } },
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorCodeDocument" } },
               },
             },
             404: errorResponse("No such error code. The full list is at /errors.json."),
@@ -504,30 +503,70 @@ export function buildOpenApi(): Record<string, unknown> {
         },
         ErrorCode: {
           type: "object",
-          required: ["code", "message", "hint"],
+          description:
+            "One registry entry, exactly as src/errors.ts assembles it. A code can be declared " +
+            "in three places — the engine's own catalogue, a grammar plugin's descriptor, and a " +
+            "plugin's C ABI — and two codes in the fleet are claimed by more than one, so the " +
+            "three are separate fields rather than one `source`.",
+          required: ["code", "message", "hint", "runtime", "engine", "packages", "abi", "url"],
           properties: {
             code: {
               type: "string",
               description: "The cross-runtime contract. Branch on this, never on the message.",
               enum: ERROR_CODES,
             },
+            // Null for a plugin-only code: the message template lives in that
+            // plugin's own catalogue, and copying it here would be a second
+            // source of truth for something already generated once.
             message: {
-              type: "string",
-              description:
-                "The message template. `{name}` placeholders are filled from the diagnostic.",
-            },
-            hint: { type: "string", description: "What causes it, and what to do about it." },
-            runtime: {
-              type: "string",
-              description: "Which runtimes raise it.",
-              enum: ["both", "ts", "go"],
-            },
-            package: {
               type: ["string", "null"],
-              description: "The declaring plugin package, or null for an engine code.",
+              description:
+                "The message template, with `{name}` placeholders filled from the diagnostic. " +
+                "Null for a code declared only by a plugin or by a C ABI.",
+            },
+            hint: {
+              type: ["string", "null"],
+              description:
+                "What causes it, and what to do about it. Null where the message is null.",
+            },
+            runtime: {
+              type: ["string", "null"],
+              description: "Which runtimes raise it. Null for a code the engine does not declare.",
+              enum: ["both", "ts", "go", null],
+            },
+            engine: {
+              type: "boolean",
+              description: "Raised by the engine itself, so any grammar can produce it.",
+            },
+            packages: {
+              type: "array",
+              description: "Grammar plugins that declare this code in their descriptor.",
+              items: { type: "string" },
+            },
+            abi: {
+              type: "array",
+              description:
+                "Packages whose C ABI declares this code. A different envelope from a parse " +
+                "diagnostic: an ABI code comes back from a call into a libtabnas* library.",
+              items: { type: "string" },
             },
             url: { type: "string", format: "uri", description: "The human page for this code." },
           },
+        },
+        ErrorCodeDocument: {
+          description:
+            "What /errors/{code}.json returns: one entry, plus the two fields every generated " +
+            "document on this site carries.",
+          allOf: [
+            { $ref: "#/components/schemas/ErrorCode" },
+            {
+              type: "object",
+              properties: {
+                $comment: { type: "string" },
+                site: { type: "string", format: "uri" },
+              },
+            },
+          ],
         },
         McpManifest: {
           type: "object",

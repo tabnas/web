@@ -15,6 +15,7 @@ import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseHTML } from 'linkedom'
 import { parse as parseYaml } from 'yaml'
+import Ajv2020 from 'ajv/dist/2020.js'
 
 import { AGENT_NAV, PROJECT_NAV, NAV } from '../src/consts.ts'
 import { markdownTwin } from '../src/worker.ts'
@@ -76,6 +77,49 @@ describe('markdown twins', () => {
 
   test('site links resolved to absolute URLs', () => {
     assert.match(read('mcp.md'), /\]\(https:\/\/tabnas\.dev\/skills\)/)
+  })
+
+  // The twin is what an agent reads instead of the page, so a link the page
+  // has and the twin does not is content the agent cannot reach. This caught
+  // `data-pagefind-ignore` being treated as "not content": /how-to.md had one
+  // guide link where the page has twelve.
+  test('every internal link on a page survives into its twin', () => {
+    // Only the drops that can contain a link, mirrored from
+    // tools/gen-markdown.mjs. Widening that list should mean widening this
+    // one — deliberately, which is the point.
+    const DROPPED = ['script', 'style', 'nav', 'form', 'svg', '.heading-anchor', '[aria-hidden="true"]']
+    const losses = []
+
+    for (const page of pages) {
+      const route = page === 'index.html' ? '/' : '/' + page.replace(/(?:\/)?index\.html$|\.html$/, '')
+      const twin = markdownTwin(route)
+      const { document } = parseHTML(read(page))
+      for (const selector of DROPPED) {
+        for (const el of document.querySelectorAll(selector)) el.remove()
+      }
+      const region =
+        document.querySelector('[data-pagefind-body]') ?? document.querySelector('main')
+      if (!region) continue
+
+      const md = read(twin)
+      const hrefs = new Set(
+        [...region.querySelectorAll('a[href^="/"]')].map((a) => a.getAttribute('href')),
+      )
+      const missing = [...hrefs].filter((href) => !md.includes(ORIGIN + href))
+      if (missing.length) losses.push(`${twin} is missing ${missing.length}: ${missing.slice(0, 5).join(' ')}`)
+    }
+
+    assert.deepEqual(losses, [], 'markdown twins dropped links their pages carry')
+  })
+
+  test('/how-to.md indexes every guide, not just the heading', () => {
+    const md = read('how-to.md')
+    const guides = readdirSync(join(ROOT, 'src', 'content', 'howto')).filter((f) => f.endsWith('.md'))
+    for (const guide of guides) {
+      const slug = guide.replace(/\.md$/, '')
+      assert.ok(md.includes(`${ORIGIN}/how-to/${slug}`), `/how-to.md does not link ${slug}`)
+    }
+    assert.ok(guides.length >= 10)
   })
 })
 
@@ -161,6 +205,15 @@ describe('the OpenAPI document', () => {
 
   test('every component schema is described and typed', () => {
     for (const [name, schema] of Object.entries(doc.components.schemas)) {
+      // Either a typed object, or a composition of them — ErrorCodeDocument
+      // is one entry plus the two fields every generated document carries,
+      // which is an allOf and has no type of its own.
+      const composed = schema.allOf ?? schema.oneOf ?? schema.anyOf
+      if (composed) {
+        assert.ok(Array.isArray(composed) && composed.length >= 2, `${name}: thin composition`)
+        assert.ok(schema.description, `${name}: a composition needs a description`)
+        continue
+      }
       assert.ok(schema.type, `${name}: no type`)
       assert.ok(schema.properties, `${name}: no properties`)
     }
@@ -174,6 +227,67 @@ describe('the OpenAPI document', () => {
 
   test('/openapi.yaml is the same document', () => {
     assert.deepEqual(parseYaml(read('openapi.yaml')), doc)
+  })
+
+  // A root `servers` entry applies to every operation that does not override
+  // it, so a second one here advertised https://mcp.tabnas.dev/errors.json —
+  // a URL that does not exist. The two operations really on that host carry
+  // their own override.
+  test('the root server list is this site alone', () => {
+    assert.equal(doc.servers.length, 1)
+    assert.equal(doc.servers[0].url, ORIGIN)
+    const elsewhere = operations.filter((o) => o.op.servers)
+    assert.ok(elsewhere.length >= 2, 'the MCP operations should override the server')
+    for (const { path, op } of elsewhere) {
+      assert.equal(op.servers[0].url, 'https://mcp.tabnas.dev', path)
+    }
+  })
+})
+
+// A published schema that does not describe the response is worse than no
+// schema: a generated client rejects a valid answer. This validates the real
+// bytes the build produced against the document the build also produced, so
+// the two cannot drift. It was added because they had — the ErrorCode schema
+// declared a `package` field the response never had, omitted `engine`,
+// `packages` and `abi`, and required a `message` that is null for every
+// plugin-only code.
+describe('responses conform to their published schemas', () => {
+  const doc = readJson('openapi.json')
+  const ajv = new Ajv2020({ strict: false, allErrors: true })
+  ajv.addFormat('uri', true)
+  ajv.addSchema({ components: doc.components }, 'oas')
+
+  const CASES = [
+    ['versions.json', 'Versions'],
+    ['packages.json', 'PackageCatalogue'],
+    ['errors.json', 'ErrorRegistry'],
+    ['.well-known/mcp', 'McpManifest'],
+    // An engine code, a plugin-only code (null message), and one claimed by
+    // both an engine catalogue and a C ABI.
+    ['errors/unexpected.json', 'ErrorCodeDocument'],
+    ['errors/bad_entity_ref.json', 'ErrorCodeDocument'],
+    ['errors/internal.json', 'ErrorCodeDocument'],
+  ]
+
+  for (const [file, schema] of CASES) {
+    test(`/${file} matches ${schema}`, () => {
+      const validate = ajv.getSchema(`oas#/components/schemas/${schema}`)
+      assert.ok(validate, `${schema} is not in the document`)
+      const ok = validate(readJson(file))
+      const detail = (validate.errors ?? [])
+        .map((e) => `${e.instancePath || '/'} ${e.message} ${JSON.stringify(e.params)}`)
+        .join('\n    ')
+      assert.ok(ok, `/${file} does not match its own schema:\n    ${detail}`)
+    })
+  }
+
+  test('every error code resolves to a document that matches', () => {
+    // The three sampled above are the interesting shapes; this covers the
+    // rest, so a code with an unforeseen shape cannot slip through.
+    const validate = ajv.getSchema('oas#/components/schemas/ErrorCodeDocument')
+    for (const entry of readJson('errors.json').codes) {
+      assert.ok(validate(readJson(`errors/${entry.code}.json`)), `${entry.code} does not match`)
+    }
   })
 })
 
@@ -358,6 +472,18 @@ describe('catalogue endpoints', () => {
       doc.components.schemas.ErrorCode.properties.code.enum,
       registry.codes.map((c) => c.code),
     )
+  })
+})
+
+describe('the declared runtime', () => {
+  test('is new enough for the TypeScript imports these tests use', () => {
+    // These suites import .ts source directly. Node strips types without a
+    // flag only from 22.18 — on 22.0-22.17 `npm test` dies while loading,
+    // before a single test runs, so `>=22` was not a true floor.
+    const { engines } = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
+    const [, major, minor = '0'] = engines.node.match(/(\d+)(?:\.(\d+))?/)
+    const enough = Number(major) > 22 || (Number(major) === 22 && Number(minor) >= 18)
+    assert.ok(enough, `engines.node is "${engines.node}"; type stripping needs >=22.18`)
   })
 })
 
