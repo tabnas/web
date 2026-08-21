@@ -265,6 +265,11 @@ Cloudflare Workers via `wrangler.json`, `output: "static"` in
 **Deployment is automatic.** Cloudflare builds and publishes the site itself
 when changes land on `main`; merging a pull request is the deploy step.
 
+**Open pull requests ready for review, never as drafts.** A draft says "not
+finished yet", and work that has `npm run check` passing is finished — leaving
+it in draft only adds a step for the maintainer. If a change genuinely is not
+ready, say so in the description rather than in the PR's state.
+
 Do not run `npm run deploy` (`wrangler deploy`) **by hand** as part of shipping
 a change. It is not a disabled script: `npm run deploy` IS the Builds
 pipeline's deploy command, so it is what runs on every merge — from
