@@ -370,6 +370,11 @@ all of them for machine callers:
    `/.well-known/mcp` (no extension, so nothing to infer from) and CORS on the
    public descriptions.
 
+It also holds the site to one host: `www.tabnas.dev` is a second custom domain
+on this same Worker, so without the 301 at the top of `fetch()` both hosts
+serve every page and the apex is canonical only by `<link rel="canonical">`,
+which search engines honour and nothing else does.
+
 [am]: https://acceptmarkdown.com
 
 Two things about this are easy to get wrong:

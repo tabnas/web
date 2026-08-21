@@ -4,12 +4,16 @@
 // Until this shipped, Cloudflare served its own managed robots.txt: the
 // Content Signals Policy preamble, explaining what the signals mean and
 // declaring none of them. A file here replaces that, so it carries the
-// signals the project actually intends. Two are granted, and both are
-// already true of this site rather than new policy: it publishes llms.txt
-// and llms-full.txt so models can read the documentation (ai-input), and it
-// wants to be findable by name (search). No signal is declared for ai-train,
-// which under the policy neither grants nor restricts it — that one is a
-// rights decision for the maintainer, not a default to assume.
+// signals the project actually intends.
+//
+// All three are granted. `search` and `ai-input` follow from what the site
+// already does — it publishes llms.txt and llms-full.txt so models can read
+// the documentation, and it wants to be findable by name. `ai-train` is a
+// rights grant rather than a description, and it is the maintainer's
+// decision: MIT-licensed documentation for a project whose whole thesis is
+// that agents should be able to write grammars is not content to withhold
+// from training. Changing it later is one line here, but a granted signal is
+// not easily walked back — treat it as a policy change, not a tidy-up.
 
 import type { APIRoute } from "astro";
 import { SITE_URL } from "../openapi";
@@ -28,7 +32,7 @@ export const GET: APIRoute = () => {
 # append ".md" to the path.
 
 User-agent: *
-Content-Signal: search=yes, ai-input=yes
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
 Sitemap: ${SITE_URL}/sitemap-index.xml

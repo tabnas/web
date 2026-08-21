@@ -26,6 +26,15 @@
 // that need it: pages and machine-readable files, never the hashed bundles,
 // fonts or the Pagefind index.
 
+/**
+ * The canonical host. `www.tabnas.dev` is a second custom domain on this same
+ * Worker (see wrangler.json), so without a redirect both hosts serve every
+ * page and the apex is canonical only by `<link rel="canonical">` — which
+ * search engines honour and nothing else does. One permanent redirect makes
+ * it canonical to anything that keys on the host.
+ */
+const CANONICAL_HOST = "tabnas.dev";
+
 /** Paths the Worker never handles, even if run_worker_first sends them here. */
 const ASSET_PREFIXES = ["/_astro/", "/pagefind/", "/fonts/", "/brand/", "/diagrams/"];
 
@@ -305,6 +314,12 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const method = request.method.toUpperCase();
+
+    // One host, before anything else looks at the path.
+    if (url.hostname === `www.${CANONICAL_HOST}`) {
+      url.hostname = CANONICAL_HOST;
+      return Response.redirect(url.toString(), 301);
+    }
 
     if (method === "OPTIONS") {
       return new Response(null, {

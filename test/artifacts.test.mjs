@@ -217,12 +217,11 @@ describe('JSON-LD', () => {
       assert.ok(point.contactType, 'a contactPoint without a contactType answers no question')
       assert.ok(point.email || point.url)
     }
-    // The address is the one identity field the project has never published.
-    // If it is present it must be a PostalAddress with a country, not a stub.
-    if (org.address) {
-      assert.equal(org.address['@type'], 'PostalAddress')
-      assert.ok(org.address.addressCountry, 'a PostalAddress without a country is not an address')
-    }
+    // The address is deliberately country-only — see ORG in consts.ts. It has
+    // to be a real PostalAddress rather than an empty object either way.
+    assert.ok(org.address, 'the Organization has no address')
+    assert.equal(org.address['@type'], 'PostalAddress')
+    assert.ok(org.address.addressCountry, 'a PostalAddress without a country is not an address')
   })
 
   test('every page carries the identity graph', () => {
@@ -251,7 +250,9 @@ describe('discovery files', () => {
     assert.match(robots, /^Allow: \/$/m)
     assert.match(robots, new RegExp(`^Sitemap: ${ORIGIN}/sitemap-index\\.xml$`, 'm'))
     assert.match(robots, /llms\.txt/)
-    assert.match(robots, /^Content-Signal: /m)
+    // A granted signal is a rights decision, not a formatting detail: pin the
+    // exact line so a change to it has to be a deliberate change to this test.
+    assert.match(robots, /^Content-Signal: search=yes, ai-input=yes, ai-train=yes$/m)
   })
 
   test('the sitemap lists the new pages', () => {

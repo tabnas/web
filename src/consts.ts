@@ -139,10 +139,15 @@ export const ISSUES = `${GITHUB_ORG}/parser/issues`;
  * The project's identity, as schema.org Organization fields.
  *
  * Every value is a fact already published somewhere the reader can check —
- * the GitHub org, the npm scope, the licence, the Code of Conduct. `address`
- * is the exception: the project has never stated a postal address anywhere,
- * and an invented one is worse than a missing one, so it stays null and the
- * JSON-LD omits the field. Fill it in and it appears; nothing else changes.
+ * the GitHub org, the npm scope, the licence, the Code of Conduct.
+ *
+ * `address` is the country and nothing else, by decision rather than
+ * oversight: the project is based in Ireland, and that is the whole of what
+ * it publishes about where it is. A PostalAddress with only
+ * `addressCountry` is valid schema.org, and it is enough to answer "where is
+ * this from" without publishing a street for a one-maintainer project. Add
+ * the rest of the fields here if that changes; the JSON-LD emits whatever
+ * this object holds.
  */
 export const ORG: {
   name: string;
@@ -162,7 +167,8 @@ export const ORG: {
     "The tabnas project: an extensible, rule-table parsing engine with TypeScript and Go " +
     "runtimes, published as the @tabnas npm scope and as Go modules under github.com/tabnas.",
   email: CONTACT_EMAIL,
-  address: null,
+  // ISO 3166-1 alpha-2, which is the form schema.org recommends. Ireland.
+  address: { addressCountry: "IE" },
   sameAs: [GITHUB_ORG, NPM_ORG, AUTHOR.url],
 };
 

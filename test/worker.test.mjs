@@ -226,6 +226,25 @@ describe('serving pages', () => {
   })
 })
 
+describe('the canonical host', () => {
+  test('www redirects to the apex, keeping the path and query', async () => {
+    const res = await worker.fetch(new Request('https://www.tabnas.dev/docs/quickstart/?x=1'), env)
+    assert.equal(res.status, 301)
+    assert.equal(res.headers.get('location'), 'https://tabnas.dev/docs/quickstart/?x=1')
+  })
+
+  test('the apex itself is never redirected', async () => {
+    const res = await worker.fetch(new Request('https://tabnas.dev/docs/quickstart/'), env)
+    assert.equal(res.status, 200)
+  })
+
+  test('a host that is not www is left alone', async () => {
+    // localhost under `wrangler dev`, and any preview hostname.
+    const res = await worker.fetch(new Request('http://localhost:8787/'), env)
+    assert.equal(res.status, 200)
+  })
+})
+
 describe('the 404', () => {
   test('a nonexistent path is a real 404, never a 200', async () => {
     for (const accept of [undefined, '*/*', BROWSER, 'application/json', 'text/markdown']) {
