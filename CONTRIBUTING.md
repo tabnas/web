@@ -8,11 +8,15 @@ Thanks for helping improve the tabnas website! This repo is the source for
 ```bash
 npm install
 npm run dev      # local dev server
-npm run build    # production build
+npm run build    # production build (Astro + Pagefind + markdown twins)
+npm run preview  # build, then wrangler dev — the real Worker runtime
+npm run check    # everything CI runs
 ```
 
-Node 20+ is required. The site is currently **password-gated** while under
-construction (see `src/middleware.ts`); local `npm run dev` is not gated.
+Node 22+ is required. `npm run dev` serves the pages but not the Pagefind
+index or the markdown twins, both of which are post-build steps — use
+`npm run preview` to exercise those, and anything that goes through
+`src/worker.ts` (content negotiation, the JSON error responses, the 404).
 
 ## Ways to help
 
@@ -29,7 +33,8 @@ repository under [github.com/tabnas](https://github.com/tabnas).
 ## Pull requests
 
 - Branch from `main`, keep changes focused, and open a PR.
-- Make sure `npm run build` passes.
+- Make sure `npm run check` passes — it builds, typechecks and runs the test
+  suites in `test/`.
 - Be kind and constructive — see our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## Questions

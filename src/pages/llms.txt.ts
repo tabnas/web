@@ -22,6 +22,8 @@ import {
 } from "../consts";
 import pkg from "../../package.json";
 import skillsData from "../data/skills.json";
+import mcpTools from "../data/mcp-tools.json";
+import { operationList, SITE_URL } from "../openapi";
 
 // One-line framing per top-level page. Keyed by href so a page added to NAV
 // without a line here is caught by the test in tools/test-examples.mjs rather
@@ -36,6 +38,8 @@ const BLURBS: Record<string, string> = {
   "/status": "per-repository CI, release and compliance state",
   "/faq": "what it does, and what it won't do",
   "/community": "discussion, issues, contributing",
+  "/about": "what the project is, who builds it, how it is funded, and what state it is in",
+  "/contact": "how to reach the maintainer, and which channel suits which kind of message",
   "/releases": "every package and its current version",
   "/comparisons": "how it differs from ANTLR, Peggy, Chevrotain, nearley, tree-sitter",
   "/sponsors": "who pays for it",
@@ -45,6 +49,26 @@ const BLURBS: Record<string, string> = {
 // The packages worth naming individually. The rest are counted, with a link
 // to the full list — an index that lists everything is not an index.
 const HEADLINE = ["parser", "abnf", "debug", "railroad", "jsonic", "expr"];
+
+// When to reach for this, and when not to. The single most useful thing this
+// file can tell an agent, and the part that has to be specific: "a fast,
+// extensible parser" is a description, not guidance. Each line names a job
+// and, where the answer is another tool, says so.
+const USE_WHEN = [
+  "You need to parse a format that has no parser, or no good one, and the alternative is writing recursive descent by hand.",
+  "You need to extend a format rather than replace it — JSON with comments, a config dialect, a DSL layered over an expression syntax. Adding rules to a working grammar is the normal case here, not a fork.",
+  "You have a grammar written in RFC 5234 ABNF (an RFC, an IETF draft, a protocol spec) and want a working parser from it directly, without translating it into another notation first.",
+  "You need the same parser in TypeScript and Go, returning the same tree. One grammar, two runtimes, pinned by shared fixtures that both must pass.",
+  "You have been asked to write a parser and you are a language model. A grammar here is flat declarative data with no control flow, so you can emit it as JSON, validate it before running it, and pin it with fixtures. Start at https://tabnas.dev/agents.",
+  "You want to check text against a GBNF constrained-decoding grammar without running a model — that is @tabnas/gbnf.",
+];
+
+const USE_INSTEAD = [
+  "The grammar is ambiguous and needs backtracking or GLR. This engine is deterministic and does not do either; ANTLR or a GLR parser is the right answer.",
+  "You need incremental re-parsing for an editor buffer — that is tree-sitter's job.",
+  "You want generated parser source code in a language to check into your repository. Grammars here stay data and are interpreted by the engine at runtime.",
+  "You need a mature 1.0 with a large community behind it. Everything here is pre-1.0 with one maintainer; https://tabnas.dev/comparisons names the cases where another tool wins.",
+];
 
 const NOTES = [
   "Start by checking whether an existing grammar already parses something close to your format, and extend it. Extension is what the engine is built for.",
@@ -97,12 +121,57 @@ export const GET: APIRoute = async () => {
     (p) => `- [@tabnas/${p.name}](${REPO(p.name)}): ${p.blurb}`,
   );
 
+  // How to actually call it, cheapest setup first. The commands come from the
+  // generated data, so they are the ones that ship.
+  const stdio = skillsData.mcp["tabnas"];
+  const stdioCommand = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
+  const hostedUrl = skillsData.mcp["tabnas-hosted"]?.url;
+  const tools = mcpTools.tools;
+
+  const calling = [
+    `- **Over MCP, no install.** \`${stdioCommand}\` speaks MCP over stdio and gives you ${tools.length} tools: ${tools.join(", ")}. In Claude Code, \`/plugin marketplace add tabnas/skills\` then \`/plugin install tabnas@tabnas\` installs the ${skillsData.skills.length} skills and both server entries. In a registry-aware client the server is \`dev.tabnas/mcp\`. Hosted at ${hostedUrl} for clients that cannot spawn a process. The handshake for either is ${SITE_URL}/.well-known/mcp.`,
+    `- **In a shell.** \`npm install -g @tabnas/mcp\` puts \`tabnas\` on your path: \`tabnas parse | validate | diagnose | test | plugins | compare\`. \`--json\` prints byte-for-byte what the matching MCP tool returns. Exit code 0 means yes, 1 means the operation said no, 2 is a usage error.`,
+    `- **In your own code.** \`npm install @tabnas/parser @tabnas/abnf\`, or \`go get github.com/tabnas/parser/go\`. Pin exact versions: everything is pre-1.0.`,
+    `- **Read first.** ${SITE_URL}/agents is the build guide written for an agent — the format to emit, the constraints, how to verify. ${SITE_URL}/llms-full.txt is every documentation page in one request.`,
+  ];
+
+  // The endpoints, generated from the same OpenAPI document /openapi.json
+  // serialises, so this list cannot describe a surface the spec does not.
+  const EXAMPLE_PATH: Record<string, string> = {
+    "/errors/{code}.json": "/errors/unexpected.json",
+    "/{page}.md": "/docs/quickstart.md",
+  };
+  const endpoints = operationList()
+    .filter((o) => o.server === SITE_URL)
+    .map((o) => {
+      // A templated path is not a link. Give the pattern, then one URL that
+      // resolves, so a reader can see the shape and try it in the same line.
+      const example = EXAMPLE_PATH[o.path];
+      return example
+        ? `- \`${o.path}\`: ${o.summary} — e.g. ${SITE_URL}${example}`
+        : `- [${o.path}](${o.url}): ${o.summary}`;
+    });
+
   const body = `# tabnas
 
 > ${SITE_DESCRIPTION.replace(/\s+/g, " ").trim()}
 
 Documentation on this site describes @tabnas/parser ${engine}; the exact
 package pins are at https://tabnas.dev/versions.json.
+
+## When to use tabnas
+
+Reach for tabnas when:
+
+${USE_WHEN.map((u) => `- ${u}`).join("\n")}
+
+Reach for something else when:
+
+${USE_INSTEAD.map((u) => `- ${u}`).join("\n")}
+
+How to call it, least setup first:
+
+${calling.join("\n")}
 
 ## Site
 
@@ -111,6 +180,14 @@ ${site.join("\n")}
 ## For agents
 
 ${agents.join("\n")}
+
+## Machine-readable endpoints
+
+Every one is a GET, needs no key and is not rate limited. All of them are described by an OpenAPI 3.1 document at ${SITE_URL}/openapi.json.
+
+${endpoints.join("\n")}
+
+Every page on this site is also available as markdown: send \`Accept: text/markdown\` to any page URL, or append \`.md\` to its path (\`/index.md\` for the home page). Those responses carry \`Vary: Accept\`. A path that does not exist returns a real 404 — markdown by default, or a JSON error object with a \`code\`, a \`message\` and a \`hint\` if you ask for JSON, request anything under /api/, or request a path ending .json.
 
 ## Documentation
 
