@@ -148,6 +148,8 @@ export const PACKAGES: {
     blurb: "Inspect a live grammar — describe it, render it back as ABNF." },
   { name: "railroad", tier: "tooling", version: "0.3.5", npm: true, go: true,
     blurb: "Render railroad (syntax) diagrams from a grammar." },
+  { name: "support", tier: "tooling", version: "0.3.3", npm: true, go: true,
+    blurb: "Shared .tsv fixture loaders and the error-code census helpers — the machinery behind every repo's two-runtime specs." },
 
   // Agent tooling. TypeScript-only — tooling over the engine, not a parity
   // package, so there is no Go module (the only entry with go: false).
