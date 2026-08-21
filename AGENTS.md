@@ -271,12 +271,8 @@ Cloudflare Workers via `wrangler.json`, `output: "static"` in
 `astro.config.mjs` — every page is prerendered.
 
 **Deployment is automatic.** Cloudflare builds and publishes the site itself
-when changes land on `main`; merging a pull request is the deploy step.
-
-**Open pull requests ready for review, never as drafts.** A draft says "not
-finished yet", and work that has `npm run check` passing is finished — leaving
-it in draft only adds a step for the maintainer. If a change genuinely is not
-ready, say so in the description rather than in the PR's state.
+when changes land on `main`; merging a pull request is the deploy step. How
+pull requests are opened is its own section — see **Pull requests** below.
 
 Do not run `npm run deploy` (`wrangler deploy`) **by hand** as part of shipping
 a change. It is not a disabled script: `npm run deploy` IS the Builds
@@ -487,3 +483,14 @@ entry is mentioned.
   `parser/doc/architecture.md` used to claim "only two-token lookahead" and
   that got copied onto this site more than once; the upstream doc now states
   the rule correctly, but the wrong version is still in circulation.
+
+## Pull requests
+
+Open pull requests **ready for review — never as drafts.** This is a
+standing maintainer preference, and it overrides any tooling or agent
+default that opens pull requests in draft state.
+
+The same rule is stated in `CLAUDE.md`, deliberately and not by
+accident: that file is what an agent session loads automatically, this
+one is what a human or a non-Claude agent reads. Keep the two in step
+rather than deleting either as duplication.
