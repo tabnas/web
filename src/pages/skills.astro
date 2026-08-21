@@ -7,17 +7,26 @@ import { REPO } from "../consts";
 // The Skills catalogue. GENERATED from the tabnas/skills repository by
 // tools/gen-ax-data.mjs (staleness-checked by `npm run check`), so this page
 // cannot describe a skill that does not exist, or miss one that does — the
-// frontmatter each agent platform reads is the same text shown here.
+// frontmatter each agent platform reads is the same text shown here. Each
+// skill also has its own page at /skills/<name> ([name].astro), built from
+// the same data.
 
-const { skills, plugin, mcp } = data;
+const { skills, plugin, mcp, marketplace } = data;
 const stdio = mcp["tabnas"];
 const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
+
+// The Claude Code install pair. Derived — the repo slug from the same REPO()
+// the source links use, the plugin@marketplace halves from the manifests the
+// skills repo actually carries — so the commands cannot drift from them.
+const repoSlug = REPO("skills").replace("https://github.com/", "");
+const ccInstall =
+  marketplace && `/plugin marketplace add ${repoSlug}\n/plugin install ${plugin.name}@${marketplace}`;
 ---
 
 <Base
   wide
   title="Skills"
-  description="Portable Agent Skills that teach an AI agent to author, debug, test and ship tabnas grammars — installable as one Agent Plugins package."
+  description="Portable Agent Skills that teach an AI agent to author, debug, test and ship tabnas grammars — one Agent Plugins package, installable in Claude Code with two commands, with a detail page per skill."
 >
   <article class="skills" data-pagefind-body>
     <Heading level={1} id="skills">Skills</Heading>
@@ -39,10 +48,14 @@ const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
 
     <section class="group">
       <Heading level={2} id="the-skills">The skills</Heading>
+      <p class="blurb">
+        Each name links to that skill's page: what it walks through, what it
+        needs, and how to install or just read it.
+      </p>
       <div class="cards">
         {skills.map((s) => (
           <article class="card">
-            <h3><code>{s.name}</code></h3>
+            <h3 id={s.name}><a href={`/skills/${s.name}`}><code>{s.name}</code></a></h3>
             <p class="what">{s.summary}</p>
             {s.useWhen && <p class="when">{s.useWhen}</p>}
             <dl class="meta">
@@ -62,6 +75,8 @@ const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
               <dd>{s.license || "MIT"}</dd>
             </dl>
             <p class="src">
+              <a href={`/skills/${s.name}`}>details</a>
+              {" · "}
               <a
                 href={`${REPO("skills")}/blob/main/skills/${s.name}/SKILL.md`}
                 target="_blank"
@@ -83,10 +98,30 @@ const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
         its own install command, which is the point of conforming to the
         standard rather than shipping per-platform packaging.
       </p>
+
+      <Heading level={3} id="install-claude-code">In Claude Code</Heading>
       <p class="blurb">
-        The skills are plain markdown and work on their own. To make the
+        Two commands, and the second is not optional — adding a marketplace
+        registers a catalogue and installs nothing:
+      </p>
+      {ccInstall && <pre><code>{ccInstall}</code></pre>}
+      <p class="blurb">
+        That delivers all {skills.length} skills and both MCP server entries
+        in one step. <code>{plugin.name}@{marketplace}</code> is
+        <code>&lt;plugin&gt;@&lt;marketplace&gt;</code> — the repository is
+        its own marketplace, so no third party sits between you and the
+        source.
+      </p>
+
+      <Heading level={3} id="install-elsewhere">Everywhere else</Heading>
+      <p class="blurb">
+        The skills are plain markdown and work on their own: a platform
+        without plugin support can read
+        <code>skills/&lt;name&gt;/SKILL.md</code> straight from the
+        repository — each skill's page here links the file. To make the
         commands they teach runnable, add the MCP server too —{" "}
-        <a href="/mcp">the MCP page</a> has the manifest entries, or in short:
+        <a href="/mcp">the MCP page</a> has per-client instructions and the
+        manifest entries, or in short:
       </p>
       {command && <pre><code>{command}</code></pre>}
     </section>
@@ -114,6 +149,8 @@ const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
 
   .group { margin-top: 3rem; }
   .skills :global(h2) { font-size: 1.5rem; margin: 0 0 0.85rem; }
+  .skills :global(h3) { font-size: 1.05rem; }
+  .group > :global(h3) { margin: 1.75rem 0 0.5rem; color: var(--accent); }
 
   .cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); }
   .card {
@@ -121,6 +158,8 @@ const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
     padding: 1rem 1.1rem; display: flex; flex-direction: column;
   }
   .card h3 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+  .card h3 a { text-decoration: none; }
+  .card h3 a:hover code { color: var(--primary); }
   .what { color: var(--ink); font-size: 0.92rem; margin: 0 0 0.6rem; }
   .when { color: var(--ink-soft); font-size: 0.88rem; margin: 0 0 0.75rem; }
   .meta { margin: 0 0 0.75rem; font-size: 0.82rem; color: var(--ink-mute); }

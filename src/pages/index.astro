@@ -5,7 +5,9 @@ import CodeTabs from "../components/CodeTabs.astro";
 import { PACKAGES, NPM, REPO, GODOC, GITHUB_ORG, SITE_TAGLINE, SPONSOR, AUTHOR } from "../consts";
 import emblem from "../assets/brand/mark.svg";
 
-const core = PACKAGES.filter((p) => p.tier === "engine" || p.tier === "tooling");
+const core = PACKAGES.filter(
+  (p) => p.tier === "engine" || p.tier === "tooling" || p.tier === "agent",
+);
 const grammars = PACKAGES.filter((p) => p.tier === "grammar");
 ---
 
@@ -110,7 +112,9 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
         <p>
           A grammar is flat declarative data — rules, token alternates,
           actions. That's a shape a model can emit reliably and you can check
-          before running. See <a href="/agents">agents</a>.
+          before running. The whole workflow installs into an agent, as
+          <a href="/skills">skills</a> and an <a href="/mcp">MCP server</a> —
+          <a href="/agents">agents</a> has the commands.
         </p>
       </article>
       <article>
@@ -263,11 +267,11 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
   <section class="packages">
     <Heading level={2} id="packages">Packages</Heading>
     <p class="sec-note">
-      A small core engine, three tools for working with grammars, and
-      {grammars.length} languages built on top — most of them extensions of
-      another one in the list. All {PACKAGES.length} are written for both
-      runtimes; the <a href="/releases">releases</a> page has the versions,
-      and which registries each one is on.
+      A small core engine, tools for writing grammars and for connecting
+      agents, and {grammars.length} languages built on top — most of them
+      extensions of another one in the list. The
+      <a href="/releases">releases</a> page has all {PACKAGES.length}, their
+      versions, and which registries each one is on.
     </p>
 
     <div class="grid pkgs">

@@ -17,20 +17,27 @@ const command = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
 // One row per tool. The CLI runs the same core, so each tool has a
 // subcommand that returns the same bytes.
 //
-// The prose and the CLI mapping are editorial and authored here; the SET of
-// tools is not. src/data/mcp-tools.json is generated from the mcp repo's
-// ts/src/tools.ts, and the assertion below joins the two — add or remove a
-// tool there and this page fails to build rather than quietly going stale.
-// It went stale once already: Phase 5 added `compare_grammars` and this
-// table still said six for weeks.
+// The prose, the CLI mapping and the result shapes are editorial and
+// authored here; the SET of tools is not. src/data/mcp-tools.json is
+// generated from the mcp repo's ts/src/tools.ts, and the assertion below
+// joins the two — add or remove a tool there and this page fails to build
+// rather than quietly going stale. It went stale once already: Phase 5
+// added `compare_grammars` and this table still said six for weeks.
 const TOOLS = [
-  { tool: "parse", cli: "tabnas parse", what: "Parse input with a grammar and return the tree." },
-  { tool: "validate_grammar", cli: "tabnas validate", what: "Check a serialized GrammarSpec before running it." },
-  { tool: "explain_parse_error", cli: "tabnas diagnose", what: "Explain a failure: code, position, expected, rule stack." },
-  { tool: "test_grammar", cli: "tabnas test", what: "Run shared .tsv fixtures against a grammar." },
-  { tool: "list_plugins", cli: "tabnas plugins", what: "List the grammar plugins and what each parses." },
-  { tool: "describe_plugin", cli: "tabnas plugins <name>", what: "One plugin's descriptor: base, grammar, extensions, error codes." },
-  { tool: "compare_grammars", cli: "tabnas compare", what: "Does a grammar change still accept what the old one accepted, and build the same trees? Reports evidence and confidence, never a bare verdict." },
+  { tool: "parse", cli: "tabnas parse", what: "Parse input with a grammar and return the tree.",
+    returns: "{ok:true, tree} | {ok:false, diagnostic}" },
+  { tool: "validate_grammar", cli: "tabnas validate", what: "Check a serialized GrammarSpec before running it.",
+    returns: "{ok:true, v} | {ok:false, errors:[{path,message}]}" },
+  { tool: "explain_parse_error", cli: "tabnas diagnose", what: "Explain a failure: code, position, expected, rule stack, joined with the error registry's entry for the code.",
+    returns: "{failed:false} | {failed:true, diagnostic, registry}" },
+  { tool: "test_grammar", cli: "tabnas test", what: "Run shared .tsv fixtures against a grammar.",
+    returns: "{pass, fail, rows:[{row,input,expected,got,ok}]}" },
+  { tool: "list_plugins", cli: "tabnas plugins", what: "List the grammar plugins and what each parses.",
+    returns: "{plugins:[…]}" },
+  { tool: "describe_plugin", cli: "tabnas plugins <name>", what: "One plugin's descriptor: base, grammar, extensions, error codes.",
+    returns: "the tabnas.plugin.json object" },
+  { tool: "compare_grammars", cli: "tabnas compare", what: "Does a grammar change still accept what the old one accepted, and build the same trees? Reports evidence and confidence, never a bare verdict.",
+    returns: "{proven[], observed[], changes[], counterexamples[], confidence, why}" },
 ];
 
 // The gate. Compares against the generated set, both sorted, so ordering
@@ -49,23 +56,32 @@ if (authored.join() !== actual.join()) {
 // either way — the count is never typed.
 const WORDS = ["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
 const toolCount = WORDS[TOOLS.length] ?? String(TOOLS.length);
+const skillCount = WORDS[data.skills.length] ?? String(data.skills.length);
 
 const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
+
+// The registry entry's canonical name, and the query that proves it exists.
+const REGISTRY_NAME = "dev.tabnas/mcp";
+const REGISTRY_URL =
+  "https://registry.modelcontextprotocol.io/v0/servers?search=tabnas";
 ---
 
 <Base
   wide
   title="MCP"
-  description="Connect an agent to tabnas over the Model Context Protocol: seven tools for parsing, validating grammars, explaining failures, running fixtures and comparing grammar versions."
+  description="Connect an agent to tabnas over the Model Context Protocol: seven tools for parsing, validating grammars, explaining failures, running fixtures and comparing grammar versions — local stdio, a hosted endpoint, and dev.tabnas/mcp in the official MCP Registry."
 >
   <article class="mcp" data-pagefind-body>
     <Heading level={1} id="mcp">MCP</Heading>
     <p class="lede">
       <code>@tabnas/mcp</code> gives an agent {toolCount} tools over the Model Context
       Protocol — parse with a grammar, validate one before running it, explain
-      a failure, run fixtures, and read the plugin catalogue. The same package
-      installs a <code>tabnas</code> command-line tool running the same core,
-      so anything an agent can do through MCP you can reproduce in a shell.
+      a failure, run fixtures, read the plugin catalogue, and compare two
+      grammar versions. The same package installs a <code>tabnas</code>
+      command-line tool running the same core, so anything an agent can do
+      through MCP you can reproduce in a shell. It is listed in the official
+      MCP Registry as <code>{REGISTRY_NAME}</code>, and it is one of the two
+      MCP entries the <a href="/skills">Skills package</a> installs.
     </p>
 
     <section class="group">
@@ -81,17 +97,46 @@ const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
         <a href="/skills">Skills package</a> already declares:
       </p>
       <pre><code>{manifest}</code></pre>
+
+      <Heading level={3} id="claude-code">In Claude Code</Heading>
+      <p class="blurb">
+        The <a href="/skills#install">skills plugin</a> installs both server
+        entries alongside the {skillCount} skills — that is the recommended
+        route, since the skills teach the workflows these tools execute. To
+        register the server alone:
+      </p>
+      {command && <pre><code>{`claude mcp add tabnas -- ${command}`}</code></pre>}
+
+      <Heading level={3} id="registry">In the MCP Registry</Heading>
+      <p class="blurb">
+        The server is <code>{REGISTRY_NAME}</code> in the{" "}
+        <a href={REGISTRY_URL} target="_blank" rel="noopener">official MCP
+        Registry</a> — the namespace is verified against the
+        <code>tabnas.dev</code> domain itself. A client that resolves servers
+        from the registry gets both transports from one entry: the npm package
+        (<code>@tabnas/mcp</code>, stdio, run via <code>npx</code>) and the
+        hosted streamable-HTTP remote. The entry is declared by{" "}
+        <a href={`${REPO("mcp")}/blob/main/server.json`} target="_blank" rel="noopener">server.json</a>{" "}
+        in the mcp repository and republished by the release pipeline, so it
+        tracks the npm version.
+      </p>
+
+      <Heading level={3} id="hosted">Hosted, for clients that cannot spawn a process</Heading>
       {hosted && (
-        <p class="note">
-          The <code>tabnas-hosted</code> entry points at a hosted endpoint for
-          clients that cannot run <code>npx</code>, live at
-          <code>{hosted.url}</code>. Local stdio stays the
+        <p class="blurb">
+          The <code>tabnas-hosted</code> entry points at{" "}
+          <code>{hosted.url}</code>. Local stdio stays the{" "}
           <strong>recommended</strong> path: it is free, private, unlimited
           and reproducible. The hosted endpoint is a convenience for clients
-          that cannot spawn a process, and it is bounded — a 256&nbsp;KB body
-          cap and a per-IP rate limit, both reported by
-          <code>/.well-known/mcp</code>. Document content is never logged,
-          stored, or used for training.
+          that cannot run <code>npx</code>, and it is bounded — a 256&nbsp;KB
+          body cap and a per-IP rate limit, both reported by its{" "}
+          <a href="https://mcp.tabnas.dev/.well-known/mcp" target="_blank" rel="noopener"><code>/.well-known/mcp</code></a>.
+          Document content is never logged, stored, or used for training —
+          the <a href="/privacy">privacy policy</a> is short because the
+          service keeps nothing. Checking it by hand: the endpoint is
+          POST-only JSON-RPC, so a browser gets a 405 that says so;{" "}
+          <a href="https://mcp.tabnas.dev/health" target="_blank" rel="noopener"><code>/health</code></a>{" "}
+          and <code>/.well-known/mcp</code> are the two GET routes.
         </p>
       )}
     </section>
@@ -101,7 +146,7 @@ const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Tool</th><th>CLI</th><th>What it does</th></tr>
+            <tr><th>Tool</th><th>CLI</th><th>What it does</th><th>Returns</th></tr>
           </thead>
           <tbody>
             {TOOLS.map((t) => (
@@ -109,6 +154,7 @@ const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
                 <th scope="row"><code>{t.tool}</code></th>
                 <td><code>{t.cli}</code></td>
                 <td class="what">{t.what}</td>
+                <td class="ret"><code>{t.returns}</code></td>
               </tr>
             ))}
           </tbody>
@@ -120,16 +166,85 @@ const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
         tests, so a shell transcript and an agent transcript describe the same
         run.
       </p>
+
+      <Heading level={3} id="contracts">The contracts worth knowing</Heading>
+      <ul class="blurb">
+        <li>
+          <strong>Every call gets a fresh engine.</strong> <code>parse</code>
+          applies <code>options</code> first, then <code>grammar</code>; with
+          no grammar the bare engine defines no rules, so every input yields
+          an undefined tree.
+        </li>
+        <li>
+          <strong>A grammar argument is validated before it is used</strong>,
+          by every operation that accepts one — an invalid grammar is rejected
+          with <code>validate_grammar</code>'s error shape rather than
+          half-run.
+        </li>
+        <li>
+          <strong>A grammar is data, never code.</strong> A firewall runs
+          first on every grammar-accepting operation: it rejects{" "}
+          <code>__proto__</code> / <code>constructor</code> /{" "}
+          <code>prototype</code> keys anywhere in the tree, any{" "}
+          <code>ref</code> key (live functions are not JSON), any function
+          reference that is not a <code>$</code>-suffixed engine builtin, a{" "}
+          <code>plugins</code> option (a plugin is live code), and grammars
+          over 5000 rules. "Validate this grammar" never becomes "run this
+          code".
+        </li>
+        <li>
+          <strong>The tools take a serialized GrammarSpec — never ABNF, EBNF
+          or jsonic source.</strong> Compiling a notation means running a
+          compiler, which the rule above forbids. Compile first, then pass
+          the result:
+          <pre class="in-li"><code>{`const { abnfConvert, toPureSpec } = require('@tabnas/abnf')\nconst spec = toPureSpec(abnfConvert(abnfSource, { builtins: true }))\n// -> { options, rule, v, meta } — validates clean, safe to send`}</code></pre>
+          <code>toPureSpec</code> is the function for this — it strips the
+          compiler-internal fields the firewall rejects and stamps{" "}
+          <code>v</code>.
+        </li>
+        <li>
+          <strong><code>test_grammar</code> takes TSV content</strong> in the
+          fleet's fixture convention: a header row, an escape-decoded input
+          column, and an expected column holding a JSON value or{" "}
+          <code>ERROR</code> / <code>ERROR:&lt;code&gt;</code>. Specs over
+          10&nbsp;000 rows are refused.
+        </li>
+      </ul>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="cli">The <code>tabnas</code> CLI</Heading>
+      <p class="blurb">
+        The package's one binary. <code>npm install -g @tabnas/mcp</code> puts
+        it on your path; the skills teach these spellings, so they work with
+        or without a server connected. Input comes from a file argument, or
+        stdin when it is <code>-</code> or absent; the CLI never touches the
+        network.
+      </p>
+      <pre><code>{`tabnas parse    [file|-] [--grammar g.json] [--json]\ntabnas validate --grammar g.json [--json]\ntabnas diagnose [file|-] [--grammar g.json] [--json]\ntabnas test     --spec fixtures.tsv [--grammar g.json] [--json]\ntabnas plugins  [name] [--json]\ntabnas compare  --a old.json --b new.json [--corpus dir|file] [--json]\ntabnas mcp      # run the MCP server (stdio)`}</code></pre>
+      <p class="blurb">
+        Exit codes are part of the contract: <code>0</code> means yes (parse
+        succeeded, grammar valid, all fixture rows passed), <code>1</code>
+        means the operation said no (parse failure, invalid grammar, fixture
+        failures), and <code>2</code> is a usage error. Without{" "}
+        <code>--json</code> you get a readable rendering; with it, the exact
+        core result JSON.
+      </p>
     </section>
 
     <section class="group">
       <Heading level={2} id="what-it-serves">What it serves</Heading>
       <p class="blurb">
-        The server also exposes the fleet's contract files as MCP resources:
-        the grammar JSON Schema, the diagnostic schema, the{" "}
-        <a href="/errors">error registry</a>, and every plugin's descriptor.
-        Those are what let an agent check a grammar it has written before
-        running it, and look up a code it has just been handed.
+        The server also exposes the fleet's contract files as MCP resources,
+        verbatim from the package's bundled data: the grammar JSON Schema
+        (<code>tabnas://schema/grammar</code>), the diagnostic schema
+        (<code>tabnas://schema/diagnostic</code>), the{" "}
+        <a href="/errors">error registry</a> (<code>tabnas://errors</code>),
+        every plugin's descriptor (<code>tabnas://plugins</code>), and the
+        recorded cross-runtime divergences
+        (<code>tabnas://divergence</code>). Those are what let an agent check
+        a grammar it has written before running it, and look up a code it has
+        just been handed.
       </p>
       <p class="blurb">
         Source and full tool schemas:{" "}
@@ -161,14 +276,19 @@ const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
 
   .group { margin-top: 3rem; }
   .mcp :global(h2) { font-size: 1.5rem; margin: 0 0 0.85rem; }
+  .mcp :global(h3) { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; color: var(--accent); }
 
   pre {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 4px; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.9rem;
   }
+  ul.blurb { padding-left: 1.2rem; }
+  ul.blurb li { margin-bottom: 0.7rem; }
+  ul.blurb li strong { color: var(--ink); }
+  pre.in-li { margin: 0.6rem 0 0.4rem; font-size: 0.82rem; }
 
   .table-wrap { overflow-x: auto; }
-  table { width: 100%; min-width: 40rem; border-collapse: collapse; font-size: 0.95rem; }
+  table { width: 100%; min-width: 52rem; border-collapse: collapse; font-size: 0.95rem; }
   th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
   thead th {
     font-family: var(--font-mono); font-size: 0.68rem;
@@ -177,4 +297,5 @@ const manifest = JSON.stringify({ servers: data.mcp }, null, 2);
   }
   tbody th { font-weight: 400; white-space: nowrap; }
   .what { color: var(--ink-soft); }
+  .ret code { font-size: 0.78em; }
 </style>
