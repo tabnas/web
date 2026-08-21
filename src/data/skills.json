@@ -12,7 +12,7 @@
       "command": [
         "npx",
         "--yes",
-        "@tabnas/mcp@0.1.12",
+        "@tabnas/mcp@0.1.13",
         "mcp"
       ]
     },
