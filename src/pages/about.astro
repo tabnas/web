@@ -1,0 +1,155 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { AUTHOR, SPONSOR, GITHUB_ORG, NPM_ORG, PACKAGES, CONTACT_EMAIL, SITE_MOTTO } from "../consts";
+import pkg from "../../package.json";
+
+// What the project is, who runs it, and how it is paid for — in one place.
+//
+// The material is spread across /why (the argument), /community (how to take
+// part) and /sponsors (who funds it), which is right for a reader following a
+// thread and wrong for anyone — person or program — arriving with the plain
+// question "what is this and who is behind it". This page answers that and
+// links onward rather than restating those pages.
+//
+// The counts and versions are derived, never typed, for the same reason they
+// are derived everywhere else on this site.
+const engine = (pkg.dependencies as Record<string, string>)["@tabnas/parser"];
+const packageCount = PACKAGES.length;
+const grammarCount = PACKAGES.filter((p) => p.tier === "grammar").length;
+const goCount = PACKAGES.filter((p) => p.go).length;
+---
+
+<Base
+  title="About"
+  description="What tabnas is, who builds it, how it is funded, and what state it is in — the tabnas project in one page, with the links to check any of it."
+>
+  <article class="about" data-pagefind-body>
+    <Heading level={1} id="about-tabnas">About tabnas</Heading>
+
+    <p class="lede">
+      <i>tabnas</i> is an open source parsing engine. It is a project, not a
+      product: nothing here is sold, there is no account to create, and the
+      code runs on your machine rather than ours.
+    </p>
+
+    <section class="group">
+      <Heading level={2} id="what-it-is">What it is</Heading>
+      <p>
+        A parser normally arrives as generated code, or as recursive descent
+        written by hand. Either way, extending someone else's language means
+        forking their parser and owning the fork. <i>tabnas</i> takes the other
+        route: the engine is a for-loop over tokens with a rule stack, and a
+        grammar is the lookup table it walks. Because that table is ordinary
+        data, extending a language means adding rows to a table that already
+        works — JSON becomes JSONC becomes jsonic becomes YAML, each one a
+        plugin over the last.
+      </p>
+      <p>
+        The second consequence is why the project has an
+        <a href="/agents">agent-facing half</a>. A flat, declarative, control-flow-free
+        table is a good compile target: RFC 5234 ABNF compiles into it, and so
+        does the output of a language model — and unlike generated code, you
+        can validate the result before you run it.
+        <a href="/why">Why tabnas</a> is the long-form version of this
+        argument, and the source document for everything else on the site.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="what-ships">What ships</Heading>
+      <p>
+        {packageCount} packages: the engine, the grammar tooling,
+        {" "}{grammarCount} language and data-format grammars, the syntax
+        plugins, and the agent distributions — Agent Skills, an
+        <a href="/mcp">MCP server</a> and the <code>tabnas</code> command-line
+        tool. {goCount} of them ship as a Go module as well as an npm package,
+        from one shared set of fixtures that both runtimes must pass.
+        <a href="/releases">Releases</a> lists every one with its current
+        version; <a href="/versions.json"><code>/versions.json</code></a> is
+        the same answer for a program.
+      </p>
+      <p>
+        Everything is MIT licensed. The source is on GitHub under
+        {" "}<a href={GITHUB_ORG} target="_blank" rel="noopener">github.com/tabnas</a>,
+        and the packages are published to npm under
+        {" "}<a href={NPM_ORG} target="_blank" rel="noopener">the @tabnas scope</a>.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="who">Who builds it</Heading>
+      <p>
+        <i>tabnas</i> is written by
+        {" "}<a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>,
+        who has been building parsers and open source Node.js libraries for a
+        long time — the engine grew out of
+        {" "}<a href="https://github.com/jsonicjs/jsonic" target="_blank" rel="noopener">jsonic</a>,
+        a forgiving JSON parser, which is still one of the grammars here.
+      </p>
+      <p>
+        One maintainer is a real constraint and the site says so rather than
+        implying a team. Contributions arrive through GitHub and are welcome,
+        including ones written with an AI agent —
+        <a href="/community">community</a> explains how that works and why the
+        shared fixtures make it safe.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="funding">How it is funded</Heading>
+      <p>
+        {SPONSOR.blurb} There is no commercial edition, no hosted plan to
+        upgrade to, and no telemetry in any package. The one service the
+        project operates is the hosted MCP endpoint, which exists for agent
+        clients that cannot spawn a local process; it stores nothing, and the
+        <a href="/privacy">privacy policy</a> is short because there is
+        nothing to describe. <a href="/sponsors">Sponsors</a> has the detail.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="state">What state it is in</Heading>
+      <p>
+        Pre-1.0, and pinned exactly for that reason: the engine is at
+        {" "}<code>{engine}</code>, and a caret range would silently accept the
+        next minor. The parser is deterministic, which means it does not
+        handle ambiguous grammars, and you supply the lexer's token
+        definitions.
+        <a href="/comparisons">Other parsers</a> names the cases where ANTLR,
+        Peggy, Chevrotain, nearley or tree-sitter is the better answer, and
+        the <a href="/faq">FAQ</a> has a scope section for the things this
+        project will not do.
+      </p>
+      <p>
+        Per-repository CI, release and compliance state is published at
+        <a href="/status">status</a>, so the claim that both runtimes agree is
+        one you can check rather than take.
+      </p>
+    </section>
+
+    <section class="group">
+      <Heading level={2} id="reach-us">Getting in touch</Heading>
+      <p>
+        Questions and bug reports go through GitHub;
+        {" "}<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> reaches the
+        maintainer directly. <a href="/contact">Contact</a> has the right
+        channel for each kind of message.
+      </p>
+      <p class="motto">
+        <i>{SITE_MOTTO}</i> — Irish for "a table of translations", which is
+        what a grammar is.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .about { max-width: 52rem; }
+  .about :global(h1) { font-size: clamp(2rem, 4.5vw, 2.8rem); margin: 0 0 1rem; }
+  .about :global(h2) { font-size: 1.35rem; margin: 0 0 0.75rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+  .group { margin-top: 2.75rem; }
+  .group p { color: var(--ink-soft); max-width: 68ch; }
+  .motto { font-family: var(--font-heading); color: var(--ink-mute); }
+</style>

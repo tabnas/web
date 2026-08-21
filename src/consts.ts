@@ -64,6 +64,8 @@ export const HOWTO_GROUPS: { name: string; blurb: string }[] = [
 
 // Secondary pages — surfaced in the footer rather than the header.
 export const PROJECT_NAV: { href: string; label: string }[] = [
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
   { href: "/releases", label: "Releases" },
   { href: "/comparisons", label: "Other parsers" },
   { href: "/sponsors", label: "Sponsors" },
@@ -100,6 +102,12 @@ export const AGENT_NAV: { href: string; label: string; blurb: string }[] = [
       "every error code the engine and its plugins raise; the code, not the message, is the cross-runtime contract",
   },
   {
+    href: "/api",
+    label: "API",
+    blurb:
+      "every machine-readable endpoint this site serves, described by an OpenAPI 3.1 document at /openapi.json — plus markdown content negotiation, and the shape of an error response",
+  },
+  {
     href: "/versions.json",
     label: "versions.json",
     blurb: "machine-readable: which package versions this documentation describes",
@@ -117,6 +125,45 @@ export const SPONSOR = {
   name: "Voxgig",
   url: "https://voxgig.com",
   blurb: "Development of tabnas is sponsored by Voxgig.",
+};
+
+// Who to write to. This is the address CODE_OF_CONDUCT.md already publishes,
+// stated once here so /contact, the JSON-LD and the error responses cannot
+// disagree about it.
+export const CONTACT_EMAIL = "richard@ricebridge.com";
+
+export const DISCUSSIONS = `${GITHUB_ORG}/parser/discussions`;
+export const ISSUES = `${GITHUB_ORG}/parser/issues`;
+
+/**
+ * The project's identity, as schema.org Organization fields.
+ *
+ * Every value is a fact already published somewhere the reader can check —
+ * the GitHub org, the npm scope, the licence, the Code of Conduct. `address`
+ * is the exception: the project has never stated a postal address anywhere,
+ * and an invented one is worse than a missing one, so it stays null and the
+ * JSON-LD omits the field. Fill it in and it appears; nothing else changes.
+ */
+export const ORG: {
+  name: string;
+  description: string;
+  email: string;
+  address: {
+    streetAddress?: string;
+    addressLocality?: string;
+    addressRegion?: string;
+    postalCode?: string;
+    addressCountry?: string;
+  } | null;
+  sameAs: string[];
+} = {
+  name: "tabnas",
+  description:
+    "The tabnas project: an extensible, rule-table parsing engine with TypeScript and Go " +
+    "runtimes, published as the @tabnas npm scope and as Go modules under github.com/tabnas.",
+  email: CONTACT_EMAIL,
+  address: null,
+  sameAs: [GITHUB_ORG, NPM_ORG, AUTHOR.url],
 };
 
 // Every package in the org. `version` is recorded here by hand and can lag a
