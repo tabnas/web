@@ -13,7 +13,8 @@ npm run preview  # build, then wrangler dev — the real Worker runtime
 npm run check    # everything CI runs
 ```
 
-Node 22+ is required. `npm run dev` serves the pages but not the Pagefind
+Node 22.18+ is required — the test suites import TypeScript sources directly,
+and Node strips types without a flag only from 22.18. `npm run dev` serves the pages but not the Pagefind
 index or the markdown twins, both of which are post-build steps — use
 `npm run preview` to exercise those, and anything that goes through
 `src/worker.ts` (content negotiation, the JSON error responses, the 404).

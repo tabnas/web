@@ -39,6 +39,16 @@ const SKIP_DIRS = new Set(['_astro', '_worker.js', 'pagefind', 'fonts', 'brand',
 
 // Markup that carries no content: chrome, decoration, and the machinery that
 // makes the tabbed code examples work in a browser.
+// `data-pagefind-ignore` is deliberately NOT in this list. It means "keep this
+// out of the search index", which is not the same as "this is not content".
+// The /how-to index marks its four guide groups with it so their repeated card
+// labels do not swamp a search result, and eight how-to guides mark the line
+// listing the packages they use. Dropping the attribute cost /how-to.md all
+// twelve of its guide links — the entire point of that page — and those eight
+// guides their package list.
+//
+// The `#` heading anchors are the only thing carrying the attribute that
+// genuinely is not content, and `.heading-anchor` already removes those.
 const DROP = [
   'script',
   'style',
@@ -49,7 +59,6 @@ const DROP = [
   'form',
   'input',
   '.heading-anchor',
-  '[data-pagefind-ignore]',
   '[aria-hidden="true"]',
 ]
 

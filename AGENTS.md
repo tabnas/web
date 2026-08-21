@@ -221,6 +221,9 @@ reached disk, the index came out empty, and the search box disabled itself with
 
 ## Build & test
 
+Node **22.18 or newer** (the tests import `.ts` sources directly, and
+unflagged type stripping landed in 22.18).
+
 ```bash
 npm install
 npm run dev        # localhost:4321, no Pagefind index, no markdown twins
@@ -239,8 +242,13 @@ order. The suites are:
   only place the negotiation, the error contract and the 404 are tested, since
   none of it is visible in the static output.
 - `test/artifacts.test.mjs` — what the build put on disk: a markdown twin per
-  page, the OpenAPI document's shape, the JSON-LD graph, robots.txt, the MCP
-  manifest, the catalogue endpoints, and the trust anchors.
+  page (and every link its page carries), the OpenAPI document's shape, the
+  JSON-LD graph, robots.txt, the MCP manifest, the catalogue endpoints, and
+  the trust anchors. It also validates **the actual JSON responses against the
+  schemas the document publishes**, with ajv. That one is not decoration: the
+  first version of the spec declared an error-code field the response never
+  had and required a `message` that is null for every plugin-only code, so a
+  generated client would have rejected a valid answer.
 
 Before pushing, at minimum:
 
@@ -373,7 +381,24 @@ all of them for machine callers:
    goes away.
 4. **Headers the files cannot carry themselves** — a content type for
    `/.well-known/mcp` (no extension, so nothing to infer from) and CORS on the
-   public descriptions.
+   public descriptions, errors included. An error body exists so a program can
+   recover from it; one a browser client cannot read cross-origin is no use at
+   the moment it is needed.
+
+**A page is anything with a markdown twin; everything else on the machine
+surface is data.** That one rule decides the response headers, and the two are
+exclusive. It matters because `/api` is both by the letter of
+`isMachinePath` — it is the API's own documentation page, and the prefix rule
+is there so a probe at `/api/v1/whatever` gets a JSON error. Answering it as
+data dropped its `Vary: Accept`, which is precisely the cache mix-up the
+negotiation exists to prevent.
+
+What the Worker deliberately does **not** do: refuse an existing page to a
+caller whose `Accept` it cannot satisfy. RFC 9110 §12.5.1 permits disregarding
+Accept rather than returning 406, and that is the right call for a
+documentation site where plenty of tooling sends a careless header and wants
+the page. The 406 is reserved for a caller that has ruled out every
+representation that exists.
 
 It also holds the site to one host: `www.tabnas.dev` is a second custom domain
 on this same Worker, so without the 301 at the top of `fetch()` both hosts
@@ -413,7 +438,15 @@ generated.
 
 It converts `[data-pagefind-body]` where a page declares one and `<main>`
 otherwise, which reuses the site's own answer to "which part of this page is
-the content". Two conversions are custom: Shiki emits one `<span class="line">`
+the content".
+
+**`data-pagefind-ignore` is not on the drop list, and must not go back on it.**
+It means "keep this out of the search index", which is not the same as "this
+is not content": the `/how-to` index marks its four guide groups with it so
+their repeated card labels do not swamp a result, and eight guides mark the
+line listing the packages they use. Dropping it cost `/how-to.md` all twelve
+of its guide links — the whole point of that page. `test/artifacts.test.mjs`
+now fails if any twin loses an internal link its page carries. Two conversions are custom: Shiki emits one `<span class="line">`
 per line with no newline between them (the CSS breaks lines with
 `display: block`), so code text is rebuilt by joining those spans; and a
 `CodeTabs` block has all three panes in source order *after* all three tab

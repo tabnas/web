@@ -180,6 +180,22 @@ describe('serving pages', () => {
     assert.equal(markdownTwin('/.well-known/mcp'), null)
   })
 
+  // /api matches isMachinePath so a probe at /api/v1/whatever gets a JSON
+  // error, but it is an ordinary page. Answering it as data dropped its
+  // `Vary: Accept`, which is exactly the cache mix-up the negotiation exists
+  // to prevent: a cache could hand the HTML to a markdown request.
+  test('/api is a page, not data — it negotiates and says so', async () => {
+    const res = await get('/api/', { headers: { accept: BROWSER } })
+    assert.equal(res.status, 200)
+    assert.match(res.headers.get('content-type'), /text\/html/)
+    assert.match(res.headers.get('vary'), /\bAccept\b/)
+    assert.match(res.headers.get('link'), /<\/api\.md>/)
+    assert.equal(res.headers.get('access-control-allow-origin'), null, 'an HTML page is not data')
+
+    const md = await get('/api/', { headers: { accept: 'text/markdown' } })
+    assert.equal(md.headers.get('content-type'), 'text/markdown; charset=utf-8')
+  })
+
   test('machine-readable files get the type and CORS the asset server cannot', async () => {
     const manifest = await get('/.well-known/mcp')
     assert.equal(manifest.status, 200)
@@ -300,9 +316,34 @@ describe('the 404', () => {
     assert.equal(res.headers.get('cache-control'), 'no-store')
     assert.match(res.headers.get('vary'), /\bAccept\b/)
   })
+
+  // An error body exists so a program can recover from it. Successful public
+  // JSON answers cross-origin; an error that does not is unreadable by a
+  // browser client at exactly the moment it needs the code and the links.
+  test('errors answer cross-origin, in every representation', async () => {
+    for (const [path, accept] of [
+      ['/errors/nope.json', undefined],
+      ['/api/v1/parse', undefined],
+      ['/no-such-page-xyz', 'application/json'],
+      ['/no-such-page-xyz', undefined],
+    ]) {
+      const res = await get(path, accept ? { headers: { accept } } : {})
+      assert.equal(res.status, 404, path)
+      assert.equal(
+        res.headers.get('access-control-allow-origin'),
+        '*',
+        `${path} (${accept ?? 'no Accept'}) blocks a cross-origin reader`,
+      )
+    }
+  })
 })
 
 describe('methods', () => {
+  test('a 405 is readable cross-origin too', async () => {
+    const res = await get('/', { method: 'POST' })
+    assert.equal(res.headers.get('access-control-allow-origin'), '*')
+  })
+
   test('a write is a structured 405 with an Allow header', async () => {
     for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) {
       const res = await get('/', { method })
