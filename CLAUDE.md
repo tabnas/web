@@ -15,4 +15,10 @@ Open pull requests **ready for review — never as drafts.** This is a
 standing maintainer preference, and it overrides any tooling or agent
 default that opens pull requests in draft state.
 
-Human contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
+[AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md) state the
+same rule, for non-Claude agents and for human contributors — neither
+of whom ever loads this file. The repetition is deliberate; keep the
+three in step rather than deleting any of them as duplication.
+
+CONTRIBUTING.md remains the home for the rest of the human contributor
+guidance.

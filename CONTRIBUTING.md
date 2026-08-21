@@ -29,6 +29,8 @@ repository under [github.com/tabnas](https://github.com/tabnas).
 ## Pull requests
 
 - Branch from `main`, keep changes focused, and open a PR.
+- Open the PR **ready for review, not as a draft** — the same rule
+  applies to automated contributors (`AGENTS.md`, `CLAUDE.md`).
 - Make sure `npm run build` passes.
 - Be kind and constructive — see our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
