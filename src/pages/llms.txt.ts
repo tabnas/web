@@ -36,6 +36,7 @@ const BLURBS: Record<string, string> = {
   "/playground": "run a grammar in the browser, as ABNF or as a rule table",
   "/examples": "real languages built on the engine",
   "/status": "per-repository CI, release and compliance state",
+  "/measure": "reproducible cross-port capability and performance evidence",
   "/faq": "what it does, and what it won't do",
   "/community": "discussion, issues, contributing",
   "/about": "what the project is, who builds it, how it is funded, and what state it is in",

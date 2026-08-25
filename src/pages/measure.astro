@@ -1,0 +1,68 @@
+---
+import Base from "../layouts/Base.astro";
+import Heading from "../components/Heading.astro";
+import { MEASURE_URL } from "../consts";
+---
+
+<Base
+  wide
+  title="Measure"
+  description="Reproducible capability and parse-performance evidence for Tabnas TypeScript and Go ports."
+>
+  <article class="measure-page">
+    <Heading level={1} id="measure">Measure</Heading>
+
+    <p class="lede">
+      Versioned capability matrices and parse-performance measurements for the
+      TypeScript and Go ports. Every immutable run carries its inputs, raw
+      samples, parser and runtime versions, methodology, and host fingerprint.
+    </p>
+
+    <div class="principles" aria-label="How to read the measurements">
+      <div>
+        <strong>Capability first</strong>
+        <span>A timing is comparable only when both ports produce the expected result.</span>
+      </div>
+      <div>
+        <strong>Parse-only</strong>
+        <span>Parser construction, process startup, compilation, and reporting are excluded.</span>
+      </div>
+      <div>
+        <strong>Environment-bound</strong>
+        <span>Compare values within a run; one workstation is not a universal ranking.</span>
+      </div>
+    </div>
+
+    <p class="direct">
+      <a href={MEASURE_URL} target="_blank" rel="noopener">Open the catalog directly</a>
+      <span>— the embed below is the same published evidence</span>
+    </p>
+
+    <div class="embed">
+      <iframe
+        src={MEASURE_URL}
+        title="Tabnas capability and performance measurement catalog"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+      ></iframe>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .lede { color: var(--ink-soft); max-width: 66ch; }
+  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1.5rem 0; }
+  .principles div { padding: 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .principles strong, .principles span { display: block; }
+  .principles strong { margin-bottom: 0.35rem; color: var(--primary); }
+  .principles span { color: var(--ink-soft); font-size: 0.88rem; line-height: 1.5; }
+  .direct { margin: 1rem 0 0.75rem; font-size: 0.9rem; }
+  .direct a { color: var(--primary); }
+  .direct span { color: var(--ink-mute); }
+  .embed { margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #101311; }
+  .embed iframe { display: block; width: 100%; height: min(85vh, 980px); min-height: 38rem; border: 0; }
+  @media (max-width: 720px) {
+    .principles { grid-template-columns: 1fr; }
+    .embed iframe { height: 82vh; min-height: 30rem; }
+  }
+</style>

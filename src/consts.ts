@@ -13,6 +13,7 @@ export const SITE_MOTTO = "Tábla na nAistrithe";
 export const GITHUB_ORG = "https://github.com/tabnas";
 export const NPM_ORG = "https://www.npmjs.com/org/tabnas";
 export const STATUS_URL = "https://tabnas.github.io/status/";
+export const MEASURE_URL = "https://tabnas.github.io/measure/";
 
 // Who writes it. Open source projects say so; products don't.
 export const AUTHOR = {
@@ -30,6 +31,7 @@ export const NAV: { href: string; label: string }[] = [
   { href: "/playground", label: "Playground" },
   { href: "/examples", label: "Examples" },
   { href: "/status", label: "Status" },
+  { href: "/measure", label: "Measure" },
   { href: "/faq", label: "FAQ" },
   { href: "/community", label: "Community" },
 ];

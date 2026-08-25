@@ -145,10 +145,12 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
         <div>
           <dt>How fast is it?</dt>
           <dd>
-            Unmeasured, publicly. The design is a for-loop over tokens with a
-            lookup table and no backtracking, which is a fast shape — but there
-            are no published benchmarks, so treat any claim, including that one,
-            as unproven until there are.
+            The public <a href="/measure">measurement catalog</a> records
+            capability matrices and steady-state parse timings for the
+            TypeScript and Go ports. Every run keeps its raw samples, exact
+            inputs, parser versions, runtime versions, and host fingerprint.
+            Compare ports within a run; workstation timings are evidence for
+            that recorded environment, not universal rankings.
           </dd>
         </div>
       </dl>
