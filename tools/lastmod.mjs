@@ -131,6 +131,21 @@ export function sourcesFor(pathname) {
 const dates = commitDates()
 
 /**
+ * One line for the build log saying whether lastmod is being emitted.
+ *
+ * Standing down on a shallow clone is correct but invisible, and "the
+ * sitemap quietly has no lastmod" is exactly the kind of thing nobody
+ * notices for a year. astro.config.mjs prints this, so any build log —
+ * including the hosted one, whose checkout is not ours to configure —
+ * answers the question.
+ */
+export function historyReport() {
+  return dates.size
+    ? `from git history (${dates.size} files)`
+    : "omitted \u2014 no usable git history (a shallow clone has none to read)";
+}
+
+/**
  * The <lastmod> for a route, or undefined when it cannot be established.
  * Where a page is rendered from several files, the most recent one wins.
  */

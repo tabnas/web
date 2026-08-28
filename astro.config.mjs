@@ -6,7 +6,11 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 import cloudflare from "@astrojs/cloudflare";
-import { lastmodFor } from "./tools/lastmod.mjs";
+import { lastmodFor, historyReport } from "./tools/lastmod.mjs";
+
+// Say which it is, once, rather than letting a lastmod-free sitemap ship
+// unnoticed — the hosted build's clone depth is not set from this repo.
+console.log(`  sitemap lastmod: ${historyReport()}`);
 
 // https://astro.build/config
 export default defineConfig({
