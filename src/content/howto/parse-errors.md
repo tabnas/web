@@ -203,8 +203,8 @@ having exactly one interpretation.
 
 ## See also
 
-- [Debug a grammar](/how-to/debug-a-grammar) — reading the `--internal` line,
+- [Debug a grammar](/how-to/debug-a-grammar/) — reading the `--internal` line,
   and what to do next.
-- [Choose between alternates](/how-to/choose-between-alternates) — where the
+- [Choose between alternates](/how-to/choose-between-alternates/) — where the
   failing alternate goes in the list.
-- [The rule table](/docs/rule-table) — the `e` field, and the rest.
+- [The rule table](/docs/rule-table/) — the `e` field, and the rest.

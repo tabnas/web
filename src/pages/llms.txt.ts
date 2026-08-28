@@ -29,22 +29,22 @@ import { operationList, SITE_URL } from "../openapi";
 // without a line here is caught by the test in tools/test-examples.mjs rather
 // than shipping as a bare link.
 const BLURBS: Record<string, string> = {
-  "/why": "the long-form motivation and the algorithm",
-  "/docs": "documentation hub (Diátaxis)",
-  "/how-to": "task-oriented guides for the problems that come up in practice",
-  "/agents": "how to build with tabnas — the format to emit, the constraints, how to verify your work",
-  "/playground": "run a grammar in the browser, as ABNF or as a rule table",
-  "/examples": "real languages built on the engine",
-  "/status": "per-repository CI, release and compliance state",
-  "/measure": "reproducible cross-port capability and performance evidence",
-  "/faq": "what it does, and what it won't do",
-  "/community": "discussion, issues, contributing",
-  "/about": "what the project is, who builds it, how it is funded, and what state it is in",
-  "/contact": "how to reach the maintainer, and which channel suits which kind of message",
-  "/releases": "every package and its current version",
-  "/comparisons": "how it differs from ANTLR, Peggy, Chevrotain, nearley, tree-sitter",
-  "/sponsors": "who pays for it",
-  "/privacy": "what the hosted MCP endpoint records (shape only) and never records (your documents)",
+  "/why/": "the long-form motivation and the algorithm",
+  "/docs/": "documentation hub (Diátaxis)",
+  "/how-to/": "task-oriented guides for the problems that come up in practice",
+  "/agents/": "how to build with tabnas — the format to emit, the constraints, how to verify your work",
+  "/playground/": "run a grammar in the browser, as ABNF or as a rule table",
+  "/examples/": "real languages built on the engine",
+  "/status/": "per-repository CI, release and compliance state",
+  "/measure/": "reproducible cross-port capability and performance evidence",
+  "/faq/": "what it does, and what it won't do",
+  "/community/": "discussion, issues, contributing",
+  "/about/": "what the project is, who builds it, how it is funded, and what state it is in",
+  "/contact/": "how to reach the maintainer, and which channel suits which kind of message",
+  "/releases/": "every package and its current version",
+  "/comparisons/": "how it differs from ANTLR, Peggy, Chevrotain, nearley, tree-sitter",
+  "/sponsors/": "who pays for it",
+  "/privacy/": "what the hosted MCP endpoint records (shape only) and never records (your documents)",
 };
 
 // The packages worth naming individually. The rest are counted, with a link
@@ -109,7 +109,7 @@ export const GET: APIRoute = async () => {
     ...AGENT_NAV.map((i) => line(i.href, i.label, i.blurb)),
     ...skillsData.skills.map((s) =>
       line(
-        `/skills/${s.name}`,
+        `/skills/${s.name}/`,
         `skill: ${s.name}`,
         // First sentence only — a period must end a word (".tsv" is not a
         // sentence boundary, and one summary contains it).
@@ -133,7 +133,7 @@ export const GET: APIRoute = async () => {
     `- **Over MCP, no install.** \`${stdioCommand}\` speaks MCP over stdio and gives you ${tools.length} tools: ${tools.join(", ")}. In Claude Code, \`/plugin marketplace add tabnas/skills\` then \`/plugin install tabnas@tabnas\` installs the ${skillsData.skills.length} skills and both server entries. In a registry-aware client the server is \`dev.tabnas/mcp\`. Hosted at ${hostedUrl} for clients that cannot spawn a process. The handshake for either is ${SITE_URL}/.well-known/mcp.`,
     `- **In a shell.** \`npm install -g @tabnas/mcp\` puts \`tabnas\` on your path: \`tabnas parse | validate | diagnose | test | plugins | compare\`. \`--json\` prints byte-for-byte what the matching MCP tool returns. Exit code 0 means yes, 1 means the operation said no, 2 is a usage error.`,
     `- **In your own code.** \`npm install @tabnas/parser @tabnas/abnf\`, or \`go get github.com/tabnas/parser/go\`. Pin exact versions: everything is pre-1.0.`,
-    `- **Read first.** ${SITE_URL}/agents is the build guide written for an agent — the format to emit, the constraints, how to verify. ${SITE_URL}/llms-full.txt is every documentation page in one request.`,
+    `- **Read first.** ${SITE_URL}/agents/ is the build guide written for an agent — the format to emit, the constraints, how to verify. ${SITE_URL}/llms-full.txt is every documentation page in one request.`,
   ];
 
   // The endpoints, generated from the same OpenAPI document /openapi.json

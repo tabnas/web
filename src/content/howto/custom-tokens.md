@@ -167,8 +167,8 @@ your grammar.)
 
 ## See also
 
-- [The rule table](/docs/rule-table) — the built-in tokens, and their names.
-- [Handle strings, quotes and escapes](/how-to/strings-and-quoting) — the
+- [The rule table](/docs/rule-table/) — the built-in tokens, and their names.
+- [Handle strings, quotes and escapes](/how-to/strings-and-quoting/) — the
   string matcher's own options, which usually beat writing a matcher.
-- [Write a parameterised parser](/how-to/parameterised-parsers) — making the
+- [Write a parameterised parser](/how-to/parameterised-parsers/) — making the
   token set an option.

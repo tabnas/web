@@ -181,9 +181,9 @@ behaviour change to existing input, so install it on a derived instance
 
 ## See also
 
-- [Handle recursion and repetition](/how-to/recursion-and-repetition) — what to
+- [Handle recursion and repetition](/how-to/recursion-and-repetition/) — what to
   do when the nesting isn't operator precedence.
-- [Write a parameterised parser](/how-to/parameterised-parsers) — the option
+- [Write a parameterised parser](/how-to/parameterised-parsers/) — the option
   pattern `Expr` follows.
 - [@tabnas/expr](https://github.com/tabnas/expr) — the full operator table and
   the Pratt implementation.

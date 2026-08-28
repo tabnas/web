@@ -211,10 +211,13 @@ for (const file of files) {
     continue
   }
 
-  // Every twin carries a top-level heading. Not every page does: /why leads
-  // with an eyebrow paragraph and its only <h1> is inside a pull quote, which
-  // converts to a quoted heading rather than a document title. The <title> is
+  // Every twin carries a top-level heading. Not every page's content region
+  // opens with one — a page can lead with a lede or a crumb, and the docs
+  // layout puts the <h1> outside some of them — so the <title> stands in:
   // the page's own name for itself, minus the site suffix the layout adds.
+  // (/why used to be the case this existed for. Its four section headings
+  // were <h1>s and the page had no title heading at all; it has one now, so
+  // the fallback no longer fires there.)
   if (title) {
     const name = title.replace(/\s+[·—]\s+tabnas$/, '').trim()
     const firstHeading = body.split('\n').findIndex((l) => l.startsWith('# '))

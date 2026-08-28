@@ -30,7 +30,7 @@ const groups = ORDER.map((tier) => ({
 <Base
   wide
   title="Agents"
-  description="How to build a parser with tabnas — and the distributions an agent installs to do it: Agent Skills, an MCP server, and the tabnas CLI, plus the rule table format, the constraints, and how to verify your work."
+  description="How an agent builds a parser with tabnas: the rule table format to emit, the constraints to design around, and how to verify the grammar you wrote."
 >
   <article class="ag">
     <Heading level={1} id="building-with-tabnas">Building with tabnas</Heading>
@@ -40,7 +40,7 @@ const groups = ORDER.map((tier) => ({
       CLI — the grammar format you should emit, the constraints the engine
       imposes, how to check your work, and where the per-package instructions
       live. A human wanting the argument for any of this should read
-      <a href="/why">why tabnas</a> instead.
+      <a href="/why/">why tabnas</a> instead.
     </p>
 
     <section>
@@ -68,12 +68,12 @@ const groups = ORDER.map((tier) => ({
       </p>
       <ul>
         <li>
-          <strong><a href="/skills">The skills</a></strong> — {nSkills}
+          <strong><a href="/skills/">The skills</a></strong> — {nSkills}
           portable <a href="https://agentskills.io/" target="_blank" rel="noopener">Agent
           Skills</a> that carry the working procedures:
           {skillsData.skills.map((s, i) => (
             <>
-              <a href={`/skills/${s.name}`}><code>{s.name}</code></a>{i < skillsData.skills.length - 1 ? ", " : ". "}
+              <a href={`/skills/${s.name}/`}><code>{s.name}</code></a>{i < skillsData.skills.length - 1 ? ", " : ". "}
             </>
           ))}
           Each has its own page here, and each is plain markdown a platform
@@ -81,7 +81,7 @@ const groups = ORDER.map((tier) => ({
           <a href={REPO("skills")} target="_blank" rel="noopener">the repository</a>.
         </li>
         <li>
-          <strong><a href="/mcp">The MCP server</a></strong> —
+          <strong><a href="/mcp/">The MCP server</a></strong> —
           <code>@tabnas/mcp</code> makes the commands the skills teach
           executable: {nTools} tools to parse, validate a grammar before
           running it, explain a failure, run fixtures, read the plugin
@@ -119,7 +119,7 @@ const groups = ORDER.map((tier) => ({
         served over streamable HTTP at <code>{hostedUrl}</code> — bounded by a
         body cap and a per-IP rate limit, both reported by its
         <code>/.well-known/mcp</code>. Local stdio is the recommended path:
-        free, private, unlimited. <a href="/mcp">MCP</a> has the manifest
+        free, private, unlimited. <a href="/mcp/">MCP</a> has the manifest
         JSON, each tool's contract, and the hosted endpoint's bounds.
       </p>
 
@@ -149,7 +149,7 @@ const groups = ORDER.map((tier) => ({
         path and the one the engine is designed for: if something close to your
         format already parses, start there and add rules. JSONC is JSON plus
         comments; jsonic is JSONC with the quoting relaxed. Check the
-        <a href="/releases">package list</a> before writing anything — or ask
+        <a href="/releases/">package list</a> before writing anything — or ask
         the <code>list_plugins</code> MCP tool (<code>tabnas plugins</code>),
         which answers from each plugin's own descriptor.
       </p>
@@ -161,7 +161,7 @@ const groups = ORDER.map((tier) => ({
         <li>Composing several documents into one parse? Add <a href={REPO("multisource")} target="_blank" rel="noopener">multisource</a>.</li>
       </ul>
       <p>
-        <a href="/examples">aontu</a> is the worked example: a whole
+        <a href="/examples/">aontu</a> is the worked example: a whole
         configuration language assembled from five of these plugins, defining no
         parser of its own.
       </p>
@@ -329,7 +329,7 @@ const groups = ORDER.map((tier) => ({
           <strong>Read the diagnostic, not the message.</strong> On a failure,
           <code>tabnas diagnose</code> (<code>explain_parse_error</code>)
           returns code, position, expected tokens and the rule stack; the
-          <code>code</code> is a URL at <a href="/errors">/errors</a>.
+          <code>code</code> is a URL at <a href="/errors/">/errors</a>.
         </li>
         <li>
           <strong>Pin behaviour with fixtures.</strong> Write
@@ -347,7 +347,7 @@ const groups = ORDER.map((tier) => ({
         <li>Run <code>tabnas-abnf --marks</code> if an action didn't fire.</li>
         <li>Use <a href={REPO("debug")} target="_blank" rel="noopener">@tabnas/debug</a> to describe the live grammar and render it back to ABNF — if the round-trip isn't what you meant, the grammar isn't either.</li>
         <li>Use <a href={REPO("railroad")} target="_blank" rel="noopener">@tabnas/railroad</a> to draw it when the structure is hard to hold in your head.</li>
-        <li>Try it in the <a href="/playground">playground</a> — it takes ABNF or a rule table and shows both the tree and the value.</li>
+        <li>Try it in the <a href="/playground/">playground</a> — it takes ABNF or a rule table and shows both the tree and the value.</li>
       </ul>
     </section>
 
@@ -373,7 +373,7 @@ const groups = ORDER.map((tier) => ({
         Work lands in TypeScript first, then Go to match; both run the same
         fixtures, so a change that doesn't really work fails loudly. Agent-written
         contributions are welcome and need no disclosure — see
-        <a href="/community#this-project-is-ai-friendly">community</a>.
+        <a href="/community/#this-project-is-ai-friendly">community</a>.
       </p>
     </section>
 
@@ -392,7 +392,7 @@ const groups = ORDER.map((tier) => ({
           before trusting an example against whatever you have installed.
         </li>
         <li>
-          <strong><a href="/errors">/errors</a></strong> is every error code
+          <strong><a href="/errors/">/errors</a></strong> is every error code
           the engine and its plugins can raise, one page per code at
           <code>/errors/&lt;code&gt;</code>. A diagnostic's <code>code</code> is
           therefore a URL you can follow.

@@ -10,7 +10,7 @@ import "../styles/why.css";
 
 <article class="why">
 
-<p class="eyebrow">Why tabnas</p>
+<h1 class="eyebrow" id="why-tabnas">Why tabnas</h1>
 
 *tabnas* is a parsing engine that can handle any language. It is a
 compilation target, a "parser VM", providing a simple state and lookup
@@ -28,7 +28,7 @@ visually, so you can see what's going on.
 
 
 
-> # The Technical TLDR
+> ## The Technical TLDR
 >
 > *"A deterministic top-down predictive rule machine."*
 >
@@ -52,7 +52,7 @@ visually, so you can see what's going on.
 
 <br/><br/><br/><br/>
 
-# The Whole Story
+## The Whole Story
 
 I wanted to build a general parser that could be extended by
 plugins. Say you have plain old JSON, but the values could be
@@ -121,7 +121,7 @@ like a general purpose idea! Other formats like YAML and TOML are
 achievable in the same way!
 
 
-<p class="eyebrow">How tabnas works</p>
+<h3 class="eyebrow" id="how-tabnas-works">How tabnas works</h3>
 
 Let's step back and look at how *tabnas* works. That way you can see
 how the extensibility falls out of the basic algorithm. Not by
@@ -180,7 +180,7 @@ tokens over characters. Because in general, lexing is the easy and boring part.
 
 
 
-# Your First Mini Lang
+## Your First Mini Lang
 
 Let's make a grammar for a miniature language! How about adding
 numbers?
@@ -398,7 +398,7 @@ example [@tabnas/directive](https://github.com/tabnas/directive), or
 the monster [@tabnas/expr](https://github.com/tabnas/expr).
 
 
-# Where that leaves us
+## Where that leaves us
 
 The grammar *is* the parser. There's no generated code to fall out of sync —
 you install a grammar and it parses, or you compile one from ABNF at
@@ -420,12 +420,12 @@ behaves the same in both. Useful, but not the point.)
 
 Related reading:
 
-- [Quickstart](/docs/quickstart) — the addition grammar above, in full.
-- [How it works](/docs/how-it-works) — rules, alternates, and the stack.
-- [ABNF grammars](/docs/abnf-grammars) — the dialect, and left recursion.
-- [Other parsers](/comparisons) — how this differs from ANTLR, Peggy,
+- [Quickstart](/docs/quickstart/) — the addition grammar above, in full.
+- [How it works](/docs/how-it-works/) — rules, alternates, and the stack.
+- [ABNF grammars](/docs/abnf-grammars/) — the dialect, and left recursion.
+- [Other parsers](/comparisons/) — how this differs from ANTLR, Peggy,
   Chevrotain, nearley and tree-sitter, and when to use one of those instead.
-- [FAQ](/faq) — what it does, what it won't do, and why.
-- [Playground](/playground) — edit a grammar in the browser.
+- [FAQ](/faq/) — what it does, what it won't do, and why.
+- [Playground](/playground/) — edit a grammar in the browser.
 
 </article>

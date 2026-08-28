@@ -53,7 +53,7 @@ export function errorRegistry(): { engine: string; codes: ErrorEntry[] } {
         engine: Boolean(entry),
         packages: packages.get(code) ?? [],
         abi: abi.get(code) ?? [],
-        url: `${SITE_URL}/errors/${code}`,
+        url: `${SITE_URL}/errors/${code}/`,
       };
     });
 

@@ -69,7 +69,7 @@ const REGISTRY_URL =
 <Base
   wide
   title="MCP"
-  description="Connect an agent to tabnas over the Model Context Protocol: seven tools for parsing, validating grammars, explaining failures, running fixtures and comparing grammar versions — local stdio, a hosted endpoint, and dev.tabnas/mcp in the official MCP Registry."
+  description="Connect an agent to tabnas over the Model Context Protocol: seven tools for parsing, validating grammars and explaining failures, over stdio or hosted."
 >
   <article class="mcp" data-pagefind-body>
     <Heading level={1} id="mcp">The tabnas MCP server</Heading>
@@ -81,7 +81,7 @@ const REGISTRY_URL =
       command-line tool running the same core, so anything an agent can do
       through MCP you can reproduce in a shell. It is listed in the official
       MCP Registry as <code>{REGISTRY_NAME}</code>, and it is one of the two
-      MCP entries the <a href="/skills">Skills package</a> installs.
+      MCP entries the <a href="/skills/">Skills package</a> installs.
     </p>
 
     <section class="group">
@@ -94,13 +94,13 @@ const REGISTRY_URL =
       {command && <pre><code>{command}</code></pre>}
       <p class="blurb">
         Or, as the manifest the{" "}
-        <a href="/skills">Skills package</a> already declares:
+        <a href="/skills/">Skills package</a> already declares:
       </p>
       <pre><code>{manifest}</code></pre>
 
       <Heading level={3} id="claude-code">In Claude Code</Heading>
       <p class="blurb">
-        The <a href="/skills#install">skills plugin</a> installs both server
+        The <a href="/skills/#install">skills plugin</a> installs both server
         entries alongside the {skillCount} skills — that is the recommended
         route, since the skills teach the workflows these tools execute. To
         register the server alone:
@@ -132,7 +132,7 @@ const REGISTRY_URL =
           body cap and a per-IP rate limit, both reported by its{" "}
           <a href="https://mcp.tabnas.dev/.well-known/mcp" target="_blank" rel="noopener"><code>/.well-known/mcp</code></a>.
           Document content is never logged, stored, or used for training —
-          the <a href="/privacy">privacy policy</a> is short because the
+          the <a href="/privacy/">privacy policy</a> is short because the
           service keeps nothing. Checking it by hand: the endpoint is
           POST-only JSON-RPC, so a browser gets a 405 that says so;{" "}
           <a href="https://mcp.tabnas.dev/health" target="_blank" rel="noopener"><code>/health</code></a>{" "}
@@ -239,7 +239,7 @@ const REGISTRY_URL =
         verbatim from the package's bundled data: the grammar JSON Schema
         (<code>tabnas://schema/grammar</code>), the diagnostic schema
         (<code>tabnas://schema/diagnostic</code>), the{" "}
-        <a href="/errors">error registry</a> (<code>tabnas://errors</code>),
+        <a href="/errors/">error registry</a> (<code>tabnas://errors</code>),
         every plugin's descriptor (<code>tabnas://plugins</code>), and the
         recorded cross-runtime divergences
         (<code>tabnas://divergence</code>). Those are what let an agent check

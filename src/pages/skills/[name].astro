@@ -40,7 +40,7 @@ const firstSentence = (skill.summary.match(/^.*?\.(?=\s|$)/s)?.[0] ?? skill.summ
 
 <Base wide title={skill.name} description={`Agent Skill: ${firstSentence}`}>
   <article class="skill" data-pagefind-body>
-    <p class="crumb"><a href="/skills">Skills</a> <span aria-hidden="true">/</span> {skill.name}</p>
+    <p class="crumb"><a href="/skills/">Skills</a> <span aria-hidden="true">/</span> {skill.name}</p>
     <Heading level={1} id={skill.name}>{skill.name}</Heading>
     <p class="lede">{skill.summary}</p>
     {skill.useWhen && <p class="when">{skill.useWhen}</p>}
@@ -68,7 +68,7 @@ const firstSentence = (skill.summary.match(/^.*?\.(?=\s|$)/s)?.[0] ?? skill.summ
         <p class="blurb">
           Nothing declared beyond the baseline: the skill is plain markdown,
           and the commands it teaches run through the <code>tabnas</code> CLI
-          or a connected <a href="/mcp">MCP server</a> — both from
+          or a connected <a href="/mcp/">MCP server</a> — both from
           <code>@tabnas/mcp</code>, which <code>npx</code> fetches on demand.
         </p>
       )}
@@ -106,7 +106,7 @@ const firstSentence = (skill.summary.match(/^.*?\.(?=\s|$)/s)?.[0] ?? skill.summ
       <pre><code>{rawUrl}</code></pre>
       <p class="blurb">
         The commands it teaches become executable once the MCP server is
-        connected — <a href="/mcp">the MCP page</a> has per-client setup, or
+        connected — <a href="/mcp/">the MCP page</a> has per-client setup, or
         in short: <code>{command}</code>.
       </p>
     </section>
@@ -126,13 +126,13 @@ const firstSentence = (skill.summary.match(/^.*?\.(?=\s|$)/s)?.[0] ?? skill.summ
       <Heading level={2} id="the-others">The other skills</Heading>
       <p class="chips">
         {others.map((s) => (
-          <a class="chip" href={`/skills/${s.name}`}>{s.name}</a>
+          <a class="chip" href={`/skills/${s.name}/`}>{s.name}</a>
         ))}
       </p>
       <p class="meta">
         Licence: {skill.license || plugin.license || "MIT"} ·{" "}
         <a href={srcUrl} target="_blank" rel="noopener">source</a> ·{" "}
-        <a href="/skills">all skills</a>
+        <a href="/skills/">all skills</a>
       </p>
     </section>
   </article>

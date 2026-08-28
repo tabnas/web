@@ -159,7 +159,7 @@ Three costs, all worth knowing before you rely on it:
 
 If you want operator precedence rather than a single left-associative rule,
 don't write it as recursion at all —
-[use `@tabnas/expr`](/how-to/expressions-with-precedence), which does it with
+[use `@tabnas/expr`](/how-to/expressions-with-precedence/), which does it with
 binding powers and no rule chain.
 
 ## Stopping unbounded nesting
@@ -216,9 +216,9 @@ than one that nests too far.
 
 ## See also
 
-- [Choose between alternates](/how-to/choose-between-alternates) — `c`, `b` and
+- [Choose between alternates](/how-to/choose-between-alternates/) — `c`, `b` and
   multi-token lookahead in their own right.
-- [The rule table](/docs/rule-table) — `p` versus `r`, and every alternate
+- [The rule table](/docs/rule-table/) — `p` versus `r`, and every alternate
   field.
-- [ABNF grammars](/docs/abnf-grammars) — repetition notation and the
+- [ABNF grammars](/docs/abnf-grammars/) — repetition notation and the
   left-recursion pass.

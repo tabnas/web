@@ -58,14 +58,14 @@ const toc = headings
       <aside class="sidebar" aria-label="How-to navigation">
         <DocsSearch placeholder="Search docs and guides…" />
         <nav>
-          <p class="group-head"><a class="side-link index" href="/how-to">All how-to guides</a></p>
+          <p class="group-head"><a class="side-link index" href="/how-to/">All how-to guides</a></p>
           {groups.map((g) => (
             <div class="group">
               <p class="group-head">{g.name}</p>
               <ul>
                 {g.items.map((d) => (
                   <li>
-                    <a href={`/how-to/${d.id}`} class:list={["side-link", { active: d.id === slug }]}>
+                    <a href={`/how-to/${d.id}/`} class:list={["side-link", { active: d.id === slug }]}>
                       {d.data.title}
                     </a>
                   </li>
@@ -95,10 +95,10 @@ const toc = headings
 
         <nav class="pager">
           {prev ? (
-            <a class="pg prev" href={`/how-to/${prev.id}`}><span>← Previous</span>{prev.title}</a>
+            <a class="pg prev" href={`/how-to/${prev.id}/`}><span>← Previous</span>{prev.title}</a>
           ) : <span />}
           {next ? (
-            <a class="pg next" href={`/how-to/${next.id}`}><span>Next →</span>{next.title}</a>
+            <a class="pg next" href={`/how-to/${next.id}/`}><span>Next →</span>{next.title}</a>
           ) : <span />}
         </nav>
       </main>

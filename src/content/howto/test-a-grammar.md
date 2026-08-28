@@ -30,7 +30,7 @@ Parsing is safe to share: state lives on the parse context, not the instance,
 so one instance can serve many `parse()` calls. It is *modification* that has
 to be per-test. `make()` is also available on an instance, and derives a copy
 without touching the original — see
-[extending a grammar](/docs/extending).
+[extending a grammar](/docs/extending/).
 
 ## Accept and reject
 
@@ -59,7 +59,7 @@ test('rejects', () => {
 **Assert on `e.code`, not on `e.message`.** The rendered message includes the
 source line, a caret and a hint, all of which are meant to change as you
 improve them. The code is the contract. This matters most for
-[errors you defined yourself](/how-to/parse-errors) — a test on the code is
+[errors you defined yourself](/how-to/parse-errors/) — a test on the code is
 what stops a message rewrite from being a breaking change.
 
 The rejection cases are the ones people skip and shouldn't. A grammar that is
@@ -145,8 +145,8 @@ thing that tells you what moved.
 
 ## See also
 
-- [Debug a grammar](/how-to/debug-a-grammar) — what `model()` contains, and how
+- [Debug a grammar](/how-to/debug-a-grammar/) — what `model()` contains, and how
   to read a trace when a test goes red.
-- [Give good parse errors](/how-to/parse-errors) — why `e.code` is the stable
+- [Give good parse errors](/how-to/parse-errors/) — why `e.code` is the stable
   surface.
-- [Attaching actions](/docs/actions) — `@ref` marks and where they come from.
+- [Attaching actions](/docs/actions/) — `@ref` marks and where they come from.

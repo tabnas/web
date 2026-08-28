@@ -158,7 +158,7 @@ new Tabnas().use(jsonic).use(Csv, { record: { separators: ';' } }).parse('a,b;1,
 
 For very large inputs, `stream` hands each record to a callback instead of
 building an array — see
-[writing a parameterised parser](/how-to/parameterised-parsers).
+[writing a parameterised parser](/how-to/parameterised-parsers/).
 
 ## What this costs
 
@@ -170,8 +170,8 @@ and the contents second.
 
 ## See also
 
-- [Handle comments and whitespace](/how-to/comments-and-whitespace) — the other
+- [Handle comments and whitespace](/how-to/comments-and-whitespace/) — the other
   two members of `IGNORE`.
-- [Choose between alternates](/how-to/choose-between-alternates) — `r` versus
+- [Choose between alternates](/how-to/choose-between-alternates/) — `r` versus
   `p`, and the empty alternate.
 - [@tabnas/csv](https://github.com/tabnas/csv) — the grammar, and every option.

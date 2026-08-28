@@ -24,17 +24,17 @@ const groups = HOWTO_GROUPS.map((g) => ({
 // so this page is a complete index of the how-to quadrant, not a partial one.
 const IN_DOCS = [
   {
-    href: "/docs/abnf-grammars",
+    href: "/docs/abnf-grammars/",
     title: "ABNF grammars",
     description: "Define a language fast using the RFC 5234 ABNF dialect.",
   },
   {
-    href: "/docs/actions",
+    href: "/docs/actions/",
     title: "Attaching actions",
     description: "Turn a parse into a value — with builtins, named refs, or inline functions.",
   },
   {
-    href: "/docs/extending",
+    href: "/docs/extending/",
     title: "Extending a grammar",
     description: "Add to a language that already parses, instead of forking it.",
   },
@@ -44,7 +44,7 @@ const IN_DOCS = [
 <Base
   wide
   title="How to"
-  description="Task-oriented guides for the parsing problems that come up in practice — includes, expressions, options, line-oriented formats, custom tokens, errors, and debugging."
+  description="Task-oriented guides for the parsing problems that come up in practice: includes, expressions, options, line-oriented formats, tokens and errors."
 >
   {/* Indexed by Pagefind like the docs articles, so the section intro is
       findable from the search box; the card list is skipped below. */}
@@ -54,7 +54,7 @@ const IN_DOCS = [
       Short guides for the problems that come up while writing a parser. Each
       one takes a single task, solves it against a running grammar, and says
       what it costs. They assume you have already parsed something — the
-      <a href="/docs/quickstart">quickstart</a> is five minutes if you haven't.
+      <a href="/docs/quickstart/">quickstart</a> is five minutes if you haven't.
     </p>
 
     <section class="intro">
@@ -64,7 +64,7 @@ const IN_DOCS = [
         you are trying to do; the page is how to do it and what it costs. Where
         a published package already solves the problem, the guide uses it and
         says so, rather than reimplementing it for the sake of an example —
-        <a href="/docs/extending">extension is the point of the engine</a>, and
+        <a href="/docs/extending/">extension is the point of the engine</a>, and
         it applies to the documentation too.
       </p>
       <p>
@@ -91,8 +91,8 @@ const IN_DOCS = [
         The question to ask before any of this is <em>what already parses
         something close to my format?</em> A new grammar is the expensive
         answer, and usually the wrong one. The
-        <a href="/docs/packages">packages page</a> lists what exists; the
-        <a href="/comparisons">comparisons page</a> is honest about when
+        <a href="/docs/packages/">packages page</a> lists what exists; the
+        <a href="/comparisons/">comparisons page</a> is honest about when
         another tool is the better answer entirely.
       </p>
     </section>
@@ -106,7 +106,7 @@ const IN_DOCS = [
         <ul class="list">
           {g.items.map((d) => (
             <li>
-              <a class="row" href={`/how-to/${d.id}`}>
+              <a class="row" href={`/how-to/${d.id}/`}>
                 <span class="row-title">{d.data.title}</span>
                 <span class="row-desc">{d.data.description}</span>
               </a>
@@ -126,7 +126,7 @@ const IN_DOCS = [
     <section class="group">
       <Heading level={3} id="also-in-the-docs">Also in the docs</Heading>
       <p class="group-blurb">
-        Three task-oriented pages live under <a href="/docs">/docs</a> because
+        Three task-oriented pages live under <a href="/docs/">/docs</a> because
         they double as the way in to ABNF, actions and extension. They belong
         to this section as much as to that one.
       </p>
@@ -145,11 +145,11 @@ const IN_DOCS = [
     <section class="intro">
       <Heading level={2} id="if-none-of-these-fit">If none of these fit</Heading>
       <p>
-        The <a href="/docs/rule-table">rule table reference</a> is the whole
+        The <a href="/docs/rule-table/">rule table reference</a> is the whole
         format in one page, and is short enough to read end to end. The
-        <a href="/playground">playground</a> runs a grammar in the browser, so
+        <a href="/playground/">playground</a> runs a grammar in the browser, so
         a guess can be checked in a few seconds. Failing both,
-        <a href="/community">open an issue</a> — a question this section should
+        <a href="/community/">open an issue</a> — a question this section should
         have answered is a bug in this section.
       </p>
     </section>

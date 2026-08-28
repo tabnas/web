@@ -76,7 +76,7 @@ describe('markdown twins', () => {
   })
 
   test('site links resolved to absolute URLs', () => {
-    assert.match(read('mcp.md'), /\]\(https:\/\/tabnas\.dev\/skills\)/)
+    assert.match(read('mcp.md'), /\]\(https:\/\/tabnas\.dev\/skills\/\)/)
   })
 
   // The twin is what an agent reads instead of the page, so a link the page
@@ -457,7 +457,7 @@ describe('catalogue endpoints', () => {
     assert.ok(registry.count > 20)
     for (const entry of registry.codes) {
       assert.ok(entry.code, 'an entry with no code')
-      assert.equal(entry.url, `${ORIGIN}/errors/${entry.code}`)
+      assert.equal(entry.url, `${ORIGIN}/errors/${entry.code}/`)
       const single = readJson(`errors/${entry.code}.json`)
       assert.equal(single.code, entry.code)
       assert.equal(single.hint, entry.hint)
@@ -516,8 +516,211 @@ describe('trust anchors', () => {
 
   test('/about and /contact are linked from every page', () => {
     const { document } = parseHTML(read('index.html'))
-    for (const href of ['/about', '/contact']) {
+    for (const href of ['/about/', '/contact/']) {
       assert.ok(document.querySelector(`footer a[href="${href}"]`), `${href} is not in the footer`)
     }
+  })
+})
+
+// Canonical URLs and the sitemap use the trailing-slash form, because
+// `build.format: "directory"` writes dist/<page>/index.html and Cloudflare's
+// asset server answers the no-slash form with a 307 to it. A link written the
+// other way therefore costs a redirect on every crawl and every click, and a
+// 307 is temporary — nothing consolidates onto the canonical URL. This is the
+// invariant that keeps the two forms from drifting apart again; it failed on
+// 3,861 links before the links were rewritten.
+describe('internal links are canonical', () => {
+  const pages = walk(DIST, '.html')
+
+  // Not pages, and correctly slashless: anything with a file extension,
+  // /404 (Astro emits dist/404.html, not a directory), and the RFC 8615
+  // protocol documents under /.well-known/.
+  const isPage = (path) =>
+    path !== '/' &&
+    path !== '/404' &&
+    !path.startsWith('/.well-known') &&
+    !/\.[A-Za-z0-9]+$/.test(path.replace(/\/$/, '').split('/').pop() ?? '')
+
+  test('every internal link ends in a slash, so none of them redirect', () => {
+    const offenders = []
+    for (const page of pages) {
+      const { document } = parseHTML(read(page))
+      for (const a of document.querySelectorAll('a[href^="/"]')) {
+        const href = a.getAttribute('href')
+        if (href.startsWith('//')) continue
+        const path = href.split('#')[0].split('?')[0]
+        if (!isPage(path) || path.endsWith('/')) continue
+        offenders.push(`${page}: ${href}`)
+      }
+    }
+    assert.deepEqual(offenders.slice(0, 20), [], `${offenders.length} link(s) would 307`)
+  })
+
+  test('every internal link resolves to a page that was built', () => {
+    const missing = []
+    for (const page of pages) {
+      const { document } = parseHTML(read(page))
+      for (const a of document.querySelectorAll('a[href^="/"]')) {
+        const href = a.getAttribute('href')
+        if (href.startsWith('//')) continue
+        const path = href.split('#')[0].split('?')[0]
+        const target = isPage(path)
+          ? join(DIST, path.replace(/\/$/, ''), 'index.html')
+          : join(DIST, path === '/404' ? '404.html' : path.slice(1))
+        if (path !== '/' && !existsSync(target)) missing.push(`${page}: ${href}`)
+      }
+    }
+    // This caught /docs/errors, linked from all 46 error pages and never a
+    // route: the docs collection has no `errors` entry, so getStaticPaths
+    // never emitted one.
+    assert.deepEqual([...new Set(missing.map((m) => m.split(': ')[1]))], [], 'links to pages that do not exist')
+  })
+})
+
+// A description longer than a search result can show is truncated mid-phrase
+// by the engine, which picks the cut, not us; one much shorter than that is
+// leaving the space empty. 160 characters is the conventional ceiling. The
+// floor is deliberately loose: the error-code and skill pages derive their
+// description from generated text — a short one there is an honest summary of
+// a short source sentence, not a page that forgot to describe itself.
+describe('meta descriptions', () => {
+  const DESCRIPTION_MAX = 160
+  const DESCRIPTION_MIN = 40
+
+  const described = walk(DIST, '.html').map((page) => {
+    const { document } = parseHTML(read(page))
+    return [page, document.querySelector('meta[name="description"]')?.getAttribute('content')]
+  })
+
+  test('every page has one', () => {
+    for (const [page, description] of described) {
+      assert.ok(description, `${page}: no meta description`)
+    }
+  })
+
+  test('none is longer than a search result shows', () => {
+    const over = described
+      .filter(([, d]) => d.length > DESCRIPTION_MAX)
+      .map(([page, d]) => `${page}: ${d.length}`)
+    assert.deepEqual(over, [], `over ${DESCRIPTION_MAX} characters`)
+  })
+
+  test('none is too thin to be a summary', () => {
+    const under = described
+      .filter(([, d]) => d.length < DESCRIPTION_MIN)
+      .map(([page, d]) => `${page}: ${d.length}`)
+    assert.deepEqual(under, [], `under ${DESCRIPTION_MIN} characters`)
+  })
+
+  // The docs hub renders the introduction, so the two share a title and a
+  // description by construction. Everything else describing itself the same
+  // way as another page is two pages competing for one result.
+  test('no two pages describe themselves identically', () => {
+    const seen = new Map()
+    for (const [page, description] of described) {
+      if (!seen.has(description)) seen.set(description, [])
+      seen.get(description).push(page)
+    }
+    const shared = [...seen.values()]
+      .filter((pages) => pages.length > 1)
+      .filter((pages) => !(pages.length === 2 && pages.includes('docs/index.html')))
+      .map((pages) => pages.join(' == '))
+    assert.deepEqual(shared, [])
+  })
+})
+
+// One <h1> per page, and no level skipped on the way down. /why had four —
+// its sections were written as top-level headings, so a 400-line page
+// offered no outline to a reader, a screen reader or a search engine.
+describe('heading outlines', () => {
+  const outline = (page) => {
+    const { document } = parseHTML(read(page))
+    for (const el of document.querySelectorAll('script,style,nav,header,footer')) el.remove()
+    const region =
+      document.querySelector('[data-pagefind-body]') ??
+      document.querySelector('main') ??
+      document.querySelector('body')
+    return [...region.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName[1]))
+  }
+
+  test('every page has exactly one h1', () => {
+    const wrong = walk(DIST, '.html')
+      .map((page) => [page, outline(page).filter((l) => l === 1).length])
+      .filter(([, n]) => n !== 1)
+      .map(([page, n]) => `${page}: ${n}`)
+    assert.deepEqual(wrong, [])
+  })
+
+  test('no page skips a heading level', () => {
+    const skips = []
+    for (const page of walk(DIST, '.html')) {
+      const levels = outline(page)
+      for (let i = 1; i < levels.length; i++) {
+        if (levels[i] - levels[i - 1] > 1) skips.push(`${page}: h${levels[i - 1]} -> h${levels[i]}`)
+      }
+    }
+    assert.deepEqual(skips, [])
+  })
+})
+
+describe('cache policy', () => {
+  // The asset server's default is `max-age=0, must-revalidate`, which is
+  // right for HTML and was also being applied to content-hashed bundles and
+  // to fonts preloaded on every page.
+  const headers = read('_headers')
+
+  test('content-hashed bundles are immutable', () => {
+    assert.match(headers, /^\/_astro\/\*$/m)
+    assert.match(headers, /Cache-Control: public, max-age=31536000, immutable/)
+  })
+
+  test('the unhashed static files are cached but not immutable', () => {
+    for (const prefix of ['/fonts/*', '/brand/*', '/diagrams/*']) {
+      assert.ok(headers.includes(prefix), `${prefix} has no cache policy`)
+    }
+    // A file that keeps its name across deploys must stay replaceable.
+    assert.doesNotMatch(headers, /\/fonts\/\*\n\s+Cache-Control:[^\n]*immutable/)
+  })
+
+  test('HTML keeps the revalidating default', () => {
+    // Naming a page path here would serve readers a stale page after a
+    // deploy. The absence is the policy.
+    assert.doesNotMatch(headers, /^\/(docs|why|agents)/m)
+  })
+})
+
+describe('the sitemap', () => {
+  const xml = walk(DIST, '.xml')
+    .filter((f) => f.startsWith('sitemap-'))
+    .map(read)
+    .join('')
+  const entries = [...xml.matchAll(/<url>(.*?)<\/url>/gs)].map((m) => m[1])
+
+  test('every URL carries a lastmod', () => {
+    assert.ok(entries.length > 50, 'suspiciously few URLs')
+    const without = entries
+      .filter((e) => !e.includes('<lastmod>'))
+      .map((e) => e.match(/<loc>(.*?)<\/loc>/)[1])
+    assert.deepEqual(without, [])
+  })
+
+  // A lastmod Google does not believe is a lastmod Google discards, for the
+  // whole site. These come from git, so they cannot be in the future and
+  // cannot all be the same instant the way a build timestamp would be.
+  test('the dates are real and not all the same', () => {
+    const dates = entries.map((e) => e.match(/<lastmod>(.*?)<\/lastmod>/)[1])
+    const now = Date.now()
+    for (const date of dates) {
+      const t = Date.parse(date)
+      assert.ok(Number.isFinite(t), `${date} is not a date`)
+      assert.ok(t <= now, `${date} is in the future`)
+    }
+    assert.ok(new Set(dates).size > 5, 'every page claims the same date — that is a build stamp')
+  })
+
+  test('changefreq and priority are absent', () => {
+    // Both are ignored by every major engine; emitting them is noise that
+    // has to be kept plausible for no return.
+    assert.doesNotMatch(xml, /<changefreq>|<priority>/)
   })
 })

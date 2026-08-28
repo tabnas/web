@@ -47,11 +47,11 @@ const goCount = PACKAGES.filter((p) => p.go).length;
       </p>
       <p>
         The second consequence is why the project has an
-        <a href="/agents">agent-facing half</a>. A flat, declarative, control-flow-free
+        <a href="/agents/">agent-facing half</a>. A flat, declarative, control-flow-free
         table is a good compile target: RFC 5234 ABNF compiles into it, and so
         does the output of a language model — and unlike generated code, you
         can validate the result before you run it.
-        <a href="/why">Why tabnas</a> is the long-form version of this
+        <a href="/why/">Why tabnas</a> is the long-form version of this
         argument, and the source document for everything else on the site.
       </p>
     </section>
@@ -62,10 +62,10 @@ const goCount = PACKAGES.filter((p) => p.go).length;
         {packageCount} packages: the engine, the grammar tooling,
         {" "}{grammarCount} language and data-format grammars, the syntax
         plugins, and the agent distributions — Agent Skills, an
-        <a href="/mcp">MCP server</a> and the <code>tabnas</code> command-line
+        <a href="/mcp/">MCP server</a> and the <code>tabnas</code> command-line
         tool. {goCount} of them ship as a Go module as well as an npm package,
         from one shared set of fixtures that both runtimes must pass.
-        <a href="/releases">Releases</a> lists every one with its current
+        <a href="/releases/">Releases</a> lists every one with its current
         version; <a href="/versions.json"><code>/versions.json</code></a> is
         the same answer for a program.
       </p>
@@ -91,7 +91,7 @@ const goCount = PACKAGES.filter((p) => p.go).length;
         One maintainer is a real constraint and the site says so rather than
         implying a team. Contributions arrive through GitHub and are welcome,
         including ones written with an AI agent —
-        <a href="/community">community</a> explains how that works and why the
+        <a href="/community/">community</a> explains how that works and why the
         shared fixtures make it safe.
       </p>
     </section>
@@ -103,8 +103,8 @@ const goCount = PACKAGES.filter((p) => p.go).length;
         upgrade to, and no telemetry in any package. The one service the
         project operates is the hosted MCP endpoint, which exists for agent
         clients that cannot spawn a local process; it stores nothing, and the
-        <a href="/privacy">privacy policy</a> is short because there is
-        nothing to describe. <a href="/sponsors">Sponsors</a> has the detail.
+        <a href="/privacy/">privacy policy</a> is short because there is
+        nothing to describe. <a href="/sponsors/">Sponsors</a> has the detail.
       </p>
     </section>
 
@@ -116,14 +116,14 @@ const goCount = PACKAGES.filter((p) => p.go).length;
         next minor. The parser is deterministic, which means it does not
         handle ambiguous grammars, and you supply the lexer's token
         definitions.
-        <a href="/comparisons">Other parsers</a> names the cases where ANTLR,
+        <a href="/comparisons/">Other parsers</a> names the cases where ANTLR,
         Peggy, Chevrotain, nearley or tree-sitter is the better answer, and
-        the <a href="/faq">FAQ</a> has a scope section for the things this
+        the <a href="/faq/">FAQ</a> has a scope section for the things this
         project will not do.
       </p>
       <p>
         Per-repository CI, release and compliance state is published at
-        <a href="/status">status</a>, so the claim that both runtimes agree is
+        <a href="/status/">status</a>, so the claim that both runtimes agree is
         one you can check rather than take.
       </p>
     </section>
@@ -133,7 +133,7 @@ const goCount = PACKAGES.filter((p) => p.go).length;
       <p>
         Questions and bug reports go through GitHub;
         {" "}<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> reaches the
-        maintainer directly. <a href="/contact">Contact</a> has the right
+        maintainer directly. <a href="/contact/">Contact</a> has the right
         channel for each kind of message.
       </p>
       <p class="motto">

@@ -3,9 +3,9 @@
 export const SITE_TITLE = "tabnas";
 export const SITE_TAGLINE = "An extensible parsing engine, and a compile target for agents";
 export const SITE_DESCRIPTION =
-  "tabnas is a parsing engine that can handle any language. Grammars are data, " +
-  "so you extend one that already works instead of starting over — and an agent " +
-  "can write one directly.";
+  "tabnas is a parsing engine for any language. Grammars are data: you extend " +
+  "one that already works instead of starting over, and an agent can write " +
+  "one directly.";
 
 // Irish: "Tábla na nAistrithe" — a table of translations (i.e. a grammar).
 export const SITE_MOTTO = "Tábla na nAistrithe";
@@ -24,16 +24,16 @@ export const AUTHOR = {
 
 // Primary navigation.
 export const NAV: { href: string; label: string }[] = [
-  { href: "/why", label: "Why" },
-  { href: "/docs", label: "Docs" },
-  { href: "/how-to", label: "How to" },
-  { href: "/agents", label: "Agents" },
-  { href: "/playground", label: "Playground" },
-  { href: "/examples", label: "Examples" },
-  { href: "/status", label: "Status" },
-  { href: "/measure", label: "Measure" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/community", label: "Community" },
+  { href: "/why/", label: "Why" },
+  { href: "/docs/", label: "Docs" },
+  { href: "/how-to/", label: "How to" },
+  { href: "/agents/", label: "Agents" },
+  { href: "/playground/", label: "Playground" },
+  { href: "/examples/", label: "Examples" },
+  { href: "/status/", label: "Status" },
+  { href: "/measure/", label: "Measure" },
+  { href: "/faq/", label: "FAQ" },
+  { href: "/community/", label: "Community" },
 ];
 
 // How-to guide groups, in the order they appear in the sidebar and on the
@@ -66,12 +66,12 @@ export const HOWTO_GROUPS: { name: string; blurb: string }[] = [
 
 // Secondary pages — surfaced in the footer rather than the header.
 export const PROJECT_NAV: { href: string; label: string }[] = [
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-  { href: "/releases", label: "Releases" },
-  { href: "/comparisons", label: "Other parsers" },
-  { href: "/sponsors", label: "Sponsors" },
-  { href: "/privacy", label: "Privacy" },
+  { href: "/about/", label: "About" },
+  { href: "/contact/", label: "Contact" },
+  { href: "/releases/", label: "Releases" },
+  { href: "/comparisons/", label: "Other parsers" },
+  { href: "/sponsors/", label: "Sponsors" },
+  { href: "/privacy/", label: "Privacy" },
 ];
 
 // The agent-facing surfaces. Their own list because llms.txt is generated
@@ -80,31 +80,31 @@ export const PROJECT_NAV: { href: string; label: string }[] = [
 // list it in a second place. `blurb` is the one-line framing llms.txt uses.
 export const AGENT_NAV: { href: string; label: string; blurb: string }[] = [
   {
-    href: "/agents",
+    href: "/agents/",
     label: "Agents",
     blurb:
       "how to build with tabnas — the format to emit, the constraints, how to verify your work",
   },
   {
-    href: "/skills",
+    href: "/skills/",
     label: "Skills",
     blurb:
       "portable Agent Skills for authoring, debugging, testing and shipping grammars — one Agent Plugins package, installable in Claude Code, with a page per skill at /skills/<name>",
   },
   {
-    href: "/mcp",
+    href: "/mcp/",
     label: "MCP",
     blurb:
       "connect an agent over MCP — local stdio or hosted, dev.tabnas/mcp in the official registry, and the same tools as the `tabnas` command-line tool",
   },
   {
-    href: "/errors",
+    href: "/errors/",
     label: "Error reference",
     blurb:
       "every error code the engine and its plugins raise; the code, not the message, is the cross-runtime contract",
   },
   {
-    href: "/api",
+    href: "/api/",
     label: "API",
     blurb:
       "every machine-readable endpoint this site serves, described by an OpenAPI 3.1 document at /openapi.json — plus markdown content negotiation, and the shape of an error response",

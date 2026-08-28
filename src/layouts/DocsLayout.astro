@@ -68,7 +68,7 @@ const toc = headings
               <ul>
                 {g.items.map((d) => (
                   <li>
-                    <a href={`/docs/${d.id}`} class:list={["side-link", { active: d.id === slug }]}>
+                    <a href={`/docs/${d.id}/`} class:list={["side-link", { active: d.id === slug }]}>
                       {d.data.title}
                     </a>
                   </li>
@@ -76,7 +76,7 @@ const toc = headings
                 {/* The rest of the how-to quadrant is a top-level section;
                     without this the three pages here look like all of it. */}
                 {"How-to" === g.section && (
-                  <li><a href="/how-to" class="side-link more">All how-to guides →</a></li>
+                  <li><a href="/how-to/" class="side-link more">All how-to guides →</a></li>
                 )}
               </ul>
             </div>
@@ -95,10 +95,10 @@ const toc = headings
 
         <nav class="pager">
           {prev ? (
-            <a class="pg prev" href={`/docs/${prev.id}`}><span>← Previous</span>{prev.title}</a>
+            <a class="pg prev" href={`/docs/${prev.id}/`}><span>← Previous</span>{prev.title}</a>
           ) : <span />}
           {next ? (
-            <a class="pg next" href={`/docs/${next.id}`}><span>Next →</span>{next.title}</a>
+            <a class="pg next" href={`/docs/${next.id}/`}><span>Next →</span>{next.title}</a>
           ) : <span />}
         </nav>
 
