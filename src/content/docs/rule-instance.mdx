@@ -54,7 +54,7 @@ For the alternate `{ s: ['#TX', '#EQ'] }` on input `port = 8080`:
 
 `r.o0` is the one you will reach for most: it is the token that decided which
 alternate you are in, which makes it the right thing to point an
-[error](/how-to/parse-errors) at.
+[error](/how-to/parse-errors/) at.
 
 ### Inside a token
 
@@ -96,7 +96,7 @@ test.
 A pushed rule's node is **seeded from its parent**. That is why
 `@setval$` can write into `r.node` from inside `pair` and have the result land
 in the enclosing map — they are the same object. It is also why
-[`@reset$`](/docs/builtin-actions) exists: a rule that needs its own scalar
+[`@reset$`](/docs/builtin-actions/) exists: a rule that needs its own scalar
 value has to clear the inherited one first.
 
 ## Scratch data: `u` and `k`
@@ -130,7 +130,7 @@ helpers, and a trap:
 is true before anything is counted, `r.gt('depth', 99)` is false, and exactly
 one of `<`, `=`, `>` holds. `r.exist('k')` asks whether the counter was set at
 all, which the comparisons cannot: one set to `0` and one never set compare
-identically. [Conditions and counters](/docs/conditions) covers it properly.
+identically. [Conditions and counters](/docs/conditions/) covers it properly.
 
 > Before 0.6 an unset counter compared as **true against every one of them**,
 > so `lt` and `gt` were both true and a guard could fire on the first token.
@@ -142,13 +142,13 @@ You do not have to guess at any of this:
 <CodeTabs id="docs-rule-instance-trace" label="Every activation, live" />
 
 Two `add` instances at the same depth is a repeat; increasing depth is a push.
-See [debugging a grammar](/how-to/debug-a-grammar) for the full trace.
+See [debugging a grammar](/how-to/debug-a-grammar/) for the full trace.
 
 ## Next
 
-- [Builtin actions](/docs/builtin-actions) — building `r.node` without writing
+- [Builtin actions](/docs/builtin-actions/) — building `r.node` without writing
   any code.
-- [Conditions and counters](/docs/conditions) — using `r.n` and `r.u` to pick
+- [Conditions and counters](/docs/conditions/) — using `r.n` and `r.u` to pick
   an alternate.
-- [The rule table](/docs/rule-table) — the alternate fields that populate all
+- [The rule table](/docs/rule-table/) — the alternate fields that populate all
   of the above.

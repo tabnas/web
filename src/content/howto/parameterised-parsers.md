@@ -119,7 +119,7 @@ new Tabnas().use(jsonic).use(Csv, { comment: true }).parse('#note\na,b\n1,2')
 Space and newline are in the `IGNORE` token set by default. CSV takes newline
 out of it always, and space too in strict mode, because in that dialect they
 are content. See
-[parsing a line-oriented format](/how-to/line-oriented-formats).
+[parsing a line-oriented format](/how-to/line-oriented-formats/).
 
 ### Include or exclude rules
 
@@ -177,7 +177,7 @@ the counter it uses, which is what keeps two instances from colliding.
 `@tabnas/expr` sits in between: the option is a *table*, merged over a default
 table. Naming an operator overrides it, naming a new one adds it, and setting
 one to `null` removes it. See
-[parsing expressions with precedence](/how-to/expressions-with-precedence).
+[parsing expressions with precedence](/how-to/expressions-with-precedence/).
 
 ## Fail fast on bad options
 
@@ -212,12 +212,12 @@ to shrink. Two things keep it manageable: put every option in `defaults` so the
 full surface is readable in one place, and prefer options that select between
 behaviours over options that take a function — a callback is impossible to
 serialise, diff, or accept from somewhere you don't trust, and the engine's
-[data-first design](/docs/how-it-works) is the thing you would be giving up.
+[data-first design](/docs/how-it-works/) is the thing you would be giving up.
 
 ## See also
 
-- [Include one source from another](/how-to/include-other-sources) —
+- [Include one source from another](/how-to/include-other-sources/) —
   `Directive` in use.
-- [Lex a token the engine doesn't know](/how-to/custom-tokens) — the
+- [Lex a token the engine doesn't know](/how-to/custom-tokens/) — the
   `match.value` matcher used above.
-- [Extending a grammar](/docs/extending) — `make()`, `use()` and pruning rules.
+- [Extending a grammar](/docs/extending/) — `make()`, `use()` and pruning rules.

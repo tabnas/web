@@ -227,8 +227,8 @@ That is two of the four things you were about to go and find out.
 
 ## See also
 
-- [Give good parse errors](/how-to/parse-errors) — making that message useful
+- [Give good parse errors](/how-to/parse-errors/) — making that message useful
   to someone who isn't you.
-- [Test a grammar](/how-to/test-a-grammar) — turning today's bug into a test.
-- [Choose between alternates](/how-to/choose-between-alternates) — what `alt=`
+- [Test a grammar](/how-to/test-a-grammar/) — turning today's bug into a test.
+- [Choose between alternates](/how-to/choose-between-alternates/) — what `alt=`
   in the trace is indexing.

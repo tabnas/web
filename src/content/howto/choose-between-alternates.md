@@ -79,7 +79,7 @@ already produced, so the tokenisation is fixed before any alternate sees it —
 an alternate cannot ask for the same characters to be read a different way. If
 two constructs in your language need the same text lexed differently, that is a
 lexer problem, not an alternate-ordering one: give them distinct tokens (see
-[lexing a token the engine doesn't know](/how-to/custom-tokens)), or use a
+[lexing a token the engine doesn't know](/how-to/custom-tokens/)), or use a
 matcher whose behaviour depends on the rule it is called from.
 
 ## Alternation inside one position
@@ -194,7 +194,7 @@ It is also a trap in a close phase: an empty alternate will happily end a rule
 that should have insisted on a closing token, producing `undefined` rather than
 an error. If a rule has a required terminator, make the empty alternate
 conditional or replace it with an
-[error alternate](/how-to/parse-errors).
+[error alternate](/how-to/parse-errors/).
 
 ## Seeing which one fired
 
@@ -206,12 +206,12 @@ parse  "2"   ["+"]~[#PL]   2  . . alt=0  []   g:abnf   r:add
 ```
 
 `alt=0` is the index into the phase's alternate list, `g:` its group tags, and
-`r:`/`p:` what it did next. See [debugging a grammar](/how-to/debug-a-grammar).
+`r:`/`p:` what it did next. See [debugging a grammar](/how-to/debug-a-grammar/).
 
 ## See also
 
-- [The rule table](/docs/rule-table) — every alternate field in one table.
-- [Handle recursion and repetition](/how-to/recursion-and-repetition) — `p`,
+- [The rule table](/docs/rule-table/) — every alternate field in one table.
+- [Handle recursion and repetition](/how-to/recursion-and-repetition/) — `p`,
   `r`, and counters as depth guards.
-- [Give good parse errors](/how-to/parse-errors) — `e`, the alternate that
+- [Give good parse errors](/how-to/parse-errors/) — `e`, the alternate that
   exists to fail well.

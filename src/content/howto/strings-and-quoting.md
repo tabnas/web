@@ -76,7 +76,7 @@ For block-delimited strings with markers rather than quotes — triple quotes,
 heredocs — see
 [@tabnas/hoover](https://github.com/tabnas/hoover), which adds a configurable
 "hoovering" matcher, or write
-[a matcher of your own](/how-to/custom-tokens#4--a-matcher-function).
+[a matcher of your own](/how-to/custom-tokens/#4--a-matcher-function).
 
 ## Escapes
 
@@ -150,13 +150,13 @@ tn.options({
 })
 ```
 
-See [giving good parse errors](/how-to/parse-errors).
+See [giving good parse errors](/how-to/parse-errors/).
 
 ## See also
 
-- [Lex a token the engine doesn't know](/how-to/custom-tokens) — when the
+- [Lex a token the engine doesn't know](/how-to/custom-tokens/) — when the
   string matcher's options run out.
-- [Handle comments and whitespace](/how-to/comments-and-whitespace) — the other
+- [Handle comments and whitespace](/how-to/comments-and-whitespace/) — the other
   half of the lexer's configuration.
-- [Extending a grammar](/docs/extending) — deriving a stricter or looser
+- [Extending a grammar](/docs/extending/) — deriving a stricter or looser
   dialect without touching the original.

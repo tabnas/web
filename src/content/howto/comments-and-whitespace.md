@@ -91,7 +91,7 @@ it. With `eatline: true` the comment token swallows the newline as well:
 ```
 
 Irrelevant while newlines are ignored, and decisive once they are not: in a
-[line-oriented grammar](/how-to/line-oriented-formats), a comment on its own
+[line-oriented grammar](/how-to/line-oriented-formats/), a comment on its own
 line otherwise emits a record separator that isn't there.
 
 ## Keeping what is normally thrown away
@@ -140,8 +140,8 @@ elsewhere. No `#CM` means the definition never registered — check `lex: true`.
 
 ## See also
 
-- [Parse a line-oriented format](/how-to/line-oriented-formats) — the other
+- [Parse a line-oriented format](/how-to/line-oriented-formats/) — the other
   reason to change `IGNORE`.
-- [Lex a token the engine doesn't know](/how-to/custom-tokens) — matcher order,
+- [Lex a token the engine doesn't know](/how-to/custom-tokens/) — matcher order,
   and why a comment-like token has to run early.
-- [The rule table](/docs/rule-table) — the built-in token names.
+- [The rule table](/docs/rule-table/) — the built-in token names.

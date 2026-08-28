@@ -243,7 +243,7 @@ tn.parse('cfg: @"base.jsonic"')
 ```
 
 Returning a token from `bad()` is how an action reports a parse error rather
-than throwing — see [giving good parse errors](/how-to/parse-errors).
+than throwing — see [giving good parse errors](/how-to/parse-errors/).
 
 Having written that, use `MultiSource` instead. Resolution order, base paths,
 implicit extensions, key-position merging and dependency tracking are the parts
@@ -251,9 +251,9 @@ that take the time, and they are already done.
 
 ## See also
 
-- [Write a parameterised parser](/how-to/parameterised-parsers) — how
+- [Write a parameterised parser](/how-to/parameterised-parsers/) — how
   `Directive` takes its options, and how to do the same.
-- [Extending a grammar](/docs/extending) — the general form of adding to a
+- [Extending a grammar](/docs/extending/) — the general form of adding to a
   grammar you didn't write.
 - [@tabnas/multisource](https://github.com/tabnas/multisource) — resolvers,
   processors, preloading.

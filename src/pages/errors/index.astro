@@ -121,7 +121,7 @@ const distinct = new Set([
             {engine.map((c) => (
               <tr>
                 <th scope="row">
-                  <a href={`/errors/${c.code}`}><code>{c.code}</code></a>
+                  <a href={`/errors/${c.code}/`}><code>{c.code}</code></a>
                   {"go" === c.runtime && <span class="tag" title="Go runtime only — TypeScript has no counterpart">Go only</span>}
                 </th>
                 <td class="msg"><code>{c.message}</code></td>
@@ -146,7 +146,7 @@ const distinct = new Set([
           <tbody>
             {pluginCodes.map((c) => (
               <tr>
-                <th scope="row"><a href={`/errors/${c.code}`}><code>{c.code}</code></a></th>
+                <th scope="row"><a href={`/errors/${c.code}/`}><code>{c.code}</code></a></th>
                 <td class="msg">
                   {c.by.map((b) => (<code class="pkg">{b.name}</code>))}
                 </td>
@@ -189,7 +189,7 @@ const distinct = new Set([
             <tbody>
               {abiCodes.map((code) => (
                 <tr>
-                  <th scope="row"><a href={`/errors/${code}`}><code>{code}</code></a></th>
+                  <th scope="row"><a href={`/errors/${code}/`}><code>{code}</code></a></th>
                   <td class="msg">
                     {abiOwners.get(code)!.length === abiLibraries.length
                       ? <span>every clib ({abiLibraries.length})</span>
@@ -216,9 +216,9 @@ const distinct = new Set([
         got there).
       </p>
       <p class="blurb">
-        The <a href="/agents">agents guide</a> covers using these while
+        The <a href="/agents/">agents guide</a> covers using these while
         iterating on a grammar, and the{" "}
-        <a href="/skills"><code>debug-parse</code> skill</a> is the same
+        <a href="/skills/"><code>debug-parse</code> skill</a> is the same
         workflow packaged for an agent.
       </p>
     </section>

@@ -1,0 +1,29 @@
+# Cache policy for the files the asset server hands out directly.
+#
+# Cloudflare's default for static assets is `public, max-age=0,
+# must-revalidate`, which is right for HTML on a site that redeploys — a
+# reader should never be shown a stale page — and wrong for everything
+# below, which was revalidating a font and a stylesheet on every navigation.
+#
+# HTML is deliberately absent: it keeps the default. So does /pagefind/,
+# which the build regenerates wholesale on every deploy.
+#
+# These paths are exactly the ones wrangler.json excludes from
+# `run_worker_first`, so the asset server answers them without the Worker in
+# the way and this file is what sets their headers. Adding a path here that
+# the Worker does handle would have no effect.
+
+# Content-hashed by the build: the filename changes whenever the bytes do,
+# so a year is safe and `immutable` saves the revalidation round trip.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Not hashed — these keep their names across deploys, so they cannot be
+# immutable: a replaced font under the same name has to reach readers
+# eventually. Thirty days, revalidated after that.
+/fonts/*
+  Cache-Control: public, max-age=2592000
+/brand/*
+  Cache-Control: public, max-age=2592000
+/diagrams/*
+  Cache-Control: public, max-age=2592000

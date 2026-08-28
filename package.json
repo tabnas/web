@@ -14,7 +14,6 @@
   "dependencies": {
     "@astrojs/cloudflare": "12.6.12",
     "@astrojs/mdx": "4.3.13",
-    "@astrojs/rss": "4.0.14",
     "@astrojs/sitemap": "3.6.1",
     "@tabnas/abnf": "0.4.6",
     "@tabnas/bnf": "0.1.9",
@@ -44,7 +43,7 @@
   "private": true,
   "scripts": {
     "astro": "astro",
-    "build": "astro build && pagefind --site dist && node tools/gen-markdown.mjs",
+    "build": "node tools/deepen.mjs && astro build && pagefind --site dist && node tools/gen-markdown.mjs",
     "cf-typegen": "wrangler types",
     "check": "npm run check-ax && npm run test-examples && npm run build && tsc && npm test && wrangler deploy --dry-run",
     "check-ax": "node tools/check-ax.mjs",

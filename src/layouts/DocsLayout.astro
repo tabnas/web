@@ -68,7 +68,7 @@ const toc = headings
               <ul>
                 {g.items.map((d) => (
                   <li>
-                    <a href={`/docs/${d.id}`} class:list={["side-link", { active: d.id === slug }]}>
+                    <a href={`/docs/${d.id}/`} class:list={["side-link", { active: d.id === slug }]}>
                       {d.data.title}
                     </a>
                   </li>
@@ -76,7 +76,7 @@ const toc = headings
                 {/* The rest of the how-to quadrant is a top-level section;
                     without this the three pages here look like all of it. */}
                 {"How-to" === g.section && (
-                  <li><a href="/how-to" class="side-link more">All how-to guides →</a></li>
+                  <li><a href="/how-to/" class="side-link more">All how-to guides →</a></li>
                 )}
               </ul>
             </div>
@@ -95,10 +95,10 @@ const toc = headings
 
         <nav class="pager">
           {prev ? (
-            <a class="pg prev" href={`/docs/${prev.id}`}><span>← Previous</span>{prev.title}</a>
+            <a class="pg prev" href={`/docs/${prev.id}/`}><span>← Previous</span>{prev.title}</a>
           ) : <span />}
           {next ? (
-            <a class="pg next" href={`/docs/${next.id}`}><span>Next →</span>{next.title}</a>
+            <a class="pg next" href={`/docs/${next.id}/`}><span>Next →</span>{next.title}</a>
           ) : <span />}
         </nav>
 
@@ -144,12 +144,21 @@ const toc = headings
       }
       .sidebar ul { list-style: none; margin: 0; padding: 0; }
       .side-link {
-        display: block; padding: 0.3rem 0.6rem; border-radius: 7px;
+        display: block; padding: 0.3rem 0.6rem;
+        /* Square on the left, rounded on the right. A radius on this corner
+           bends the 2px marker below into a crescent at each end, and at one
+           row's height the two curves meet — what showed beside the current
+           page was a gold bracket, not a rule. */
+        border-radius: 0 7px 7px 0;
         color: var(--ink-soft); text-decoration: none; font-size: 0.95rem;
         border-left: 2px solid transparent;
       }
       .side-link:hover { color: var(--ink); background: color-mix(in srgb, var(--accent-strong) 10%, transparent); }
-      .side-link.active { color: var(--primary); border-left-color: var(--accent-strong); font-weight: 600; }
+      /* The marker is the label's own colour, not the gold accent: one hue
+         doing one job reads as emphasis, two reads as decoration. The weight
+         and the colour already say which page this is; the rule is there to
+         be found when scanning down the list, so it stays quiet. */
+      .side-link.active { color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
       .side-link.more { color: var(--ink-mute); font-size: 0.88rem; }
       .side-link.more:hover { color: var(--primary); }
 

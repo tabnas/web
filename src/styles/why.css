@@ -2,13 +2,22 @@
    prefixed with .why since the import is not Astro-scoped. */
 
 .why { max-width: 44rem; }
+/* Small caps for a heading that names a part rather than announcing it: the
+   page's own <h1> at the top, and the "How tabnas works" <h3> mid-page. Both
+   were paragraphs, so the page had four <h1>s, no <h2> and no outline; they
+   are headings now and this rule keeps them looking the way they did. */
 .why .eyebrow {
   font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;
   letter-spacing: 0.16em; color: var(--accent); margin: 0 0 0.5rem;
 }
-.why h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); text-wrap: balance; margin: 0 0 1rem; }
 .why .lede { font-size: 1.25rem; color: var(--ink-soft); }
-.why h2 { margin-top: 2.5rem; }
+/* The display type the sections have always had: they were written as h1s,
+   so `.why h1` is the rule that sized them. Demoting them to h2 fixed the
+   outline; the size follows them so the page looks the same. */
+.why h2 { font-size: clamp(2.2rem, 5vw, 3.2rem); text-wrap: balance; margin: 2.5rem 0 1rem; }
+/* The TLDR heading opens its pull quote, so it keeps the flush top it had
+   as an h1 rather than pushing itself down inside the box. */
+.why blockquote h2:first-child { margin-top: 0; }
 .why .story-logo {
   display: flex; flex-direction: column; align-items: center; gap: 1rem;
   margin: 2.25rem 0; text-align: center;

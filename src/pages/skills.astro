@@ -26,7 +26,7 @@ const ccInstall =
 <Base
   wide
   title="Skills"
-  description="Portable Agent Skills that teach an AI agent to author, debug, test and ship tabnas grammars — one Agent Plugins package, installable in Claude Code with two commands, with a detail page per skill."
+  description="Portable Agent Skills that teach an AI agent to author, debug, test and ship tabnas grammars — one package, installed in Claude Code with two commands."
 >
   <article class="skills" data-pagefind-body>
     <Heading level={1} id="skills">tabnas Agent Skills</Heading>
@@ -55,7 +55,7 @@ const ccInstall =
       <div class="cards">
         {skills.map((s) => (
           <article class="card">
-            <h3 id={s.name}><a href={`/skills/${s.name}`}><code>{s.name}</code></a></h3>
+            <h3 id={s.name}><a href={`/skills/${s.name}/`}><code>{s.name}</code></a></h3>
             <p class="what">{s.summary}</p>
             {s.useWhen && <p class="when">{s.useWhen}</p>}
             <dl class="meta">
@@ -75,7 +75,7 @@ const ccInstall =
               <dd>{s.license || "MIT"}</dd>
             </dl>
             <p class="src">
-              <a href={`/skills/${s.name}`}>details</a>
+              <a href={`/skills/${s.name}/`}>details</a>
               {" · "}
               <a
                 href={`${REPO("skills")}/blob/main/skills/${s.name}/SKILL.md`}
@@ -120,7 +120,7 @@ const ccInstall =
         <code>skills/&lt;name&gt;/SKILL.md</code> straight from the
         repository — each skill's page here links the file. To make the
         commands they teach runnable, add the MCP server too —{" "}
-        <a href="/mcp">the MCP page</a> has per-client instructions and the
+        <a href="/mcp/">the MCP page</a> has per-client instructions and the
         manifest entries, or in short:
       </p>
       {command && <pre><code>{command}</code></pre>}

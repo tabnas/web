@@ -64,7 +64,7 @@ export function buildOpenApi(): Record<string, unknown> {
       contact: {
         name: `${ORG.name} maintainers`,
         email: ORG.email,
-        url: `${SITE_URL}/contact`,
+        url: `${SITE_URL}/contact/`,
       },
       license: {
         name: "MIT",
@@ -74,7 +74,7 @@ export function buildOpenApi(): Record<string, unknown> {
     },
     externalDocs: {
       description: "Documentation hub",
-      url: `${SITE_URL}/docs`,
+      url: `${SITE_URL}/docs/`,
     },
     // One server only. A root `servers` entry applies to every operation that
     // does not override it, so listing the MCP host here advertised
@@ -324,7 +324,7 @@ export function buildOpenApi(): Record<string, unknown> {
             "",
             `The server exposes ${mcpTools.tools.length} tools — ${mcpTools.tools.join(", ")} —`,
             "and the fleet's contract files as resources. Full tool schemas come from",
-            "`tools/list`; the tools and their contracts are documented at " + `${SITE_URL}/mcp.`,
+            "`tools/list`; the tools and their contracts are documented at " + `${SITE_URL}/mcp/.`,
             "",
             "Local stdio is the recommended transport (`npx --yes @tabnas/mcp mcp`): free,",
             "private, unlimited, and the same code. This endpoint exists for clients that",

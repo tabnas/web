@@ -227,12 +227,30 @@ unflagged type stripping landed in 22.18).
 ```bash
 npm install
 npm run dev        # localhost:4321, no Pagefind index, no markdown twins
-npm run build      # astro build + pagefind + markdown twins
+npm run build      # deepen + astro build + pagefind + markdown twins
 npm run preview    # build, then wrangler dev — the real runtime
 npm run test       # node --test over test/ (needs a build first)
 npm run check      # everything: check-ax, examples, build, tsc, test, deploy --dry-run
 npm run deploy     # wrangler deploy
 ```
+
+The `deepen` step is `tools/deepen.mjs`, and on your machine it does nothing
+at all: it checks whether the checkout is shallow and exits. On a build that
+cloned shallow — `actions/checkout` defaults to `fetch-depth: 1`, and hosted
+builders clone shallow to start faster — it fetches the rest of the history,
+because `tools/lastmod.mjs` dates every sitemap entry by the last commit that
+touched the file the page renders from. A shallow checkout does not merely
+lack that history, it misreports it: the boundary commit is grafted as a root,
+so every file looks like it was added by that one commit at that one instant.
+The build says which happened, next to the twin count:
+
+```
+  sitemap lastmod: from git history (380 files)
+  sitemap lastmod: omitted — no usable git history (a shallow clone has none to read)
+```
+
+Neither the fetch nor a failed fetch can fail the build. A sitemap without
+`lastmod` is valid; a build that cannot run is not.
 
 `npm test` runs against `dist/`, so build first — `npm run check` does both in
 order. The suites are:

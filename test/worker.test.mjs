@@ -20,6 +20,7 @@ import worker, {
   explicitQuality,
   wantsMarkdown,
   markdownTwin,
+  pageForTwin,
   isMachinePath,
   errorFormat,
   ENTRY_POINTS,
@@ -173,6 +174,44 @@ describe('serving pages', () => {
     const res = await get('/why')
     assert.equal(res.status, 307)
     assert.equal(res.headers.get('location'), '/why/')
+  })
+
+  test('pageForTwin is the inverse of markdownTwin', () => {
+    assert.equal(pageForTwin('/index.md'), '/')
+    assert.equal(pageForTwin('/why.md'), '/why/')
+    assert.equal(pageForTwin('/docs/quickstart.md'), '/docs/quickstart/')
+    assert.equal(pageForTwin('/skills/build-a-plugin.md'), '/skills/build-a-plugin/')
+    // dist/404.html is a file, not a directory, so its page has no slash.
+    assert.equal(pageForTwin('/404.md'), '/404')
+    for (const p of ['/llms.txt', '/openapi.json', '/why/', '/']) {
+      assert.equal(pageForTwin(p), null, p)
+    }
+  })
+
+  // The twins are the same content at a second URL, advertised from every
+  // page head, so a crawler finds all of them: 194 URLs for 97 pages. The
+  // canonical header collapses that without making the twin any less
+  // available to something that wants to read it.
+  test('a markdown twin names the page it is a copy of', async () => {
+    const res = await get('/docs/quickstart.md')
+    assert.equal(res.status, 200)
+    assert.equal(
+      res.headers.get('link'),
+      '<https://tabnas.dev/docs/quickstart/>; rel="canonical"',
+    )
+
+    const home = await get('/index.md')
+    assert.equal(home.headers.get('link'), '<https://tabnas.dev/>; rel="canonical"')
+  })
+
+  test('documents that are not copies of a page carry no canonical', async () => {
+    // /llms.txt and /robots.txt are `isPublicData` like the twins are, but
+    // they are documents in their own right — pointing them at a page would
+    // be a claim that they duplicate one.
+    for (const path of ['/llms.txt', '/llms-full.txt', '/robots.txt', '/openapi.json']) {
+      const res = await get(path)
+      assert.doesNotMatch(res.headers.get('link') ?? '', /canonical/, path)
+    }
   })
 
   test('protocol files are not treated as pages', async () => {

@@ -50,10 +50,10 @@ export const ENTRY_POINTS: [string, string][] = [
   ["/llms.txt", "the site index, written for agents"],
   ["/llms-full.txt", "every documentation page as one file"],
   ["/openapi.json", "the OpenAPI description of the machine-readable endpoints"],
-  ["/api", "what this site serves to machines, and at which URLs"],
+  ["/api/", "what this site serves to machines, and at which URLs"],
   ["/sitemap-index.xml", "every page"],
-  ["/docs", "the documentation hub"],
-  ["/errors", "every error code the engine and its plugins raise"],
+  ["/docs/", "the documentation hub"],
+  ["/errors/", "every error code the engine and its plugins raise"],
 ];
 
 /**
@@ -214,6 +214,28 @@ export function markdownTwin(pathname: string): string | null {
   return `${trimmed}.md`;
 }
 
+/**
+ * The page a markdown twin is a copy of, or null if the path is not a twin.
+ *
+ * The inverse of `markdownTwin`, and the reason it exists: the twins are the
+ * same content at a second URL, linked from every page head and from a `Link`
+ * header, so a crawler finds all 97 of them. Left alone that is 194 crawlable
+ * URLs for 97 pages. Pointing each twin at its page with `rel="canonical"` —
+ * which is what the header is for on non-HTML representations — consolidates
+ * them without hiding anything: the twin still answers, still 200s, and an
+ * agent that wants it is unaffected.
+ *
+ * `/index.md` is `/`. `/404.md` is `/404`, which alone has no trailing slash:
+ * Astro emits `dist/404.html` rather than a directory.
+ */
+export function pageForTwin(pathname: string): string | null {
+  if (!/\.md$/i.test(pathname)) return null;
+  const stem = pathname.slice(0, -".md".length);
+  if (stem === "/index") return "/";
+  if (stem === "/404") return "/404";
+  return `${stem}/`;
+}
+
 interface ErrorBody {
   status: number;
   code: string;
@@ -222,7 +244,9 @@ interface ErrorBody {
 }
 
 function resources(origin: string): Record<string, string> {
-  return Object.fromEntries(ENTRY_POINTS.map(([href]) => [href.replace(/^\//, "") || "home", origin + href]));
+  return Object.fromEntries(
+    ENTRY_POINTS.map(([href]) => [href.replace(/^\/|\/$/g, "") || "home", origin + href]),
+  );
 }
 
 function jsonError(origin: string, error: ErrorBody, extra?: HeadersInit): Response {
@@ -430,6 +454,11 @@ export default {
       const type = machineContentType(url.pathname);
       if (type) response.headers.set("content-type", type);
       response.headers.set("access-control-allow-origin", "*");
+      // A twin reached at its own `.md` URL says which page it is a copy of.
+      // Only the twins: /llms.txt and /robots.txt are `isPublicData` too, and
+      // they are documents in their own right, not a second copy of a page.
+      const page = pageForTwin(url.pathname);
+      if (page) response.headers.set("link", `<${url.origin}${page}>; rel="canonical"`);
     }
     return response;
   },

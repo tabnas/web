@@ -28,7 +28,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             A parsing engine you extend rather than replace. A grammar is data —
             a table of rules and token alternates the engine walks at runtime —
             so a new language is usually rules added to one that already parses.
-            The long version is on <a href="/why">why tabnas</a>.
+            The long version is on <a href="/why/">why tabnas</a>.
           </dd>
         </div>
         <div>
@@ -37,7 +37,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             Writing a parser is expensive, so most formats never get a good one.
             Two things make it cheaper here: extension is the normal case
             instead of a fork, and the grammar is plain enough data that a
-            language model can write it. See <a href="/agents">agents</a>.
+            language model can write it. See <a href="/agents/">agents</a>.
           </dd>
         </div>
         <div>
@@ -75,7 +75,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             and a programmatic API for parameterised grammars — the level
             <a href={REPO("expr")} target="_blank" rel="noopener">expr</a> and
             <a href={REPO("directive")} target="_blank" rel="noopener">directive</a>
-            are built at. The <a href="/playground">playground</a> takes the
+            are built at. The <a href="/playground/">playground</a> takes the
             first two.
           </dd>
         </div>
@@ -83,13 +83,13 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dt>Can I connect an agent without installing anything?</dt>
           <dd>
             Yes, but installing is better. <code>npx --yes @tabnas/mcp mcp</code>
-            runs the <a href="/mcp">MCP server</a> locally and is the supported
+            runs the <a href="/mcp/">MCP server</a> locally and is the supported
             path — free, private, unlimited, and reproducible. For clients that
             cannot spawn a process, the same tools are served over streamable
             HTTP at <code>mcp.tabnas.dev/mcp</code>. It is bounded (a body cap
             and a per-IP rate limit, both stated by its
             <code>/.well-known/mcp</code>), and it keeps nothing: see{" "}
-            <a href="/privacy">privacy</a>. Both answer byte-for-byte
+            <a href="/privacy/">privacy</a>. Both answer byte-for-byte
             identically, because there is one implementation behind them.
           </dd>
         </div>
@@ -107,7 +107,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dd>
             No. The engine is deterministic and does not backtrack. If you need every valid parse of an ambiguous input, an
             Earley or GLR parser is the right tool —
-            <a href="/comparisons">other parsers</a> covers when to reach for one.
+            <a href="/comparisons/">other parsers</a> covers when to reach for one.
           </dd>
         </div>
         <div>
@@ -127,7 +127,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             Add rules and token alternates to it. That's the whole mechanism,
             and it's how the packages are built: JSON is a handful of rules,
             JSONC adds comments, jsonic relaxes the quoting. See
-            <a href="/docs/extending">extending a grammar</a>.
+            <a href="/docs/extending/">extending a grammar</a>.
           </dd>
         </div>
         <div>
@@ -145,7 +145,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
         <div>
           <dt>How fast is it?</dt>
           <dd>
-            The public <a href="/measure">measurement catalog</a> records
+            The public <a href="/measure/">measurement catalog</a> records
             capability matrices and steady-state parse timings for the
             TypeScript and Go ports. Every run keeps its raw samples, exact
             inputs, parser versions, runtime versions, and host fingerprint.
@@ -176,7 +176,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             <a href={REPO("css")} target="_blank" rel="noopener">CSS</a>,
             <a href={REPO("markdown")} target="_blank" rel="noopener">Markdown</a>
             and <a href={REPO("xml")} target="_blank" rel="noopener">XML</a>.
-            Beyond the org, <a href="/examples">boru</a> is a complete
+            Beyond the org, <a href="/examples/">boru</a> is a complete
             programming language — types, macros, an LSP — with its whole front
             end on this engine.
           </dd>
@@ -232,13 +232,13 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             and jsonic — which is where tabnas came from. Development is
             sponsored by
             <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a>;
-            see <a href="/sponsors">sponsors</a>.
+            see <a href="/sponsors/">sponsors</a>.
           </dd>
         </div>
         <div>
           <dt>Is anyone using it?</dt>
           <dd>
-            Yes — <a href="/examples">examples</a> covers two real languages
+            Yes — <a href="/examples/">examples</a> covers two real languages
             built on the engine, one in TypeScript and one in Go. Beyond that
             it's early, and pretending otherwise wouldn't help you.
           </dd>
@@ -249,7 +249,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             Yes, and you don't have to disclose it. Every package repository
             ships an <code>AGENTS.md</code>, and the shared fixtures mean a
             change that doesn't actually work fails loudly. See
-            <a href="/community">community</a>.
+            <a href="/community/">community</a>.
           </dd>
         </div>
         <div>

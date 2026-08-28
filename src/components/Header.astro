@@ -3,8 +3,15 @@ import { NAV, SITE_TITLE, GITHUB_ORG } from "../consts";
 import mark from "../assets/brand/mark.svg";
 
 const path = Astro.url.pathname;
+
+// Both sides normalised before comparing. The nav hrefs carry a trailing
+// slash (they are the canonical URLs — see astro.config.mjs) and so does the
+// path of a built page, but neither is guaranteed: appending "/" to an href
+// that already ends in one produced "/docs//", which no path starts with, and
+// silently stopped Docs and How to from lighting up on any child page.
+const withSlash = (p: string) => (p.endsWith("/") ? p : `${p}/`);
 const isActive = (href: string) =>
-  href === "/" ? path === "/" : path === href || path.startsWith(href + "/");
+  href === "/" ? path === "/" : withSlash(path).startsWith(withSlash(href));
 ---
 
 <header class="site-header">
