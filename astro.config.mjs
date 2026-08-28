@@ -9,7 +9,8 @@ import cloudflare from "@astrojs/cloudflare";
 import { lastmodFor, historyReport } from "./tools/lastmod.mjs";
 
 // Say which it is, once, rather than letting a lastmod-free sitemap ship
-// unnoticed — the hosted build's clone depth is not set from this repo.
+// unnoticed. tools/deepen.mjs runs before this and fetches the history a
+// shallow checkout lacks, so "omitted" here means that could not be done.
 console.log(`  sitemap lastmod: ${historyReport()}`);
 
 // https://astro.build/config

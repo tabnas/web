@@ -43,7 +43,7 @@
   "private": true,
   "scripts": {
     "astro": "astro",
-    "build": "astro build && pagefind --site dist && node tools/gen-markdown.mjs",
+    "build": "node tools/deepen.mjs && astro build && pagefind --site dist && node tools/gen-markdown.mjs",
     "cf-typegen": "wrangler types",
     "check": "npm run check-ax && npm run test-examples && npm run build && tsc && npm test && wrangler deploy --dry-run",
     "check-ax": "node tools/check-ax.mjs",

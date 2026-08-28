@@ -37,10 +37,12 @@ function commitDates() {
     // same trap in miniature: files untouched within the fetched depth all
     // fall on the boundary date.
     //
-    // Shallow is the common case, not the exception: `actions/checkout`
-    // defaults to `fetch-depth: 1`. So expect no lastmod unless the build
-    // fetches full history — absent is allowed by the schema, and this is
-    // the whole reason the tests below accept a sitemap without it.
+    // Shallow is the common case for a build, not the exception, which is
+    // why tools/deepen.mjs runs first in `npm run build` and fetches the
+    // history this needs. This stays as the backstop for when that could
+    // not: no network, no permission, or a build invoked some other way.
+    // Absent lastmod is allowed by the schema, and it is why the tests
+    // accept a sitemap without it.
     const shallow = execFileSync('git', ['rev-parse', '--is-shallow-repository'], {
       cwd: ROOT,
       encoding: 'utf8',
@@ -136,8 +138,8 @@ const dates = commitDates()
  * Standing down on a shallow clone is correct but invisible, and "the
  * sitemap quietly has no lastmod" is exactly the kind of thing nobody
  * notices for a year. astro.config.mjs prints this, so any build log —
- * including the hosted one, whose checkout is not ours to configure —
- * answers the question.
+ * the hosted one included — says whether tools/deepen.mjs got the history
+ * it went looking for.
  */
 export function historyReport() {
   return dates.size
