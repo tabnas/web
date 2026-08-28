@@ -134,13 +134,22 @@ const toc = headings
       }
       .sidebar ul { list-style: none; margin: 0; padding: 0; }
       .side-link {
-        display: block; padding: 0.3rem 0.6rem; border-radius: 7px;
+        display: block; padding: 0.3rem 0.6rem;
+        /* Square on the left, rounded on the right. A radius on this corner
+           bends the 2px marker below into a crescent at each end, and at one
+           row's height the two curves meet — what showed beside the current
+           page was a gold bracket, not a rule. */
+        border-radius: 0 7px 7px 0;
         color: var(--ink-soft); text-decoration: none; font-size: 0.95rem;
         border-left: 2px solid transparent;
       }
       .side-link.index { font-family: var(--font-body); text-transform: none; letter-spacing: 0; }
       .side-link:hover { color: var(--ink); background: color-mix(in srgb, var(--accent-strong) 10%, transparent); }
-      .side-link.active { color: var(--primary); border-left-color: var(--accent-strong); font-weight: 600; }
+      /* The marker is the label's own colour, not the gold accent: one hue
+         doing one job reads as emphasis, two reads as decoration. The weight
+         and the colour already say which page this is; the rule is there to
+         be found when scanning down the list, so it stays quiet. */
+      .side-link.active { color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
 
       .doc-main { min-width: 0; }
       .prose h1 { margin-bottom: 0.6rem; }
