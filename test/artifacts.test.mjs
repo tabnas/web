@@ -19,6 +19,7 @@ import Ajv2020 from 'ajv/dist/2020.js'
 
 import { AGENT_NAV, PROJECT_NAV, NAV } from '../src/consts.ts'
 import { markdownTwin } from '../src/worker.ts'
+import { sourcesFor } from '../tools/lastmod.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = join(ROOT, 'dist')
@@ -696,19 +697,28 @@ describe('the sitemap', () => {
     .join('')
   const entries = [...xml.matchAll(/<url>(.*?)<\/url>/gs)].map((m) => m[1])
 
-  test('every URL carries a lastmod', () => {
+  const dated = entries.filter((e) => e.includes('<lastmod>'))
+
+  // All or nothing. lastmod comes from git history, and a shallow clone —
+  // which is what most CI checkouts are, this repo's included — has none to
+  // read, so a sitemap with no lastmod at all is a correct outcome and not a
+  // failure. What would be wrong is some pages carrying one and others not:
+  // that is a mapping that has stopped covering a route.
+  test('lastmod is present on every URL or on none', () => {
     assert.ok(entries.length > 50, 'suspiciously few URLs')
-    const without = entries
-      .filter((e) => !e.includes('<lastmod>'))
-      .map((e) => e.match(/<loc>(.*?)<\/loc>/)[1])
-    assert.deepEqual(without, [])
+    assert.ok(
+      dated.length === entries.length || dated.length === 0,
+      `${dated.length} of ${entries.length} URLs carry a lastmod`,
+    )
   })
 
   // A lastmod Google does not believe is a lastmod Google discards, for the
-  // whole site. These come from git, so they cannot be in the future and
-  // cannot all be the same instant the way a build timestamp would be.
-  test('the dates are real and not all the same', () => {
-    const dates = entries.map((e) => e.match(/<lastmod>(.*?)<\/lastmod>/)[1])
+  // whole site. These come from git, so they cannot be in the future — and
+  // they cannot all be the same instant, which is what a build stamp looks
+  // like and also what a shallow clone's boundary commit produces.
+  test('the dates are real and not all the same', (t) => {
+    if (!dated.length) return t.skip('built from a shallow clone: no history to date pages by')
+    const dates = dated.map((e) => e.match(/<lastmod>(.*?)<\/lastmod>/)[1])
     const now = Date.now()
     for (const date of dates) {
       const t = Date.parse(date)
@@ -716,6 +726,29 @@ describe('the sitemap', () => {
       assert.ok(t <= now, `${date} is in the future`)
     }
     assert.ok(new Set(dates).size > 5, 'every page claims the same date — that is a build stamp')
+  })
+
+  // The map in tools/lastmod.mjs is hand-kept, so a new page rendering from a
+  // generated catalogue would otherwise date itself by its own file and sit
+  // still while the catalogue moved under it.
+  test('a page rendering from a data file is dated by that file', () => {
+    const missing = []
+    for (const page of walk(DIST, '.html')) {
+      if (page === '404.html') continue
+      const route = '/' + page.replace(/(?:^|\/)index\.html$|\.html$/, '')
+      const source = sourcesFor(route).find(
+        (rel) => rel.startsWith('src/pages/') && existsSync(join(ROOT, rel)),
+      )
+      if (!source) continue
+      const imports = readFileSync(join(ROOT, source), 'utf8').matchAll(
+        /from\s+"[^"]*\/(data\/[a-z-]+\.json)"/g,
+      )
+      const sources = sourcesFor(route)
+      for (const [, data] of imports) {
+        if (!sources.includes(`src/${data}`)) missing.push(`${route} renders from src/${data}`)
+      }
+    }
+    assert.deepEqual([...new Set(missing)], [])
   })
 
   test('changefreq and priority are absent', () => {

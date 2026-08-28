@@ -7,12 +7,12 @@
 // that touched the file the page is rendered from.
 //
 // A page whose source cannot be identified gets no lastmod rather than a
-// guess, and if git is unavailable (a tarball, a shallow clone with no
-// history for a path) every page gets none. An absent lastmod is allowed by
-// the sitemap schema and costs nothing; a wrong one costs the signal.
+// guess, and where the history itself cannot be trusted — no git at all, or
+// a shallow clone, which is what most CI checkouts are — every page goes
+// without. An absent lastmod is allowed by the sitemap schema and costs
+// nothing; a wrong one costs the signal for the whole site.
 
 import { execFileSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -29,6 +29,24 @@ function commitDates() {
   const dates = new Map()
   let log
   try {
+    // A shallow clone has no history to read, and does not say so: its
+    // boundary commit is grafted as a root, so `git log --name-only` reports
+    // every tracked file as added by that one commit, under one timestamp.
+    // That is worse than no history — it looks complete, and it would stamp
+    // every page with the moment the repo was cloned. A partial clone is the
+    // same trap in miniature: files untouched within the fetched depth all
+    // fall on the boundary date.
+    //
+    // Shallow is the common case, not the exception: `actions/checkout`
+    // defaults to `fetch-depth: 1`. So expect no lastmod unless the build
+    // fetches full history — absent is allowed by the schema, and this is
+    // the whole reason the tests below accept a sitemap without it.
+    const shallow = execFileSync('git', ['rev-parse', '--is-shallow-repository'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    }).trim()
+    if (shallow !== 'false') return dates
+
     log = execFileSync('git', ['log', '--no-merges', '--name-only', '--format=%cI'], {
       cwd: ROOT,
       encoding: 'utf8',
@@ -50,12 +68,26 @@ function commitDates() {
   return dates
 }
 
-/** The first of `candidates` that exists in the repo, or null. */
-function firstPresent(candidates) {
-  for (const rel of candidates) {
-    if (existsSync(join(ROOT, rel))) return rel
-  }
-  return null
+/**
+ * Data a route renders content from, beyond its own file.
+ *
+ * A page can change without its own source changing: /releases builds its
+ * table from PACKAGES in consts.ts, so a routine package bump edits neither
+ * releases.astro nor anything else this map would otherwise reach, and the
+ * page's lastmod would sit still while the page changed.
+ *
+ * Chrome does not count — nearly every page imports SITE_TITLE from consts,
+ * and dating them all by it would report a change on 97 pages every time the
+ * nav is touched. Only what the page renders as content belongs here.
+ * test/artifacts.test.mjs checks this map against what the pages import.
+ */
+const RENDERS_FROM = {
+  '/releases': ['src/consts.ts'],
+  '/skills': ['src/data/skills.json'],
+  '/agents': ['src/data/skills.json', 'src/data/mcp-tools.json'],
+  '/mcp': ['src/data/skills.json', 'src/data/mcp-tools.json'],
+  '/api': ['src/openapi.ts', 'src/errors.ts', 'src/data/mcp-tools.json'],
+  '/errors': ['src/data/error-codes.json', 'src/data/plugins.json'],
 }
 
 /**
@@ -66,7 +98,7 @@ function firstPresent(candidates) {
  * and a skill page have no source of their own, they are rendered from data
  * that tools/gen-ax-data.mjs writes, so the data file is what dates them.
  */
-function sourcesFor(pathname) {
+export function sourcesFor(pathname) {
   const path = pathname.replace(/\/$/, '')
   if (path === '') return ['src/pages/index.astro']
 
@@ -85,13 +117,14 @@ function sourcesFor(pathname) {
     // Generated from both catalogues; the newer of the two dates the page.
     return ['src/data/error-codes.json', 'src/data/plugins.json']
   }
-  if (section === 'errors') return ['src/pages/errors/index.astro']
+  if (section === 'errors') return ['src/pages/errors/index.astro', ...RENDERS_FROM['/errors']]
   if (section === 'skills' && rest) return ['src/data/skills.json']
 
   return [
     `src/pages/${path.slice(1)}.astro`,
     `src/pages/${path.slice(1)}.mdx`,
     `src/pages/${path.slice(1)}/index.astro`,
+    ...(RENDERS_FROM[path] ?? []),
   ]
 }
 
@@ -108,9 +141,3 @@ export function lastmodFor(pathname) {
   if (!known.length) return undefined
   return known.sort().at(-1)
 }
-
-/** Whether any history was found at all — used by the build-time check. */
-export const hasHistory = () => dates.size > 0
-
-/** The source file a route resolves to, or null. Exported for the check. */
-export const sourceFor = (pathname) => firstPresent(sourcesFor(pathname))

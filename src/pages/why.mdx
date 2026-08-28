@@ -6,11 +6,15 @@ description: "Why tabnas exists: an extensible parser you build on rather than r
 
 import { SITE_TITLE, SITE_MOTTO } from "../consts";
 import mark from "../assets/brand/mark.svg";
+// Raw JSX headings in MDX are mdxJsxFlowElement nodes, which
+// rehype-autolink-headings does not touch — the same reason .astro pages use
+// this component. See "Headings and anchors" in AGENTS.md.
+import Heading from "../components/Heading.astro";
 import "../styles/why.css";
 
 <article class="why">
 
-<h1 class="eyebrow" id="why-tabnas">Why tabnas</h1>
+<Heading level={1} id="why-tabnas" class="eyebrow">Why tabnas</Heading>
 
 *tabnas* is a parsing engine that can handle any language. It is a
 compilation target, a "parser VM", providing a simple state and lookup
@@ -121,7 +125,7 @@ like a general purpose idea! Other formats like YAML and TOML are
 achievable in the same way!
 
 
-<h3 class="eyebrow" id="how-tabnas-works">How tabnas works</h3>
+<Heading level={3} id="how-tabnas-works" class="eyebrow">How tabnas works</Heading>
 
 Let's step back and look at how *tabnas* works. That way you can see
 how the extensibility falls out of the basic algorithm. Not by
