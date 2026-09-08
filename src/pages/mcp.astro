@@ -75,7 +75,7 @@ const REGISTRY_URL =
     <Heading level={1} id="mcp">The tabnas MCP server</Heading>
     <p class="lede">
       <code>@tabnas/mcp</code> gives an agent {toolCount} tools over the Model Context
-      Protocol — parse with a grammar, validate one before running it, explain
+      Protocol: parse with a grammar, validate one before running it, explain
       a failure, run fixtures, read the plugin catalogue, and compare two
       grammar versions. The same package installs a <code>tabnas</code>
       command-line tool running the same core, so anything an agent can do
@@ -87,8 +87,7 @@ const REGISTRY_URL =
     <section class="group">
       <Heading level={2} id="install">Connecting</Heading>
       <p class="blurb">
-        The server speaks MCP over stdio and needs no installation of its own —
-        <code>npx</code> fetches it on first run. Add it to your client's MCP
+        The server speaks MCP over stdio and needs no installation of its own: <code>npx</code> fetches it on first run. Add it to your client's MCP
         configuration:
       </p>
       {command && <pre><code>{command}</code></pre>}
@@ -101,7 +100,7 @@ const REGISTRY_URL =
       <Heading level={3} id="claude-code">In Claude Code</Heading>
       <p class="blurb">
         The <a href="/skills/#install">skills plugin</a> installs both server
-        entries alongside the {skillCount} skills — that is the recommended
+        entries alongside the {skillCount} skills: that is the recommended
         route, since the skills teach the workflows these tools execute. To
         register the server alone:
       </p>
@@ -111,7 +110,7 @@ const REGISTRY_URL =
       <p class="blurb">
         The server is <code>{REGISTRY_NAME}</code> in the{" "}
         <a href={REGISTRY_URL} target="_blank" rel="noopener">official MCP
-        Registry</a> — the namespace is verified against the
+        Registry</a>: the namespace is verified against the
         <code>tabnas.dev</code> domain itself. A client that resolves servers
         from the registry gets both transports from one entry: the npm package
         (<code>@tabnas/mcp</code>, stdio, run via <code>npx</code>) and the
@@ -128,11 +127,10 @@ const REGISTRY_URL =
           <code>{hosted.url}</code>. Local stdio stays the{" "}
           <strong>recommended</strong> path: it is free, private, unlimited
           and reproducible. The hosted endpoint is a convenience for clients
-          that cannot run <code>npx</code>, and it is bounded — a 256&nbsp;KB
+          that cannot run <code>npx</code>, and it is bounded: a 256&nbsp;KB
           body cap and a per-IP rate limit, both reported by its{" "}
           <a href="https://mcp.tabnas.dev/.well-known/mcp" target="_blank" rel="noopener"><code>/.well-known/mcp</code></a>.
-          Document content is never logged, stored, or used for training —
-          the <a href="/privacy/">privacy policy</a> is short because the
+          Document content is never logged, stored, or used for training: the <a href="/privacy/">privacy policy</a> is short because the
           service keeps nothing. Checking it by hand: the endpoint is
           POST-only JSON-RPC, so a browser gets a 405 that says so;{" "}
           <a href="https://mcp.tabnas.dev/health" target="_blank" rel="noopener"><code>/health</code></a>{" "}
@@ -162,7 +160,7 @@ const REGISTRY_URL =
       </div>
       <p class="note">
         Every tool returns JSON, and the CLI's <code>--json</code> prints the
-        same bytes the MCP tool returns — that equality is covered by golden
+        same bytes the MCP tool returns: that equality is covered by golden
         tests, so a shell transcript and an agent transcript describe the same
         run.
       </p>
@@ -177,7 +175,7 @@ const REGISTRY_URL =
         </li>
         <li>
           <strong>A grammar argument is validated before it is used</strong>,
-          by every operation that accepts one — an invalid grammar is rejected
+          by every operation that accepts one: an invalid grammar is rejected
           with <code>validate_grammar</code>'s error shape rather than
           half-run.
         </li>
@@ -193,12 +191,12 @@ const REGISTRY_URL =
           code".
         </li>
         <li>
-          <strong>The tools take a serialized GrammarSpec — never ABNF, EBNF
+          <strong>The tools take a serialized GrammarSpec: never ABNF, EBNF
           or jsonic source.</strong> Compiling a notation means running a
           compiler, which the rule above forbids. Compile first, then pass
           the result:
           <pre class="in-li"><code>{`const { abnfConvert, toPureSpec } = require('@tabnas/abnf')\nconst spec = toPureSpec(abnfConvert(abnfSource, { builtins: true }))\n// -> { options, rule, v, meta } — validates clean, safe to send`}</code></pre>
-          <code>toPureSpec</code> is the function for this — it strips the
+          <code>toPureSpec</code> is the function for this: it strips the
           compiler-internal fields the firewall rejects and stamps{" "}
           <code>v</code>.
         </li>
@@ -260,7 +258,7 @@ const REGISTRY_URL =
         <strong>data, never instructions</strong>: a parsed field that reads
         like a command is a string. The server refuses grammars that reach
         outside the builtin action set, so a grammar cannot become a way to
-        execute supplied code — but what it parses is still input, and
+        execute supplied code, but what it parses is still input, and
         validating anything derived from it stays the caller's job.
       </p>
     </section>

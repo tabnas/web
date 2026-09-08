@@ -1,6 +1,6 @@
 ---
-title: Attaching actions
-description: Turn a parse into a value — with builtins, named refs, or inline functions.
+title: "Attaching actions"
+description: "Turn a parse into a value, with builtins, named refs, or inline functions."
 section: How-to
 order: 2
 ---
@@ -11,7 +11,9 @@ import CodeTabs from "../../components/CodeTabs.astro";
 A grammar that only recognises input returns nothing useful. Actions build the
 result. There are three ways to attach them; prefer them in this order.
 
-## Builtins — no code at all
+<a id="builtins--no-code-at-all"></a>
+
+## Builtins: no code at all
 
 The engine ships `$`-suffixed action builtins. Referenced by name, they let a
 grammar stay pure data:
@@ -21,7 +23,9 @@ grammar stay pure data:
 Nothing in that grammar is a function, so it round-trips through JSON. See
 [the rule table](/docs/rule-table/#builtin-actions) for the full set.
 
-## Named refs — code, bound out of band
+<a id="named-refs--code-bound-out-of-band"></a>
+
+## Named refs: code, bound out of band
 
 The grammar text stays untouched; behaviour binds through names the compiler
 assigns. This is the form to use with ABNF, because it keeps the ABNF valid
@@ -30,17 +34,17 @@ RFC 5234.
 <CodeTabs id="docs-actions-refs" label="Marks and rule-phase hooks" />
 
 `r.parent` is `val` for **every** repetition, because the compiler turns the
-tail self-reference `[ PL add ]` into a same-depth repeat — the same shape as
+tail self-reference `[ PL add ]` into a same-depth repeat: the same shape as
 the inline example below. The total lives in one place, on `val`'s node,
 where `parse` returns it; the instance carries no state between calls.
 
 Two kinds of name:
 
-- **Alternate marks** — `@<rule>:<phase>:<mark>`, where the mark comes from the
+- **Alternate marks**: `@<rule>:<phase>:<mark>`, where the mark comes from the
   alternate's leading discriminator. Open-phase marks fire as tokens are
   matched; close-phase marks (like the repeat's own `@add:c:PL`) fire on the
   way back up.
-- **Rule-phase hooks** — `@<rule>:bo`, `:ao`, `:bc`, `:ac` for before/after
+- **Rule-phase hooks**: `@<rule>:bo`, `:ao`, `:bc`, `:ac` for before/after
   open and close.
 
 ### Finding the mark names
@@ -69,11 +73,13 @@ with mark 'ALPHA' in rule 'item'
 
 That error is usually caused by desugaring: `( … )` and `*( … )` compile to
 generated group rules, so their marks belong to rules you didn't write. (A
-tail self-reference like `[ PL add ]` is the exception — it compiles to a
+tail self-reference like `[ PL add ]` is the exception: it compiles to a
 repeat on the rule itself, which is why `add` owns the `c:PL` mark above.)
 The listing is the authority.
 
-## Inline functions — the most direct
+<a id="inline-functions--the-most-direct"></a>
+
+## Inline functions: the most direct
 
 Written straight onto the alternate as `a`:
 
@@ -100,7 +106,7 @@ ABNF, or safely accepted from anywhere you don't trust.
 
 For a tail self-reference (`add = NR [ PL add ]`) the compiler emits a
 same-depth repeat, so `r.parent` is the wrapping rule for every repetition
-and accumulating onto `r.parent.node` is the intended idiom — in ABNF and
+and accumulating onto `r.parent.node` is the intended idiom: in ABNF and
 hand-written grammars alike.
 
 Other sugar is different: `( … )` and `*( … )` still compile to generated

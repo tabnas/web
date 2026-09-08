@@ -1,6 +1,6 @@
 ---
-title: Include one source from another
-description: Splice a file, a package or an in-memory string into a parse at the point it is referenced.
+title: "Include one source from another"
+description: "Splice a file, a package or an in-memory string into a parse at the point it is referenced."
 group: Composing grammars
 order: 1
 packages: ["multisource", "directive"]
@@ -11,7 +11,7 @@ is always the same shape: a mark in the source names another source, and the
 value it parses to is spliced in at that point.
 
 `@tabnas/multisource` is that feature, finished. It is worth reading how it is
-built, because the mechanism underneath — `@tabnas/directive` — is how you
+built, because the mechanism underneath (`@tabnas/directive`) is how you
 would add *any* statement that triggers custom parsing.
 
 ## The finished answer
@@ -36,7 +36,7 @@ tn.parse('@"base.jsonic"')
 ```
 
 The mark is `@` by default (`markchar` changes it), and the path is an ordinary
-value in the host grammar — so it obeys that grammar's quoting rules.
+value in the host grammar, so it obeys that grammar's quoting rules.
 
 ## Where the mark can go
 
@@ -93,13 +93,12 @@ tn.parse('@"dev.jsonic"')   // reads cfg/dev.jsonic
 ```
 
 A nested include resolves against *its own* file's directory, not the entry
-point's — the usual expectation, and the reason `base` is tracked per source
+point's: the usual expectation, and the reason `base` is tracked per source
 rather than globally. `makePkgResolver()` does the same job through
 `require.resolve`, so a reference can name a published package.
 
 The extension may be left off. `@"base"` searches `base.jsonic`, `base.jsc`,
-`base.json` and `base.js`, then the same four as folder index files —
-`base/index.*` and `base/index.base.*`.
+`base.json` and `base.js`, then the same four as folder index files: `base/index.*` and `base/index.base.*`.
 
 ## Deciding what a file means
 
@@ -131,7 +130,7 @@ inserted as a raw string.
 
 ## Knowing what was read
 
-Pass a `deps` object in the parse metadata and it comes back filled in — which
+Pass a `deps` object in the parse metadata and it comes back filled in, which
 is how a build tool knows what to watch:
 
 ```ts
@@ -154,7 +153,7 @@ during the parse.
 
 ## A missing source is a parse error
 
-Not an exception from the file system — an error positioned at the reference,
+Not an exception from the file system: an error positioned at the reference,
 listing where it looked:
 
 ```
@@ -185,7 +184,7 @@ tn.parse('home: $HOME, port: $PORT')
 
 `open` is the token that starts the directive. `rule.child.node` is the value
 that was parsed after it, and whatever you assign to `rule.node` is the value
-the directive produced. Directives compose — a second `use(Directive, …)` adds
+the directive produced. Directives compose: a second `use(Directive, …)` adds
 another, and they nest:
 
 ```ts
@@ -213,7 +212,7 @@ tn.parse('a: sum<1,2,3>, b: 9')
 ```
 
 By default a directive is accepted wherever a value is accepted. The `rules`
-option narrows or widens that — `MultiSource` uses it to also allow the mark in
+option narrows or widens that: `MultiSource` uses it to also allow the mark in
 key position, which is how the merge-into-the-enclosing-map form works.
 
 An include of your own is the `env` example with a file read and a recursive
@@ -243,7 +242,7 @@ tn.parse('cfg: @"base.jsonic"')
 ```
 
 Returning a token from `bad()` is how an action reports a parse error rather
-than throwing — see [giving good parse errors](/how-to/parse-errors/).
+than throwing: see [giving good parse errors](/how-to/parse-errors/).
 
 Having written that, use `MultiSource` instead. Resolution order, base paths,
 implicit extensions, key-position merging and dependency tracking are the parts
@@ -251,9 +250,9 @@ that take the time, and they are already done.
 
 ## See also
 
-- [Write a parameterised parser](/how-to/parameterised-parsers/) — how
+- [Write a parameterised parser](/how-to/parameterised-parsers/): how
   `Directive` takes its options, and how to do the same.
-- [Extending a grammar](/docs/extending/) — the general form of adding to a
+- [Extending a grammar](/docs/extending/): the general form of adding to a
   grammar you didn't write.
-- [@tabnas/multisource](https://github.com/tabnas/multisource) — resolvers,
+- [@tabnas/multisource](https://github.com/tabnas/multisource): resolvers,
   processors, preloading.

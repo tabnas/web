@@ -1,6 +1,6 @@
 ---
-title: Parse expressions with precedence
-description: Add infix, prefix, suffix and ternary operators to a grammar, with a binding-power scale you control.
+title: "Parse expressions with precedence"
+description: "Add infix, prefix, suffix and ternary operators to a grammar, with a binding-power scale you control."
 group: Composing grammars
 order: 2
 packages: ["expr"]
@@ -29,8 +29,8 @@ tn.parse('1+2*3')
 ## What comes back
 
 An S-expression: an array whose first element is the operator and whose
-remaining elements are the terms. The operator is an `Op` object — it carries
-the source text, the binding powers, and which fixity matched — so printing a
+remaining elements are the terms. The operator is an `Op` object (it carries
+the source text, the binding powers, and which fixity matched) so printing a
 tree usually means replacing it with `op.src` first:
 
 ```ts
@@ -48,7 +48,7 @@ S(tn.parse('(1+2)*3'))   // => [ '*', [ '(', [ '+', 1, 2 ] ], 3 ]
 
 Two things worth noticing. `2+3+4` groups to the left, because addition's
 binding powers say so. And the parenthesis is **kept** in the tree as an
-operator of its own rather than dissolved — the tree records that the source
+operator of its own rather than dissolved: the tree records that the source
 was written with brackets, which matters if you are formatting it back out.
 
 Expressions live wherever values live, so this needs nothing extra:
@@ -66,7 +66,7 @@ millions so there is room to insert between levels:
 
 | Operator | `left` | `right` |
 |---|---|---|
-| `+` `-` prefix | — | 4000000 |
+| `+` `-` prefix |: | 4000000 |
 | `*` `/` `%` | 3000000 | 3100000 |
 | `+` `-` infix | 2000000 | 2100000 |
 
@@ -167,7 +167,7 @@ terms.
 
 **Evaluating during the parse is a choice, not the default.** It is the right
 one for a configuration language, where the result is a value. It is the wrong
-one for anything that wants to inspect, rewrite or re-emit the source — keep
+one for anything that wants to inspect, rewrite or re-emit the source: keep
 the tree and walk it afterwards.
 
 ## What this costs
@@ -181,9 +181,9 @@ behaviour change to existing input, so install it on a derived instance
 
 ## See also
 
-- [Handle recursion and repetition](/how-to/recursion-and-repetition/) — what to
+- [Handle recursion and repetition](/how-to/recursion-and-repetition/): what to
   do when the nesting isn't operator precedence.
-- [Write a parameterised parser](/how-to/parameterised-parsers/) — the option
+- [Write a parameterised parser](/how-to/parameterised-parsers/): the option
   pattern `Expr` follows.
-- [@tabnas/expr](https://github.com/tabnas/expr) — the full operator table and
+- [@tabnas/expr](https://github.com/tabnas/expr): the full operator table and
   the Pratt implementation.

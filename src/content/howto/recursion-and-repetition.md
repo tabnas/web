@@ -1,6 +1,6 @@
 ---
-title: Handle recursion and repetition
-description: Repeat without nesting, nest without recursing forever, and get left recursion past a push-down engine.
+title: "Handle recursion and repetition"
+description: "Repeat without nesting, nest without recursing forever, and get left recursion past a push-down engine."
 group: Shaping the parse
 order: 1
 packages: ["abnf"]
@@ -8,10 +8,10 @@ packages: ["abnf"]
 
 The engine is a push-down machine with no backtracking. It never re-enters a
 rule at the same input position, which is what makes a parse linear and
-predictable — and also what makes "a list of things" and "a thing inside a
+predictable, and also what makes "a list of things" and "a thing inside a
 thing" two different constructions rather than one.
 
-Getting them the right way round is most of what a rule table gets wrong.
+Choose the operation according to whether the rule nests or repeats.
 
 ## Repetition is `r`
 
@@ -40,7 +40,7 @@ tn.parse('1+2+3')   // => 6
 ```
 
 `r.parent` is `val` for the first `add` and for every one after it, and
-`r.d` — the stack depth — stays at 1. That is the property to reach for: if
+`r.d` (the stack depth) stays at 1. That is the property to reach for: if
 what you are parsing is a *sequence*, `r` keeps it flat and the result lives
 somewhere you can get at.
 
@@ -63,13 +63,13 @@ tn.parse('1+2+3')
 
 Three siblings, not three levels. `*( … )` and `1*( … )` also repeat, but they
 desugar into a generated group rule, so the repeated content is a child of a
-rule you did not write — fine for recognition, awkward for actions. The tail
+rule you did not write: fine for recognition, awkward for actions. The tail
 self-reference is the one that stays flat.
 
 ### The trap
 
 `r` in a **close** phase replaces the *current* rule at its depth, so the
-repetition's parent is the current rule's parent — not the current rule. Put a
+repetition's parent is the current rule's parent: not the current rule. Put a
 repeat in the wrong phase and the accumulator you were reaching for is gone:
 
 ```ts
@@ -115,7 +115,7 @@ tn.parse('(((1)))')   // => [ [ [ 1 ] ] ]
 ```
 
 The condition on the close alternate is not optional decoration. Without it the
-innermost `val` — the one that opened on the number — happily consumes the
+innermost `val` (the one that opened on the number) happily consumes the
 first `)`, the outer one never sees its closing bracket, and the result is
 `undefined` with no error. **A rule that can close on a delimiter must check
 that it opened on the matching one.** `r.o0` is the first token the rule
@@ -158,8 +158,7 @@ Three costs, all worth knowing before you rely on it:
   cannot be rewritten, and the compiler says so.
 
 If you want operator precedence rather than a single left-associative rule,
-don't write it as recursion at all —
-[use `@tabnas/expr`](/how-to/expressions-with-precedence/), which does it with
+don't write it as recursion at all: [use `@tabnas/expr`](/how-to/expressions-with-precedence/), which does it with
 binding powers and no rule chain.
 
 ## Stopping unbounded nesting
@@ -194,7 +193,7 @@ tn.parse('[[[[1]]]]')                  // throws [tabnas/too_deep]
 ```
 
 Three details do the work. `s: [['#OB', '#OS']]` is *one* position matching
-either token — a nested array is alternation, a flat one is a sequence.
+either token: a nested array is alternation, a flat one is a sequence.
 Counters set with `n` propagate to pushed and repeated rules, so `depth` counts
 levels rather than occurrences. And `b: 1` puts the token back, so the guard
 inspects without consuming.
@@ -205,7 +204,7 @@ Note the double negative in the condition: an unset counter reads as `0`, so
 same reasoning had to hold in both directions at once.)
 
 The `custom` modifier reaches into the host grammar's alternates by index,
-which is a real coupling — indices 1 and 2 are the `map` and `list` pushes in
+which is a real coupling: indices 1 and 2 are the `map` and `list` pushes in
 `@tabnas/json` as it stands today. Print `tn.rule('val').def.open` before and
 after, and pin the version.
 
@@ -216,9 +215,9 @@ than one that nests too far.
 
 ## See also
 
-- [Choose between alternates](/how-to/choose-between-alternates/) — `c`, `b` and
+- [Choose between alternates](/how-to/choose-between-alternates/): `c`, `b` and
   multi-token lookahead in their own right.
-- [The rule table](/docs/rule-table/) — `p` versus `r`, and every alternate
+- [The rule table](/docs/rule-table/): `p` versus `r`, and every alternate
   field.
-- [ABNF grammars](/docs/abnf-grammars/) — repetition notation and the
+- [ABNF grammars](/docs/abnf-grammars/): repetition notation and the
   left-recursion pass.

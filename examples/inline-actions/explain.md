@@ -1,4 +1,4 @@
-Same grammar, same machine as step 3 — the actions are just written straight
+Same grammar, same machine as step 3: the actions are just written straight
 onto the alternates as `a`. Because `r` repeats `add` at the same stack depth
 rather than nesting it, every `add` shares one parent, so the accumulator is a
 single number that rides on the parse and `parse` returns it directly.

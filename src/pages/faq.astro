@@ -25,9 +25,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
         <div>
           <dt>What is tabnas?</dt>
           <dd>
-            A parsing engine you extend rather than replace. A grammar is data —
-            a table of rules and token alternates the engine walks at runtime —
-            so a new language is usually rules added to one that already parses.
+            A parsing engine you extend rather than replace. A grammar is data (a table of rules and token alternates the engine walks at runtime) so a new language is usually rules added to one that already parses.
             The long version is on <a href="/why/">why tabnas</a>.
           </dd>
         </div>
@@ -43,14 +41,14 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
         <div>
           <dt>What does the name mean?</dt>
           <dd>
-            <em>Tábla na nAistrithe</em> — Irish for "a table of translations",
+            <em>Tábla na nAistrithe</em>: Irish for "a table of translations",
             which is what the engine walks.
           </dd>
         </div>
         <div>
           <dt>Is it ready to use?</dt>
           <dd>
-            It works, and {PACKAGES.length} packages are published — but
+            It works, and {PACKAGES.length} packages are published, but
             everything is pre-1.0. Minor versions can break things, and grammar
             packages track the engine release they were built against. Pin exact
             versions. Per-repo CI and publish state is on the
@@ -72,7 +70,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dd>
             No. There are three levels, and they produce the same thing: ABNF
             when a person is writing, a declarative rule table when an agent is,
-            and a programmatic API for parameterised grammars — the level
+            and a programmatic API for parameterised grammars: the level
             <a href={REPO("expr")} target="_blank" rel="noopener">expr</a> and
             <a href={REPO("directive")} target="_blank" rel="noopener">directive</a>
             are built at. The <a href="/playground/">playground</a> takes the
@@ -84,7 +82,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dd>
             Yes, but installing is better. <code>npx --yes @tabnas/mcp mcp</code>
             runs the <a href="/mcp/">MCP server</a> locally and is the supported
-            path — free, private, unlimited, and reproducible. For clients that
+            path: free, private, unlimited, and reproducible. For clients that
             cannot spawn a process, the same tools are served over streamable
             HTTP at <code>mcp.tabnas.dev/mcp</code>. It is bounded (a body cap
             and a per-IP rate limit, both stated by its
@@ -97,8 +95,8 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dt>Do I have to write a lexer?</dt>
           <dd>
             Mostly, yes. tabnas draws a hard line between lexing and parsing and
-            is really about the parsing half. It gives you tools — matchers,
-            fixed tokens, built-ins like <code>NR</code> — but you assemble
+            is really about the parsing half. It gives you tools (matchers,
+            fixed tokens, built-ins like <code>NR</code>) but you assemble
             them. Lexing is the easy and boring part.
           </dd>
         </div>
@@ -106,8 +104,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dt>Can it handle ambiguous grammars?</dt>
           <dd>
             No. The engine is deterministic and does not backtrack. If you need every valid parse of an ambiguous input, an
-            Earley or GLR parser is the right tool —
-            <a href="/comparisons/">other parsers</a> covers when to reach for one.
+            Earley or GLR parser can return those parses: <a href="/comparisons/">other parsers</a> covers when to reach for one.
           </dd>
         </div>
         <div>
@@ -135,7 +132,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dd>
             Probably the mark name. An <code>@ref</code> alternate mark comes
             from the alternate's leading discriminator, which the compiler
-            assigns — so ask it rather than guessing:
+            assigns, so ask it rather than guessing:
             <code>tabnas-abnf --marks -f grammar.abnf</code>. ABNF also desugars
             <code>[ … ]</code> and <code>( … )</code> into generated group
             rules, so a rule's <code>parent</code> at runtime is often one of
@@ -166,10 +163,9 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
         <div>
           <dt>What can it actually parse?</dt>
           <dd>
-            Real languages, not just config formats. The strongest evidence is
+            Programming languages and data formats. The strongest evidence is
             <a href={REPO("c")} target="_blank" rel="noopener">@tabnas/c</a>,
-            which parses <strong>C source</strong> into a concrete syntax tree —
-            preserving every token, comment, macro definition, macro use and
+            which parses <strong>C source</strong> into a concrete syntax tree: preserving every token, comment, macro definition, macro use and
             compiler extension as written. There is also a
             <a href={REPO("proto")} target="_blank" rel="noopener">Protocol Buffers</a>
             IDL parser (proto2, proto3, editions 2023/2024), and
@@ -177,12 +173,12 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
             <a href={REPO("markdown")} target="_blank" rel="noopener">Markdown</a>
             and <a href={REPO("xml")} target="_blank" rel="noopener">XML</a>.
             Beyond the org, <a href="/examples/">boru</a> is a complete
-            programming language — types, macros, an LSP — with its whole front
+            programming language (types, macros, an LSP) with its whole front
             end on this engine.
           </dd>
           <dd>
             The limits are shape rather than size: the grammar has to be
-            deterministic. Ambiguity is the thing it can't do — not complexity,
+            deterministic. Ambiguity is the thing it can't do: not complexity,
             and not lookahead depth.
           </dd>
         </div>
@@ -197,7 +193,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dt>Does it generate parser code?</dt>
           <dd>
             No. Generating source would give back the drift problem the engine
-            exists to avoid — grammars stay data, interpreted at runtime. It
+            exists to avoid: grammars stay data, interpreted at runtime. It
             also means you can inspect a grammar while it runs, print it back as
             ABNF, or draw it.
           </dd>
@@ -229,7 +225,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
           <dd>
             <a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>,
             who also wrote <a href="https://senecajs.org" target="_blank" rel="noopener">Seneca</a>
-            and jsonic — which is where tabnas came from. Development is
+            and jsonic, which is where tabnas came from. Development is
             sponsored by
             <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a>;
             see <a href="/sponsors/">sponsors</a>.
@@ -238,7 +234,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar").length;
         <div>
           <dt>Is anyone using it?</dt>
           <dd>
-            Yes — <a href="/examples/">examples</a> covers two real languages
+            Yes: <a href="/examples/">examples</a> covers two real languages
             built on the engine, one in TypeScript and one in Go. Beyond that
             it's early, and pretending otherwise wouldn't help you.
           </dd>

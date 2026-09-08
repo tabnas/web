@@ -1,12 +1,11 @@
 ---
-title: Handle comments and whitespace
-description: Turn comment styles on, define your own, and decide what the parser is allowed to throw away.
+title: "Handle comments and whitespace"
+description: "Turn comment styles on, define your own, and decide what the parser is allowed to throw away."
 group: Feeding the lexer
 order: 2
 ---
 
-Space, newline and comment are lexed as real tokens — `#SP`, `#LN`, `#CM` —
-and then discarded, because all three are in the `IGNORE` token set. Nearly
+Space, newline and comment are lexed as real tokens (`#SP`, `#LN`, `#CM`) and then discarded, because all three are in the `IGNORE` token set. Nearly
 everything you want here is a change to that set, or to what counts as a
 comment.
 
@@ -23,7 +22,7 @@ strict.parse('{"a":1} // hi')
 // throws [tabnas/unexpected]: unexpected character(s): /
 ```
 
-Flip it and the three built-in styles appear — `#`, `//` and `/* … */`. That
+Flip it and the three built-in styles appear: `#`, `//` and `/* … */`. That
 one line is the whole difference between JSON and JSONC:
 
 ```ts
@@ -37,7 +36,7 @@ jsonc.parse('{"a":1} # h')        // => { a: 1 }
 
 ## Choosing which styles
 
-The definitions are a map keyed by name — `hash`, `slash`, `multi` — so
+The definitions are a map keyed by name (`hash`, `slash`, `multi`) so
 removing one is setting it to `null`:
 
 ```ts
@@ -73,7 +72,7 @@ tn.parse('{"a": <!-- x --> 1}')     // => { a: 1 }
 
 **A new definition must set `lex: true` on itself.** The built-in definitions
 carry it, and the outer `comment.lex` switch does not supply it for entries you
-add — leave it out and the definition is registered, ignored, and your comment
+add: leave it out and the definition is registered, ignored, and your comment
 marker comes back as "unexpected character". This is the single most common way
 to get this wrong.
 
@@ -96,7 +95,7 @@ line otherwise emits a record separator that isn't there.
 
 ## Keeping what is normally thrown away
 
-`IGNORE` is positional — `#SP`, `#LN`, `#CM` — and `null` drops an entry while
+`IGNORE` is positional (`#SP`, `#LN`, `#CM`) and `null` drops an entry while
 `undefined` leaves it:
 
 ```ts
@@ -109,7 +108,7 @@ tn.options({ tokenSet: { IGNORE: [undefined, undefined, null] } })
 
 Keeping `#CM` is how a formatter or a doc-comment extractor gets at comment
 text: the token is in the stream with its source, and a rule can attach it to
-whatever it precedes. Be aware of the cost — *every* rule that a comment can
+whatever it precedes. Be aware of the cost: *every* rule that a comment can
 appear before now needs an alternate for it, which is most of them.
 
 Making space significant is rarer, and drastic:
@@ -136,12 +135,12 @@ tn.sub({ lex: (tkn) => console.log(tkn.name, JSON.stringify(tkn.src)) })
 ```
 
 A `#CM` token in the stream means the definition took and the problem is
-elsewhere. No `#CM` means the definition never registered — check `lex: true`.
+elsewhere. No `#CM` means the definition never registered: check `lex: true`.
 
 ## See also
 
-- [Parse a line-oriented format](/how-to/line-oriented-formats/) — the other
+- [Parse a line-oriented format](/how-to/line-oriented-formats/): the other
   reason to change `IGNORE`.
-- [Lex a token the engine doesn't know](/how-to/custom-tokens/) — matcher order,
+- [Lex a token the engine doesn't know](/how-to/custom-tokens/): matcher order,
   and why a comment-like token has to run early.
-- [The rule table](/docs/rule-table/) — the built-in token names.
+- [The rule table](/docs/rule-table/): the built-in token names.

@@ -1,6 +1,6 @@
 ---
-title: Give good parse errors
-description: Name the file, define your own error codes, and raise them from the alternate that knows what went wrong.
+title: "Give good parse errors"
+description: "Name the file, define your own error codes, and raise them from the alternate that knows what went wrong."
 group: Working on a grammar
 order: 2
 ---
@@ -12,7 +12,7 @@ The engine gives you a good default and four ways to improve on it.
 
 ## What you get for free
 
-Every parse error is a `TabnasError` — a `SyntaxError` subclass — rendered with
+Every parse error is a `TabnasError` (a `SyntaxError` subclass) rendered with
 the source, a caret, and an explanation:
 
 ```
@@ -30,7 +30,9 @@ the source, a caret, and an explanation:
 The last line is for you, not your users: the rule and phase that gave up, the
 token it was offered, and the plugins in play.
 
-## 1 · Tell it the file name
+<a id="1--tell-it-the-file-name"></a>
+
+## 1 · Set the filename
 
 `<no-file>` is not helpful and it is one argument away. Anything in the parse
 metadata is available to the error formatter, and `fileName` is used directly:
@@ -62,7 +64,7 @@ tn.options({ errmsg: { name: 'cfg', link: 'https://example.com/errors/' } })
 ## 3 · Define your own errors
 
 An error is a code with a short message and a longer hint. Both are templates,
-and **placeholders are `{braces}`** — values come from the `details` object you
+and **placeholders are `{braces}`**: values come from the `details` object you
 pass when raising it, and from the token, rule and context:
 
 ```ts
@@ -85,8 +87,7 @@ tn.parse('"abc')
 ## 4 · Raise it from where you know
 
 `e` is an alternate field: an alternate that exists in order to fail well.
-It runs when that alternate is selected, and returns the token to blame —
-`token.bad(code, details)` builds it.
+It runs when that alternate is selected, and returns the token to blame: `token.bad(code, details)` builds it.
 
 The pattern is an alternate *after* the good one, matching the prefix they
 share:
@@ -123,11 +124,9 @@ tn.parse('port 8080')
   The key port had no `=` after it.
 ```
 
-Without that second alternate the message would have been "unexpected
-character(s): 8080", pointing at the number rather than the missing `=`.
+Without that second alternate the message would have been `unexpected character(s): 8080`, pointing at the number rather than the missing `=`.
 
-An action can raise one too, by *returning* the token rather than throwing —
-which is how `@tabnas/multisource` reports a missing include:
+An action can raise one too, by *returning* the token rather than throwing, which is how `@tabnas/multisource` reports a missing include:
 
 ```ts
 action: (rule, ctx) => {
@@ -141,7 +140,7 @@ action: (rule, ctx) => {
 
 The token you call `bad()` on decides where the caret goes, and the obvious
 choice is often wrong. For an unclosed bracket, the useful position is the
-*opening* one — which is `r.o0`, the token the rule opened on, not the token
+*opening* one, which is `r.o0`, the token the rule opened on, not the token
 that surprised it:
 
 ```ts
@@ -168,7 +167,7 @@ tn.parse('((1)')
   A ( opened here was never closed with a matching ).
 ```
 
-Column 1 — the bracket that was never closed — rather than the end of input.
+Column 1 (the bracket that was never closed) rather than the end of input.
 
 ## Handling errors in code
 
@@ -186,7 +185,7 @@ try {
 ```
 
 `TabnasError` is exported if you want an exact `instanceof`, but the `code`
-field is the thing to branch on — it is stable, and it is what your `error` and
+field is the thing to branch on: it is stable, and it is what your `error` and
 `hint` tables are keyed by.
 
 ## What this can't do
@@ -194,8 +193,8 @@ field is the thing to branch on — it is stable, and it is what your `error` an
 **The parse stops at the first error.** There is no recovery pass and no way to
 collect several errors from one input: the engine is deterministic and does not
 backtrack, so once a token cannot be matched there is no defined state to
-continue from. If you need a list of problems rather than the first one — an
-editor integration, say — the shape that works is parsing smaller units
+continue from. If you need a list of problems rather than the first one (an
+editor integration, say) the shape that works is parsing smaller units
 separately (a line, a record, a section) and collecting their failures.
 
 That is a real limitation, and it is the price of the parse being linear and
@@ -203,8 +202,8 @@ having exactly one interpretation.
 
 ## See also
 
-- [Debug a grammar](/how-to/debug-a-grammar/) — reading the `--internal` line,
+- [Debug a grammar](/how-to/debug-a-grammar/): reading the `--internal` line,
   and what to do next.
-- [Choose between alternates](/how-to/choose-between-alternates/) — where the
+- [Choose between alternates](/how-to/choose-between-alternates/), where the
   failing alternate goes in the list.
-- [The rule table](/docs/rule-table/) — the `e` field, and the rest.
+- [The rule table](/docs/rule-table/): the `e` field, and the rest.

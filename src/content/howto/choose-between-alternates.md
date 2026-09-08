@@ -1,6 +1,6 @@
 ---
-title: Choose between alternates
-description: Order, lookahead, conditions, counters and group tags — how the engine picks a branch, and how to make it pick yours.
+title: "Choose between alternates"
+description: "Order, lookahead, conditions, counters and group tags: how the engine picks a branch, and how to make it pick yours."
 group: Shaping the parse
 order: 2
 ---
@@ -13,7 +13,9 @@ alternates part of your grammar*.
 Nearly every "why did it parse that way" question is one of the five tools
 below.
 
-## Order — best practice: most specific first
+<a id="order--best-practice-most-specific-first"></a>
+
+## Order: most specific first
 
 An alternate is taken only when its **whole** token sequence matches. A
 sequence that fails partway costs nothing: the engine abandons it and tries the
@@ -64,19 +66,20 @@ Column 1, and an empty character list. The cause is three alternates in the
 wrong order; nothing in the message says so. When a grammar rejects input that
 is obviously valid, alternate order is the first thing to check.
 
-## Lookahead — as many tokens as you need
+<a id="lookahead--as-many-tokens-as-you-need"></a>
+
+## Lookahead: as many tokens as you need
 
 `s` is a *sequence*: the alternate matches only if all of its tokens match, in
 order. The second example above looks four tokens ahead, and six works the same
-way. There is no two-token limit — that claim appears in some older notes and
+way. There is no two-token limit: that claim appears in some older notes and
 is wrong.
 
 Lookahead is free in the sense that it does not backtrack: the tokens are
 peeked, and the alternate either matches or the next one is tried.
 
 What it does **not** do is re-lex. Lookahead peeks at tokens the lexer has
-already produced, so the tokenisation is fixed before any alternate sees it —
-an alternate cannot ask for the same characters to be read a different way. If
+already produced, so the tokenisation is fixed before any alternate sees it: an alternate cannot ask for the same characters to be read a different way. If
 two constructs in your language need the same text lexed differently, that is a
 lexer problem, not an alternate-ordering one: give them distinct tokens (see
 [lexing a token the engine doesn't know](/how-to/custom-tokens/)), or use a
@@ -94,7 +97,9 @@ A nested array is "any of these", at a single position:
 That is the most common typo in a hand-written table, and it fails as
 "unexpected character" on input that looks obviously valid.
 
-## Conditions — `c`
+<a id="conditions--c"></a>
+
+## Conditions: `c`
 
 When the tokens cannot tell two cases apart, the state can. `c` is a predicate
 on the rule instance; the alternate only applies if it returns true:
@@ -108,10 +113,12 @@ on the rule instance; the alternate only applies if it returns true:
 rule, `r.child` the one that just closed. Anything reachable from the rule
 instance is fair game.
 
-## Counters — `n`
+<a id="counters--n"></a>
+
+## Counters: `n`
 
 `n` sets or increments a named counter, and counters **propagate to pushed and
-repeated rules** — so a counter set at the top is visible all the way down. The
+repeated rules**, so a counter set at the top is visible all the way down. The
 comparison helpers read them:
 
 | Helper | True when |
@@ -127,7 +134,7 @@ comparison helpers read them:
 
 **An unset counter reads as `0`.** `r.lt('depth', 3)` is true before anything
 is counted, `r.gt('depth', 3)` is false, and exactly one of `<`, `=`, `>`
-holds — so a guard means what it says wherever you put it. Use
+holds, so a guard means what it says wherever you put it. Use
 `r.exist('depth')` when you need to tell "never counted" from "counted zero";
 the comparisons cannot.
 
@@ -135,10 +142,12 @@ the comparisons cannot.
 > `r.lt('depth',3)` and `r.gt('depth',3)` were both true and guards written
 > the obvious way fired on the very first token.
 
-Setting a counter to `0` resets it rather than incrementing — `n: { pk: 0 }`
+Setting a counter to `0` resets it rather than incrementing: `n: { pk: 0 }`
 in the JSON grammar is a reset, not a no-op.
 
-## Push-back — `b`
+<a id="push-back--b"></a>
+
+## Push-back: `b`
 
 `b: n` returns `n` matched tokens to the stream. It is how an alternate can
 *inspect* without *consuming*:
@@ -150,7 +159,9 @@ in the JSON grammar is a reset, not a no-op.
 The JSON grammar uses it for exactly that: `val` recognises `{`, pushes `map`,
 and hands the brace back so `map` can match its own opening token.
 
-## Group tags — `g`
+<a id="group-tags--g"></a>
+
+## Group tags: `g`
 
 Every alternate can carry group tags, and an instance can include or exclude
 whole groups when it is derived. This is how one grammar ships several
@@ -180,14 +191,14 @@ strict mode on.
 
 **Filtering happens when an instance is derived, and derivation re-runs
 plugins.** Rules registered with a bare `tn.rule(…)` outside a plugin are *not*
-carried into `make()` — the derived instance simply won't have them. Put the
+carried into `make()`: the derived instance simply won't have them. Put the
 grammar in a plugin function, as above, and this works; define it inline and it
 silently doesn't.
 
 ## The empty alternate
 
 `{}` matches anything and consumes nothing, which is how a phase ends. Every
-phase needs one, or a way to reach a token that satisfies it — if no alternate
+phase needs one, or a way to reach a token that satisfies it: if no alternate
 matches, that is a parse error.
 
 It is also a trap in a close phase: an empty alternate will happily end a rule
@@ -210,8 +221,8 @@ parse  "2"   ["+"]~[#PL]   2  . . alt=0  []   g:abnf   r:add
 
 ## See also
 
-- [The rule table](/docs/rule-table/) — every alternate field in one table.
-- [Handle recursion and repetition](/how-to/recursion-and-repetition/) — `p`,
+- [The rule table](/docs/rule-table/): every alternate field in one table.
+- [Handle recursion and repetition](/how-to/recursion-and-repetition/): `p`,
   `r`, and counters as depth guards.
-- [Give good parse errors](/how-to/parse-errors/) — `e`, the alternate that
+- [Give good parse errors](/how-to/parse-errors/): `e`, the alternate that
   exists to fail well.

@@ -1,6 +1,6 @@
 ---
-title: Conditions and counters
-description: Pick an alternate on state rather than tokens — with a predicate, a counter, or a declarative check.
+title: "Conditions and counters"
+description: "Pick an alternate on state rather than tokens, with a predicate, a counter, or a declarative check."
 section: Tutorials
 order: 6
 ---
@@ -9,7 +9,7 @@ import CodeTabs from "../../components/CodeTabs.astro";
 
 
 Alternates are chosen by their tokens. When two cases look identical to the
-lexer, the difference has to come from somewhere else — how deep you are, what
+lexer, the difference has to come from somewhere else: how deep you are, what
 the enclosing rule is, whether something has already been seen.
 
 That is what `c` is for. This tutorial covers the three ways to write one, and
@@ -28,7 +28,7 @@ the token that opened this rule, `r.parent`, `r.child`, `r.n`, `r.u`.
 ## Counters
 
 `n` on an alternate sets or increments a named counter, and counters
-**propagate to pushed and repeated rules** — so a count made at the top is
+**propagate to pushed and repeated rules**, so a count made at the top is
 visible all the way down:
 
 <CodeTabs id="docs-conditions-counters" label="Add one, or reset to zero" />
@@ -51,8 +51,8 @@ as `0`:
 
 <CodeTabs id="docs-conditions-unset" label="Nothing counted yet" />
 
-That keeps the permissive direction you want — a rule that never counts is not
-blocked by a limit it knows nothing about — while leaving exactly one of `<`,
+That keeps the permissive direction you want (a rule that never counts is not
+blocked by a limit it knows nothing about) while leaving exactly one of `<`,
 `=`, `>` true, so a guard means what it says wherever you put it.
 
 `eq('k', 0)` is therefore true both for a counter set to `0` and for one never
@@ -67,7 +67,7 @@ set. When the difference matters, ask directly:
 > An alternate gated on `{ 'n.k': { $gt: 0 } }` used to match on **two**
 > grounds: the counter was positive, *or* it was unset and the comparison
 > passed regardless. Only the second is gone. If you relied on both, add the
-> unset case as its own alternate — do not swap the condition, or you lose the
+> unset case as its own alternate: do not swap the condition, or you lose the
 > positive-counter branch you actually wanted:
 >
 > ```ts
@@ -88,19 +88,18 @@ alternate matches, and the unconditional guard behind them is reached:
 
 Note the order: the two push alternates carry the condition, and the guard is
 *after* them. Alternates are tried in order, so the first one that matches
-wins — put the guard first and it claims the token before the push alternates
+wins: put the guard first and it claims the token before the push alternates
 are ever considered.
 
 A `$gte` guard first now also works, since an unset `depth` reads as `0` and
 `0 >= MAX` is false at the opening brace. Before 0.6 it did not: `$gte` passed
 unconditionally while the counter was unset, so every parse failed on the first
-token. Ordering the permissive alternates first is still the clearer habit —
-it does not depend on how the counter reads when nothing has been counted.
+token. Ordering the permissive alternates first is still the clearer habit: it does not depend on how the counter reads when nothing has been counted.
 
 ## Declarative conditions
 
 `c` also takes an **object**, which is a check against a path on the rule
-instance. This keeps a grammar as data — no closure, so it still serialises:
+instance. This keeps a grammar as data: no closure, so it still serialises:
 
 <CodeTabs id="docs-conditions-declarative" label="A guard with no closure in it" />
 
@@ -114,7 +113,7 @@ The key is a dot-path resolved against `r`, so `n.depth` is the counter,
 | `{ 'u.mode': 'strict' }` | a bare value is `$eq` |
 | `{ 'u.mode': { $ne: 'loose' } }` | not equal |
 
-Several keys are **ANDed** — every one must hold:
+Several keys are **ANDed**: every one must hold:
 
 <CodeTabs id="docs-conditions-and" label="Every key must hold" />
 
@@ -126,7 +125,7 @@ This is worth pinning down, because the asymmetry is invisible in the syntax:
 
 So counters compare as numbers from zero, `$eq` on a non-counter path fails
 closed, and the ordered ops fail open only for paths that are not counters.
-Use `$exist` when you mean "only if this was explicitly set" — on a counter
+Use `$exist` when you mean "only if this was explicitly set": on a counter
 that is the sole way to tell "never counted" from "counted zero".
 
 ## Which form to use
@@ -139,13 +138,13 @@ that is the sole way to tell "never counted" from "counted zero".
 
 The object form covers comparisons against rule state, which is most guards.
 Anything involving two paths, arithmetic, or a call into your own code needs a
-function — and the grammar becomes code at that point.
+function, and the grammar becomes code at that point.
 
 ## Next
 
-- [The rule instance](/docs/rule-instance/) — every path the object form can
+- [The rule instance](/docs/rule-instance/): every path the object form can
   reach.
-- [Choose between alternates](/how-to/choose-between-alternates/) — order,
+- [Choose between alternates](/how-to/choose-between-alternates/): order,
   lookahead and group tags, the other ways to pick a branch.
-- [Give good parse errors](/how-to/parse-errors/) — the `e` alternate the guard
+- [Give good parse errors](/how-to/parse-errors/): the `e` alternate the guard
   above uses.

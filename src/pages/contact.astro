@@ -55,8 +55,7 @@ const CONTRIBUTING = "https://github.com/tabnas/web/blob/main/CONTRIBUTING.md";
       <Heading level={2} id="questions">Questions and ideas</Heading>
       <p>
         <a href={DISCUSSIONS} target="_blank" rel="noopener">GitHub Discussions</a>
-        {" "}on the engine repository. "How do I parse this", "is this the
-        right tool for X", "here is a grammar I wrote" — all of it belongs
+        {" "}on the engine repository. "How do I parse this", "can tabnas parse X", "here is a grammar I wrote": all of it belongs
         there. Discussions are searchable, so an answer given once keeps
         working.
       </p>
@@ -85,12 +84,8 @@ const CONTRIBUTING = "https://github.com/tabnas/web/blob/main/CONTRIBUTING.md";
       <Heading level={2} id="security">Security</Heading>
       <p>
         Report a suspected vulnerability by email rather than in a public
-        issue, and say what you did, what happened, and what you expected. The
-        engine's threat surface is smaller than most parsers' — a grammar is
-        data, and the MCP server refuses grammars that reach outside the
-        built-in action set, so "validate this grammar" never becomes "run
-        this code" — but parsers are input-handling code and input-handling
-        code has bugs.
+        issue. Include the affected version, reproduction steps, expected
+        result, and observed result.
       </p>
     </section>
 
@@ -99,7 +94,7 @@ const CONTRIBUTING = "https://github.com/tabnas/web/blob/main/CONTRIBUTING.md";
       <p>
         Read <a href={CONTRIBUTING} target="_blank" rel="noopener">CONTRIBUTING.md</a>,
         then open a pull request. Patches written with an AI agent are welcome
-        on the same terms as any other — <a href="/community/">community</a>
+        on the same terms as any other: <a href="/community/">community</a>
         {" "}explains the policy, and every repository ships an
         <code>AGENTS.md</code> so an agent can orient itself without guessing.
       </p>

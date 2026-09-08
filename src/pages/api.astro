@@ -26,7 +26,7 @@ const TAGS: Record<string, string> = {
   index: "Start here",
   catalogue: "Catalogues",
   content: "Content",
-  mcp: "MCP",
+  mcp: "Agent protocol",
 };
 ---
 
@@ -49,8 +49,7 @@ const TAGS: Record<string, string> = {
 
     <p class="scope">
       <strong>What this is not:</strong> tabnas does not parse your documents
-      over HTTP. The engine runs in your own process — that is the point of it
-      — and this site publishes the catalogue around it: which versions the
+      over HTTP. The engine runs in your own process (that is the point of it) and this site publishes the catalogue around it: which versions the
       documentation describes, what the packages are, every error code the
       engine can raise, and how to connect an agent over MCP. The one endpoint
       that executes anything is the hosted MCP server below, and running it
@@ -88,15 +87,15 @@ const TAGS: Record<string, string> = {
       <Heading level={2} id="markdown">Any page, as markdown</Heading>
       <p class="blurb">
         Every page on this site is content-negotiated. Ask for markdown and
-        the same URL answers with markdown instead of HTML — no navigation, no
-        styling, no scripts — and the response carries
+        the same URL answers with markdown instead of HTML (no navigation, no
+        styling, no scripts) and the response carries
         {" "}<code>Vary: Accept</code> so a cache keeps the two apart
         (<a href="https://acceptmarkdown.com" target="_blank" rel="noopener">acceptmarkdown.com</a>).
       </p>
       <pre><code>{`curl -H "Accept: text/markdown" ${SITE_URL}/docs/quickstart`}</code></pre>
       <p class="blurb">
         The same bytes are at the path plus <code>.md</code>, for callers that
-        would rather not set a header — <code>{SITE_URL}/docs/quickstart.md</code>,
+        would rather not set a header: <code>{SITE_URL}/docs/quickstart.md</code>,
         and <code>{SITE_URL}/index.md</code> for the home page. Each twin opens
         with a small YAML frontmatter block carrying the page's title,
         description and canonical URL.
@@ -111,7 +110,7 @@ const TAGS: Record<string, string> = {
     <section class="group">
       <Heading level={2} id="errors">When something is wrong</Heading>
       <p class="blurb">
-        A path that does not exist returns a real <code>404</code> — never a
+        A path that does not exist returns a real <code>404</code>: never a
         200 with an application shell. What is in the body depends on what you
         asked for: <code>application/json</code>, any path under
         {" "}<code>/api/</code>, and any path ending <code>.json</code> or
@@ -157,9 +156,9 @@ const TAGS: Record<string, string> = {
     <section class="group">
       <Heading level={2} id="mcp">The MCP endpoint</Heading>
       <p class="blurb">
-        {mcpTools.tools.length} tools that actually run the engine — parse,
+        {mcpTools.tools.length} tools that actually run the engine (parse,
         validate a grammar, explain a failure, run fixtures, read the plugin
-        catalogue, compare two grammar versions — are served over the Model
+        catalogue, compare two grammar versions) are served over the Model
         Context Protocol from a separate service at <code>{MCP_URL}</code>,
         deployed from the <code>tabnas/mcp</code> repository. Start from
         {" "}<a href="/.well-known/mcp"><code>/.well-known/mcp</code></a> on this

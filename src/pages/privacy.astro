@@ -1,7 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
 import Heading from "../components/Heading.astro";
-import { REPO } from "../consts";
 
 // The privacy policy for mcp.tabnas.dev.
 //
@@ -24,28 +23,26 @@ const ENDPOINT = "mcp.tabnas.dev";
     <Heading level={1} id="privacy">Privacy</Heading>
 
     <p class="lede">
-      This covers the hosted MCP endpoint at <code>{ENDPOINT}</code>. It is
-      the only tabnas service that receives your data at all.
-    </p>
+        This page covers the hosted MCP endpoint at <code>{ENDPOINT}</code>
+        and the documentation website at <code>tabnas.dev</code>.
+      </p>
 
     <section class="group">
       <Heading level={2} id="short">The short version</Heading>
       <p>
-        <strong>Document content is never logged, never stored, and never
-        used for training.</strong> The endpoint parses what you send, returns
-        the answer, and keeps nothing. There is no database, no object store
-        and no session — every request is self-contained, which is what makes
-        that promise cheap to keep rather than a matter of trust.
+        The hosted MCP service processes document content in memory and does
+        not write it to application logs or persistent storage. It records
+        the request metadata listed here. The service does not use
+        document content for training.
       </p>
       <p>
-        If that is not enough for you, <strong>run it locally</strong>. It is
-        the same code with the same answers, and the recommended path
-        regardless:
+        Run the MCP server locally to process documents without sending
+        them to the hosted endpoint:
       </p>
       <pre><code>npx --yes @tabnas/mcp mcp</code></pre>
       <p>
-        Locally there is no network hop, no operator, and nothing on this page
-        applies.
+        Local stdio processes requests on your machine. Installing the
+        package may contact the npm registry.
       </p>
     </section>
 
@@ -55,9 +52,9 @@ const ENDPOINT = "mcp.tabnas.dev";
         Shape only, per request, for keeping the service working:
       </p>
       <ul>
-        <li><strong>Tool name</strong> — e.g. <code>parse</code>.</li>
+        <li><strong>Tool name</strong>: for example <code>parse</code>.</li>
         <li>
-          <strong>A size bucket</strong> — one of <code>&lt;=1k</code>,
+          <strong>A size bucket</strong>: one of <code>&lt;=1k</code>,
           <code>&lt;=16k</code>, <code>&lt;=64k</code>,
           <code>&lt;=256k</code>. Deliberately a bucket and never a byte
           count: an exact document length is a weak fingerprint of the
@@ -65,14 +62,13 @@ const ENDPOINT = "mcp.tabnas.dev";
         </li>
         <li><strong>Duration</strong> in milliseconds.</li>
         <li>
-          <strong>Status and error code</strong> — whether the tool answered
+          <strong>Status and error code</strong>: whether the tool answered
           yes or no, and which documented code it returned.
         </li>
       </ul>
       <p>
-        That list is exhaustive. It is defined in one place —
-        <code>Telemetry</code> in <code>ts/src/budget.ts</code> — and the test
-        suite asserts a parsed secret does not appear in an emitted record.
+        The service records these fields for each request. Its telemetry
+        tests check that parsed content does not appear in an emitted record.
       </p>
     </section>
 
@@ -84,9 +80,8 @@ const ENDPOINT = "mcp.tabnas.dev";
         <li>Any byte of request or response body, in any form.</li>
       </ul>
       <p>
-        No content is used to train anything, by us or by anyone else. There
-        is no mechanism by which it could be: it is not retained long enough
-        to be collected.
+        The application does not retain request or response bodies.
+        Cloudflare handles requests in transit as described in the next section.
       </p>
     </section>
 
@@ -100,8 +95,8 @@ const ENDPOINT = "mcp.tabnas.dev";
         count requests; the count is what is kept, not a log of who you are.
       </p>
       <p>
-        This is the unavoidable cost of a hosted endpoint, and the reason
-        local stdio is the recommended path rather than a fallback.
+        See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare&rsquo;s
+        privacy policy</a> for its handling of network request data.
       </p>
     </section>
 
@@ -117,10 +112,10 @@ const ENDPOINT = "mcp.tabnas.dev";
     <section class="group">
       <Heading level={2} id="changes">Changes</Heading>
       <p>
-        This page is version-controlled with the code it describes, in{" "}
-        <a href={REPO} target="_blank" rel="noopener">the tabnas repositories</a>.
-        A change to what the service records is a change to this page in the
-        same commit — the history is the changelog.
+        The website and MCP service have separate repositories. Update this
+        page when the service&rsquo;s data handling changes. Their
+        <a href="https://github.com/tabnas">source repositories</a> contain
+        the change history.
       </p>
     </section>
   </article>

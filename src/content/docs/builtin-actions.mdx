@@ -1,6 +1,6 @@
 ---
-title: Builtin actions
-description: Build a value with `$`-suffixed action names instead of code — and keep the grammar as pure data.
+title: "Builtin actions"
+description: "Build a value with `$`-suffixed action names instead of code, and keep the grammar as pure data."
 section: Tutorials
 order: 5
 ---
@@ -13,7 +13,7 @@ being data: it can no longer be serialised, diffed, stored, or accepted from
 somewhere you don't trust.
 
 The engine ships a set of actions referenced **by name**. A grammar using only
-those is pure JSON with no code in it — and still builds a real value. This
+those is pure JSON with no code in it, and still builds a real value. This
 tutorial builds a small JSON-shaped parser that way, with not one function in
 the grammar.
 
@@ -24,7 +24,7 @@ builtin:
 
 <CodeTabs id="docs-builtin-naming" label="A builtin, and a reserved namespace" />
 
-The `$` namespace is **reserved** — `grammar()` refuses a user ref containing
+The `$` namespace is **reserved**: `grammar()` refuses a user ref containing
 `$`, so a builtin can never be shadowed by something a grammar brought with it.
 
 ## The value builders
@@ -63,7 +63,7 @@ object, so `@setval$` writing a property from `pair` is writing into the object
 
 Once that clicks, the rest of the table reads straightforwardly:
 
-- `@key$` stores the key on `r.u` — the **non**-propagating bag, so a nested
+- `@key$` stores the key on `r.u`: the **non**-propagating bag, so a nested
   pair cannot clobber an outer one's key.
 - `@setval$` runs in the *close* phase, because `r.child.node` does not exist
   until the child has closed.
@@ -103,28 +103,28 @@ So serialise **before** you install, or install a copy:
 <CodeTabs id="docs-builtin-roundtrip" label="Serialise first, then install" />
 
 Getting this the wrong way round produces a spec that silently loses every
-action — the grammar still installs, still parses, and returns `undefined`.
+action: the grammar still installs, still parses, and returns `undefined`.
 
 ## The other families
 
 Two more sets exist, and you are unlikely to write either by hand:
 
-- **Tree builders** — `@node$`, `@capture$`, `@bubble$`, `@fold$` build the
+- **Tree builders**: `@node$`, `@capture$`, `@bubble$`, `@fold$` build the
   `{ rule, src, kids }` AST. This is what `@tabnas/abnf` emits, and it is why
   an ABNF grammar can compile to pure data too.
-- **Probe dispatch** — `@probeInit$`, `@probeDecide$`, `@probePhase0$/1$/2$`
+- **Probe dispatch**: `@probeInit$`, `@probeDecide$`, `@probePhase0$/1$/2$`
   implement the optional-prefix disambiguation the ABNF compiler needs.
 
 Both are versioned by `BUILTIN_SCHEMA_VERSION`. A serialized grammar can
 declare the schema it was compiled against as `v`, and the engine refuses one
-that needs a newer version than it implements — so an old engine fails loudly
+that needs a newer version than it implements, so an old engine fails loudly
 rather than mis-parsing.
 
 ## When to use code instead
 
 Builtins cover building values. They do not cover *computing* them. The moment
 you need arithmetic, validation, or a call into your own code, write a
-function — and accept that the grammar is now code.
+function, and accept that the grammar is now code.
 
 The useful middle ground is [named refs](/docs/actions/#named-refs--code-bound-out-of-band):
 the grammar keeps ref *names*, and the functions are supplied separately at
@@ -132,7 +132,7 @@ install time. The grammar text stays declarative; only the binding is code.
 
 ## Next
 
-- [The rule instance](/docs/rule-instance/) — what `r.node`, `r.u` and
+- [The rule instance](/docs/rule-instance/): what `r.node`, `r.u` and
   `r.child` are.
-- [Attaching actions](/docs/actions/) — the three ways, and when each is right.
-- [The rule table](/docs/rule-table/) — every alternate field.
+- [Attaching actions](/docs/actions/): the three ways, and when each is right.
+- [The rule table](/docs/rule-table/): every alternate field.

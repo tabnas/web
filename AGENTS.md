@@ -512,3 +512,11 @@ The same rule is stated in `CLAUDE.md`, deliberately and not by
 accident: that file is what an agent session loads automatically, this
 one is what a human or a non-Claude agent reads. Keep the two in step
 rather than deleting either as duplication.
+
+## Website style and Vale
+
+Apply [STYLE-GUIDE.md](STYLE-GUIDE.md) to all published text. `npm run check`
+includes a rendered-page prose gate, covering imported content, metadata,
+navigation, and accessibility labels. `npm run prose` also runs Vale 3.9.1
+with Google v0.7.1; `.github/workflows/docs.yml` runs it in CI. Code and literal
+output are excluded. Change generated content at its source.

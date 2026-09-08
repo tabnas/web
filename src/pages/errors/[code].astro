@@ -82,10 +82,10 @@ const versionsAgree = sitePin === registry.engine;
 ---
 
 <Base
-  title={`${code} — error reference`}
+  title={`${code}: error reference`}
   description={
     isEngine
-      ? `The tabnas engine error code ${code}: ${engine.message}`
+      ? `The tabnas engine error code ${code}: message, diagnostic details, and recovery steps.`
       : isAbi && 0 === owners.length
         ? `The tabnas C ABI error code ${code}, returned by the libtabnas* shared libraries.`
         : `The tabnas error code ${code}, declared by ${owners.map((o) => o.name).join(", ")}.`
@@ -97,7 +97,7 @@ const versionsAgree = sitePin === registry.engine;
 
     <p class="kind">
       {isEngine && (isGoOnly
-        ? "Raised by the Go engine only — the TypeScript runtime has no counterpart."
+        ? "Raised by the Go engine only: the TypeScript runtime has no counterpart."
         : "Raised by the parsing engine, so any grammar can produce it.")}
       {!isEngine && owners.length > 0 &&
         "Declared by a grammar plugin, in addition to the engine's own codes."}
@@ -130,7 +130,7 @@ const versionsAgree = sitePin === registry.engine;
         <p class="note">
           <code>{"{placeholders}"}</code> are filled from the failing token and
           the details the grammar attached. The wording is informative and can
-          change between releases — <strong>the code is the contract</strong>.
+          change between releases: <strong>the code is the contract</strong>.
           {isGoOnly
             ? " This one is guaranteed by the Go runtime only: the TypeScript engine has no equivalent, so a cross-runtime check must not expect it."
             : " It is what both the TypeScript and Go runtimes guarantee."}
@@ -144,7 +144,7 @@ const versionsAgree = sitePin === registry.engine;
         <ul class="owners">
           {owners.map((o) => (
             <li>
-              <code>{o.name}</code> — {o.description}
+              <code>{o.name}</code>: {o.description}
               <span class="links">
                 <a href={REPO(o.repo)} target="_blank" rel="noopener">source</a>
                 <a href={NPM(o.repo)} target="_blank" rel="noopener">npm</a>
@@ -154,7 +154,7 @@ const versionsAgree = sitePin === registry.engine;
         </ul>
         <p class="note">
           The message text for a plugin code lives in that plugin's own error
-          catalogue, alongside its grammar — this page does not copy it, so it
+          catalogue, alongside its grammar: this page does not copy it, so it
           cannot fall out of step with the package you are running. The
           plugin's <code>AGENTS.md</code> lists what raises each of its codes.
         </p>
@@ -166,7 +166,7 @@ const versionsAgree = sitePin === registry.engine;
         <Heading level={2} id="c-abi">In the C ABI</Heading>
         <p class="kind">
           {abiBy.length === abiTotal
-            ? `Returned by all ${abiTotal} per-format shared libraries — the ABI is uniform, so every clib can return it.`
+            ? `Returned by all ${abiTotal} per-format shared libraries: the ABI is uniform, so every clib can return it.`
             : `Returned by ${abiBy.length} of the ${abiTotal} per-format shared libraries.`}
         </p>
         <p class="note">
@@ -176,7 +176,7 @@ const versionsAgree = sitePin === registry.engine;
         <p class="note">
           <strong>This says your call was wrong, not your input.</strong> A
           library that read your input and decided it is outside the format
-          replies <code>{'{"ok":true,"accept":false}'}</code> instead — a
+          replies <code>{'{"ok":true,"accept":false}'}</code> instead: a
           rejection is an answer, and it carries no code from this namespace.
           If you are here because a parse "failed", check which of the two you
           actually got before treating it as an error.
@@ -207,7 +207,7 @@ const versionsAgree = sitePin === registry.engine;
             <code>tabnas diagnose --json</code>, which prints the whole object.
           </li>
           <li>
-            Work the grammar back from the failing alternate — the{" "}
+            Work the grammar back from the failing alternate: the{" "}
             <a href="/skills/"><code>debug-parse</code> skill</a> is that
             procedure written out, and{" "}
             <a href="/how-to/parse-errors/">the errors guide</a> covers raising good ones
@@ -223,7 +223,7 @@ const versionsAgree = sitePin === registry.engine;
         <ol class="next">
           {crossesEnvelopes && (
             <li>
-              First settle which <code>{code}</code> you have — the steps above
+              First settle which <code>{code}</code> you have: the steps above
               are for the diagnostic; these are for the library reply.
             </li>
           )}

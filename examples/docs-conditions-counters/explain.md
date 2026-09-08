@@ -1,5 +1,5 @@
 `n` on an alternate sets or increments a named counter, and counters propagate
-to pushed and repeated rules — so a count made at the top is visible all the way
+to pushed and repeated rules, so a count made at the top is visible all the way
 down.
 
 The last line is the trap: setting `0` **resets** rather than adding nothing, so

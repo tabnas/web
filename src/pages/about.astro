@@ -22,7 +22,7 @@ const goCount = PACKAGES.filter((p) => p.go).length;
 
 <Base
   title="About"
-  description="What tabnas is, who builds it, how it is funded, and what state it is in — the tabnas project in one page, with the links to check any of it."
+  description="What tabnas is, who builds it, how it is funded, and what state it is in: the tabnas project in one page, with the links to check any of it."
 >
   <article class="about" data-pagefind-body>
     <Heading level={1} id="about-tabnas">About tabnas</Heading>
@@ -36,23 +36,15 @@ const goCount = PACKAGES.filter((p) => p.go).length;
     <section class="group">
       <Heading level={2} id="what-it-is">What it is</Heading>
       <p>
-        A parser normally arrives as generated code, or as recursive descent
-        written by hand. Either way, extending someone else's language means
-        forking their parser and owning the fork. <i>tabnas</i> takes the other
-        route: the engine is a for-loop over tokens with a rule stack, and a
-        grammar is the lookup table it walks. Because that table is ordinary
-        data, extending a language means adding rows to a table that already
-        works — JSON becomes JSONC becomes jsonic becomes YAML, each one a
-        plugin over the last.
+        tabnas represents a grammar as a table of rules and token alternates.
+        Plugins extend those tables to add syntax. The JSONC plugin adds
+        comments to JSON, and jsonic adds relaxed quoting and other syntax.
       </p>
       <p>
-        The second consequence is why the project has an
-        <a href="/agents/">agent-facing half</a>. A flat, declarative, control-flow-free
-        table is a good compile target: RFC 5234 ABNF compiles into it, and so
-        does the output of a language model — and unlike generated code, you
-        can validate the result before you run it.
-        <a href="/why/">Why tabnas</a> is the long-form version of this
-        argument, and the source document for everything else on the site.
+        The rule table is a compile target for ABNF and a data format that
+        agents can emit directly. Validate the grammar structure, then test
+        its behaviour with sample inputs. <a href="/why/">Why tabnas</a>
+        explains the design and the parser algorithm.
       </p>
     </section>
 
@@ -61,7 +53,7 @@ const goCount = PACKAGES.filter((p) => p.go).length;
       <p>
         {packageCount} packages: the engine, the grammar tooling,
         {" "}{grammarCount} language and data-format grammars, the syntax
-        plugins, and the agent distributions — Agent Skills, an
+        plugins, and the agent distributions: Agent Skills, an
         <a href="/mcp/">MCP server</a> and the <code>tabnas</code> command-line
         tool. {goCount} of them ship as a Go module as well as an npm package,
         from one shared set of fixtures that both runtimes must pass.
@@ -83,15 +75,14 @@ const goCount = PACKAGES.filter((p) => p.go).length;
         <i>tabnas</i> is written by
         {" "}<a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>,
         who has been building parsers and open source Node.js libraries for a
-        long time — the engine grew out of
+        long time: the engine grew out of
         {" "}<a href="https://github.com/jsonicjs/jsonic" target="_blank" rel="noopener">jsonic</a>,
         a forgiving JSON parser, which is still one of the grammars here.
       </p>
       <p>
         One maintainer is a real constraint and the site says so rather than
         implying a team. Contributions arrive through GitHub and are welcome,
-        including ones written with an AI agent —
-        <a href="/community/">community</a> explains how that works and why the
+        including ones written with an AI agent: <a href="/community/">community</a> explains how that works and why the
         shared fixtures make it safe.
       </p>
     </section>
@@ -137,7 +128,7 @@ const goCount = PACKAGES.filter((p) => p.go).length;
         channel for each kind of message.
       </p>
       <p class="motto">
-        <i>{SITE_MOTTO}</i> — Irish for "a table of translations", which is
+        <i>{SITE_MOTTO}</i>: Irish for "a table of translations", which is
         what a grammar is.
       </p>
     </section>

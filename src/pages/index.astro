@@ -17,11 +17,10 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <img class="emblem" src={emblem.src} width="128" height="128" alt="" aria-hidden="true" />
     <Heading level={1} id="tabnas">{SITE_TAGLINE}</Heading>
     <p class="lede">
-      <i>tabnas</i> is a parser VM: a simple state and lookup engine that
-      grammars compile down to. Because a grammar is just data, you extend one
-      that already works rather than starting over — and because the data is
-      flat and regular, an agent can write one. <i>tabnas</i> has already
-      burned the tokens, so you don't have to.
+      <i>tabnas</i> runs grammars as tables of rules and token alternates.
+      Extend an existing grammar with plugins, compile one from ABNF, or
+      define its rule table directly. Agents can use the same data format
+      and validate it before parsing.
     </p>
     <!-- Abridged copy of example 3 below: the shortest thing that shows the
          actual argument — RFC 5234 ABNF in, behaviour bound by reference, a
@@ -31,7 +30,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <div class="hero-code">
       <CodeTabs id="abnf-actions" label="ABNF in, a parser out" lines={[[1, 18]]} />
       <p class="code-note">
-        Valid RFC 5234 — nothing added to it. Behaviour binds out of band,
+        Valid RFC 5234: nothing added to it. Behaviour binds out of band,
         through names the compiler already assigns.
         <a href="#a-grammar-end-to-end">See it end to end ↓</a>
       </p>
@@ -48,12 +47,10 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <Heading level={2} id="why-tabnas">Why <i>tabnas</i></Heading>
     <div class="why-body">
       <p>
-        Writing a parser is expensive, so most languages get one and that's
-        that. Parser toolkits hand you generated code from a grammar file, or
-        you write recursive descent by hand — and either way, extending
-        someone else's language means forking their parser and owning the
-        fork.
-      </p>
+      Adding syntax to an existing language requires a way to change its
+      grammar. In <i>tabnas</i>, plugins add or modify rules and token
+      alternates while using the same parsing engine.
+    </p>
       <p>
         <i>tabnas</i> started as an attempt to write a more forgiving JSON parser and
         turned into an extensible one by accident. The engine is a for-loop
@@ -65,27 +62,23 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
         plugin.
       </p>
       <p>
-        The second consequence took longer to notice. A machine this plain is a
-        good <em>compile target</em>. ABNF compiles into it, so a human can
-        write a grammar in the notation the RFCs already use. And the grammar
-        itself is flat, regular, declarative data — which is exactly the kind
-        of thing a language model is good at emitting, and which you can check
-        before you run it. Defining a grammar this way is surprisingly not too
-        hard for humans, and really easy for agents.
-      </p>
+      The rule table is also a compile target. The ABNF plugin compiles
+      grammar notation into that table. An agent can emit a declarative
+      grammar directly, then check its structure and test sample inputs.
+    </p>
       <p>
-        Put those together and the cost of parsing something new drops a long
-        way. That is the whole point of the project.
-      </p>
+      Start with a grammar that parses a related format, then add the rules
+      your language needs.
+    </p>
       <p class="more">
-        <a href="/why/">Read the whole story — how the algorithm works, and where it came from</a>
+        <a href="/why/">Read the whole story: how the algorithm works, and where it came from</a>
       </p>
     </div>
 
     <blockquote class="tldr">
       <p class="tldr-head">The technical TLDR</p>
       <p>
-        You write a for-loop over parsing tokens. There's no recursion — a
+        You write a for-loop over parsing tokens. There's no recursion: a
         stack keeps track of rule depth. Each rule represents a semantic
         element of your language, and you move to the next rule using a lookup
         table of token alternates. Rules are hit twice, once on descent and
@@ -110,26 +103,26 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
       <article>
         <Heading level={3} id="a-target-agents-can-hit">A target agents can hit</Heading>
         <p>
-          A grammar is flat declarative data — rules, token alternates,
-          actions. That's a shape a model can emit reliably and you can check
-          before running. The whole workflow installs into an agent, as
-          <a href="/skills/">skills</a> and an <a href="/mcp/">MCP server</a> —
-          <a href="/agents/">agents</a> has the commands.
-        </p>
+      A declarative grammar contains rules, token alternates, and action
+          references. Validate its structure and test its behaviour before
+          using it. The <a href="/skills/">skills</a> and
+          <a href="/mcp/">MCP server</a> support this workflow;
+          <a href="/agents/">the agent guide</a> has the commands.
+    </p>
       </article>
       <article>
         <Heading level={3} id="a-target-compilers-can-hit">A target compilers can hit</Heading>
         <p>
           <a href={REPO("abnf")} target="_blank" rel="noopener">@tabnas/abnf</a>
           compiles RFC 5234 ABNF into a working grammar, left recursion
-          included — so an RFC's own notation is runnable.
+          included, so an RFC's own notation is runnable.
         </p>
       </article>
       <article>
         <Heading level={3} id="three-levels">Three levels</Heading>
         <p>
           ABNF when a human is writing, declarative JSON when an agent is, and
-          a programmatic API for parameterised grammars — the level
+          a programmatic API for parameterised grammars: the level
           <a href={REPO("expr")} target="_blank" rel="noopener">expr</a> and
           <a href={REPO("directive")} target="_blank" rel="noopener">directive</a>
           are built at.
@@ -160,7 +153,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <Heading level={2} id="a-grammar-end-to-end">A grammar, end to end</Heading>
     <p class="sec-note">
       Addition, four times: the grammar as a person writes it, the same
-      grammar as data, and the same two actions attached two ways — by
+      grammar as data, and the same two actions attached two ways: by
       reference to the ABNF, and inline on the rule table. Steps 3 and 4
       compute the same total with the same logic, because the ABNF compiles
       to the table.
@@ -168,12 +161,12 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
 
     <div class="code-cols">
       <div>
-        <p class="code-label">1 · ABNF — as a person writes it</p>
+        <p class="code-label">1 · ABNF: as a person writes it</p>
         <CodeTabs id="abnf-text" />
         <p class="code-note">
           <code>NR</code> is the built-in number token, <code>[ … ]</code> is
           optional, and <code>add</code> refers to itself to take a whole
-          chain. <code>val</code> wraps it — that's where the total will live.
+          chain. <code>val</code> wraps it: that's where the total will live.
         </p>
       </div>
       <div>
@@ -183,14 +176,14 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
           <code>p</code> pushes a rule, <code>s</code> matches tokens,
           <code>r</code> repeats the rule at the same depth, and
           <code>{"{}"}</code> is the alternate that ends it. This recognises
-          <code>1+2+3</code> and rejects <code>1+*</code> — but produces
+          <code>1+2+3</code> and rejects <code>1+*</code>, but produces
           nothing. It's the shape an agent emits.
         </p>
       </div>
     </div>
 
     <div class="actions-block">
-      <p class="code-label">3 · Actions by reference — the <code>@ref</code> form</p>
+      <p class="code-label">3 · Actions by reference: the <code>@ref</code> form</p>
       <div class="code-cols narrow">
         <div>
           {/* Same example as the hero, shown in full here — `instance` keeps
@@ -199,7 +192,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
         </div>
         <div>
           <p class="code-note wide">
-            The grammar is exactly the ABNF from step 1 — valid RFC 5234,
+            The grammar is exactly the ABNF from step 1: valid RFC 5234,
             nothing added to it. Behaviour binds out of band, through names the
             compiler already assigns: <code>'@val:o:add'</code> is the
             <code>val</code> rule's alternate that pushes <code>add</code>;
@@ -209,7 +202,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
           </p>
           <p class="code-note wide">
             These are <strong>the same two actions, on the same two rules, as
-            step 4 below</strong> — because the compiler emits the same shape.
+            step 4 below</strong>, because the compiler emits the same shape.
             The tail self-reference <code>[ PL add ]</code> compiles to the
             <code>r: 'add'</code> close-phase repeat that step 4 declares by
             hand, so <code>r.parent</code> is <code>val</code> for every
@@ -226,14 +219,14 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     </div>
 
     <div class="actions-block">
-      <p class="code-label">4 · Actions inline — carried on the parse</p>
+      <p class="code-label">4 · Actions inline: carried on the parse</p>
       <div class="code-cols narrow">
         <div>
           <CodeTabs id="inline-actions" />
         </div>
         <div>
           <p class="code-note wide">
-            Same grammar, same machine — the actions are just written straight
+            Same grammar, same machine: the actions are just written straight
             onto the alternates as <code>a</code>. The total now rides on the
             parse instead of an outer variable, so <code>parse</code> returns
             it directly and concurrent parses can't collide.
@@ -241,7 +234,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
           <p class="code-note wide">
             Because <code>r</code> repeats <code>add</code> at the same stack
             depth rather than nesting it, every <code>add</code> shares one
-            parent — so the accumulator is a single number and each action is a
+            parent, so the accumulator is a single number and each action is a
             single expression. <code>r.node</code> is the value a rule carries;
             <code>r.o</code> the tokens matched in the open phase, so
             <code>r.o[0].val</code> is the number just read.
@@ -268,7 +261,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <Heading level={2} id="packages">Packages</Heading>
     <p class="sec-note">
       A small core engine, tools for writing and testing grammars and for
-      connecting agents, and {grammars.length} languages built on top — most
+      connecting agents, and {grammars.length} languages built on top: most
       of them extensions of another one in the list. The
       <a href="/releases/">releases</a> page has all {PACKAGES.length}, their
       versions, and which registries each one is on.
@@ -308,7 +301,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
           <a href={AUTHOR.url} target="_blank" rel="noopener">{AUTHOR.name}</a>
           (<a href={AUTHOR.github} target="_blank" rel="noopener">@rjrodger</a>),
           who also wrote <a href="https://senecajs.org" target="_blank" rel="noopener">Seneca</a>
-          and jsonic — which is where this came from.
+          and jsonic, which is where this came from.
         </p>
       </article>
       <article>
@@ -326,8 +319,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
           MIT, across every repository in the
           <a href={GITHUB_ORG} target="_blank" rel="noopener"><i>tabnas</i> org</a>.
           Development is sponsored by
-          <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a> —
-          see <a href="/sponsors/">sponsors</a>.
+          <a href={SPONSOR.url} target="_blank" rel="noopener">{SPONSOR.name}</a>: see <a href="/sponsors/">sponsors</a>.
         </p>
       </article>
     </div>

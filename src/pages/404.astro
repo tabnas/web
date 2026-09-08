@@ -19,7 +19,7 @@ import { ENTRY_POINTS } from "../worker";
   description="No page at that address on tabnas.dev. The site index, the documentation hub and the machine-readable endpoints, so you can find what you were looking for."
 >
   <article class="notfound">
-    <Heading level={1} id="not-found">404 — no page at that address</Heading>
+    <Heading level={1} id="not-found">404: no page at that address</Heading>
 
     <p class="lede">
       Nothing is published here. Either the address is wrong, or a page that
@@ -31,7 +31,7 @@ import { ENTRY_POINTS } from "../worker";
       <ul>
         {ENTRY_POINTS.map(([href, what]) => (
           <li>
-            <a href={href}><code>{href}</code></a> — {what}
+            <a href={href}><code>{href}</code></a>: {what}
           </li>
         ))}
       </ul>
@@ -41,7 +41,7 @@ import { ENTRY_POINTS } from "../worker";
       <Heading level={2} id="for-programs">If you are a program</Heading>
       <p>
         This response is a real <code>404</code>, not a 200 with an
-        application shell — every path that does not exist says so in the
+        application shell: every path that does not exist says so in the
         status line. The body is negotiated: ask for
         <code>text/markdown</code> or send no preference and you get the list
         above as markdown; ask for <code>application/json</code>, or request

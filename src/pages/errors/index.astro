@@ -82,8 +82,8 @@ const distinct = new Set([
       {distinct} error codes in three namespaces: {engine.length} raised by the
       engine itself, {pluginCodes.length} declared by individual grammar
       plugins, and {abiCodes.length} returned by the C shared libraries. A
-      tabnas diagnostic always carries a <code>code</code>, and the code — never
-      the message text — is what stays the same across the TypeScript and Go
+      tabnas diagnostic always carries a <code>code</code>, and the code (never
+      the message text) is what stays the same across the TypeScript and Go
       runtimes. Match on it.
     </p>
 
@@ -91,8 +91,7 @@ const distinct = new Set([
       Generated from the engine's{" "}
       <a href={`${REPO("parser")}/blob/main/schema/error-codes.json`} target="_blank" rel="noopener">
         <code>schema/error-codes.json</code></a>{" "}
-      and from each plugin's <code>tabnas.plugin.json</code> descriptor —
-      nothing on this page is hand-listed.{" "}
+      and from each plugin's <code>tabnas.plugin.json</code> descriptor: nothing on this page is hand-listed.
       {versionsAgree ? (
         <>Engine {catalogueVersion}.</>
       ) : (
@@ -122,7 +121,7 @@ const distinct = new Set([
               <tr>
                 <th scope="row">
                   <a href={`/errors/${c.code}/`}><code>{c.code}</code></a>
-                  {"go" === c.runtime && <span class="tag" title="Go runtime only — TypeScript has no counterpart">Go only</span>}
+                  {"go" === c.runtime && <span class="tag" title="Go runtime only: TypeScript has no counterpart">Go only</span>}
                 </th>
                 <td class="msg"><code>{c.message}</code></td>
               </tr>
@@ -164,14 +163,14 @@ const distinct = new Set([
           A different namespace, and worth reading as one. These are not parse
           diagnostics: they come back in the JSON reply of a{" "}
           <code>libtabnas&lt;format&gt;</code> shared library, and they describe
-          the <em>call</em> — a bad pointer, a handle you already freed — rather
+          the <em>call</em> (a bad pointer, a handle you already freed) rather
           than the input you passed. All{" "}
           {abiLibraries.length} libraries return the same four, because the ABI
           is uniform by decision
           {1 === abiVersions.length ? (
             <> (<code>{abiVersions[0]}</code>)</>
-          ) : (
-            <> (versions in the fleet right now: {abiVersions.map((v) => (<code>{v}</code>))} — they are meant to agree)</>
+          ): (
+            <> (versions in the fleet right now: {abiVersions.map((v) => (<code>{v}</code>))}: they are meant to agree)</>
           )}.
         </p>
         <p class="blurb">
@@ -206,7 +205,7 @@ const distinct = new Set([
     <section class="group">
       <Heading level={2} id="reading">Reading a diagnostic</Heading>
       <p class="blurb">
-        Every failing parse produces the same structured object — the same
+        Every failing parse produces the same structured object: the same
         fields in both runtimes, described by the engine's{" "}
         <a href={`${REPO("parser")}/blob/main/schema/diagnostic.schema.json`} target="_blank" rel="noopener">
           <code>diagnostic.schema.json</code></a>. The fields worth reading

@@ -1,6 +1,6 @@
 # tabnas/web
 
-Source of **[tabnas.dev](https://tabnas.dev)** — the project site and
+Source of **[tabnas.dev](https://tabnas.dev)**: the project site and
 documentation for the tabnas parsing engine. An [Astro](https://astro.build)
 site deployed to Cloudflare Workers.
 
@@ -20,8 +20,8 @@ npm run check          # test-examples, build, tsc, and a dry-run deploy
 ```
 
 **`npm run check` is the gate, and you have to run it yourself.** A pull request
-here does get two automated checks — CodeQL, from GitHub's *default setup*, and
-a Cloudflare build — but neither runs this repo's tests: one is a security scan,
+here does get two automated checks (CodeQL, from GitHub's *default setup*, and
+a Cloudflare build) but neither runs this repo's tests: one is a security scan,
 the other a build. Nothing on the server executes the examples. So green checks
 on a PR are not evidence the site works; `npm run check` is.
 
@@ -29,13 +29,13 @@ on a PR are not evidence the site works; `npm run check` is.
 
 **Merging to `main` is the deploy step.** Cloudflare builds and publishes the
 site from `main` through its own Git integration, so there is nothing to run
-and no workflow file to look for — the absence of `.github/workflows/` here
+and no workflow file to look for: the absence of `.github/workflows/` here
 does *not* mean deployment is manual.
 
 Do not run `npm run deploy` (`wrangler deploy`) **by hand** as part of
 shipping a change. Note it is not an inert script: `npm run deploy` is
 the Builds pipeline's own deploy command, so it is exactly what runs on
-every merge — just from Cloudflare's builder, against a clean checkout,
+every merge: just from Cloudflare's builder, against a clean checkout,
 rather than from your working tree. Running it locally publishes
 whatever `dist/` you happen to have, which is how a stale build reaches
 production.
@@ -50,7 +50,7 @@ See [`AGENTS.md`](AGENTS.md#deployment) for the full picture.
 
 | Path | What it is |
 |---|---|
-| `src/pages/` | Routes — `.astro` and `.mdx` map to URLs. |
+| `src/pages/` | Routes: `.astro` and `.mdx` map to URLs. |
 | `src/content/docs/` | The documentation set, rendered by `src/pages/docs/[...slug].astro`. |
 | `src/components/` | Shared components. `CodeTabs.astro` renders the TypeScript / Go / Explain code blocks. |
 | `src/consts.ts` | Site constants, plus the `PACKAGES` registry behind `/docs/packages`. |
@@ -59,7 +59,7 @@ See [`AGENTS.md`](AGENTS.md#deployment) for the full picture.
 
 ## Examples are executed, not transcribed
 
-`CodeTabs` reads `examples/<id>/` at build time — the same files
+`CodeTabs` reads `examples/<id>/` at build time: the same files
 `tools/test-examples.mjs` runs. So the code on the page is the code that was
 run, and the TypeScript and Go versions are *known* to produce the same output
 rather than merely claimed to. Editing an example means editing the files in
@@ -71,8 +71,8 @@ something that does not work.
 ## Keep the tabnas deps current
 
 The site must run against the **currently published** package versions, pinned
-exactly (`"0.6.2"`, not `"^0.6.2"` — these are pre-1.0, where a caret range
-silently refuses the next minor and the site quietly falls behind). Bump the
+exactly (`"0.6.2"`, not `"^0.6.2"`: these are pre-1.0, where a caret range
+silently refuses the next minor and the site falls behind). Bump the
 pins, `src/consts.ts` versions, and re-run `npm run test-examples` in the same
 commit.
 
@@ -84,3 +84,11 @@ document a *fixed compiler bug* as intended behaviour. See
 
 MIT, as with the rest of the org. This repo carries no `LICENSE` file of its
 own; it publishes nothing.
+
+## Prose checks
+
+Follow [STYLE-GUIDE.md](STYLE-GUIDE.md). Build the site, then run
+`npm run check-prose` for the local phrase check. Install Vale 3.9.1,
+run `vale sync`, then `npm run prose` for the full prose check.
+Use `VALE=/path/to/vale` to select a local binary. The prose workflow pins
+both Vale and the Google rules. `npm run check` includes the local check.

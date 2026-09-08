@@ -1,6 +1,6 @@
 ---
-title: ABNF grammars
-description: Define a language fast using the RFC 5234 ABNF dialect.
+title: "ABNF grammars"
+description: "Define a language fast using the RFC 5234 ABNF dialect."
 section: How-to
 order: 1
 ---
@@ -29,9 +29,9 @@ alternatives (not `::=` or `|`).
 
 ## Left recursion
 
-Left-recursive rules are accepted directly. A left-recursion pass ([Paull's](https://en.wikipedia.org/wiki/Left_recursion#Removing_all_left_recursion) — Wikipedia describes the method without using the name)
-algorithm) rewrites both direct (`P = P a / b`) and indirect recursion into the
-iterative form the engine runs without re-entering a rule at the same position:
+The compiler rewrites direct (`P = P a / b`) and indirect left recursion
+into iterative rules. See the [left-recursion elimination algorithm](https://en.wikipedia.org/wiki/Left_recursion#Removing_all_left_recursion).
+For example:
 
 ```
 P = P a / b     →     P = b *(a)
@@ -47,9 +47,9 @@ details and caveats.
 Attach behaviour with `@ref` action references, passed as `actions` and keyed
 by rule and phase. There are two forms:
 
-- `'@add:o:NR'` — an **alternate** action: runs when the `add` rule opens on an
+- `'@add:o:NR'`: an **alternate** action: runs when the `add` rule opens on an
   `NR` token. The trailing mark is the alternate's leading discriminator.
-- `'@add:bo'` — a **rule-phase** hook: before-open. Also `ao`, `bc` and `ac`
+- `'@add:bo'`: a **rule-phase** hook: before-open. Also `ao`, `bc` and `ac`
   for after-open, before-close and after-close.
 
 <CodeTabs id="docs-abnf-actions" label="Actions by alternate mark" />
@@ -58,12 +58,12 @@ by rule and phase. There are two forms:
 `[ PL add ]` compiles to a same-depth repeat of `add`, not a nested push.
 
 `r` is the rule instance and `r.o` the tokens matched in the open phase, so
-`r.o[0].val` is the value of the first — a real number, courtesy of the lexer.
+`r.o[0].val` is the value of the first: a real number, courtesy of the lexer.
 
 ### Finding the marks
 
 An alternate mark comes from the alternate's leading discriminator, which the
-compiler assigns — so don't guess at the name, ask for it:
+compiler assigns, so don't guess at the name, ask for it:
 
 ```bash
 tabnas-abnf --marks -f grammar.abnf
@@ -80,7 +80,7 @@ add  c:_  (empty)
 `markListing(spec)` gives the same listing from code. Reading it also tells
 you the shape the compiler produced: `val o:add p:add` says `val` pushes
 `add` as a child rule, and `add c:PL s:#PL` says `add` repeats itself from
-its close phase when a `+` follows — the tail self-reference `[ PL add ]`
+its close phase when a `+` follows: the tail self-reference `[ PL add ]`
 compiled to a same-depth repeat, exactly what a hand-written grammar
 declares as `{ s: '#PL', r: 'add' }`.
 
@@ -91,7 +91,7 @@ repetition; 0.2.x additionally dissolved pure aliases like `val = add`.
 ### Parents and generated rules
 
 For a tail self-reference, `r.parent` is the wrapping rule for **every**
-repetition — accumulating onto `r.parent.node` is the intended idiom, the
+repetition: accumulating onto `r.parent.node` is the intended idiom, the
 same as in a hand-written rule table.
 
 Other sugar still desugars into generated group rules: inside `( … )` or

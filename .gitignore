@@ -203,3 +203,8 @@ dist
 
 ### Emacs ###
 *~
+
+# Prepared prose and downloaded Vale rules
+.prose/
+.vale/styles/Google/
+.vale/styles/.vale-config/

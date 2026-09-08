@@ -1,6 +1,6 @@
 ---
-title: Your first grammar
-description: Build a small language from nothing — recognise it, reject bad input, then read the tree.
+title: "Your first grammar"
+description: "Build a small language from nothing: recognise it, reject bad input, then read the tree."
 section: Tutorials
 order: 2
 ---
@@ -9,8 +9,8 @@ import CodeTabs from "../../components/CodeTabs.astro";
 
 
 The [quickstart](/docs/quickstart/) parsed arithmetic. This one builds a
-grammar that depends on nothing but the engine — no existing language
-underneath it — and takes it as far as a usable tree. It should take about ten
+grammar that depends on nothing but the engine (no existing language
+underneath it) and takes it as far as a usable tree. It should take about ten
 minutes.
 
 We'll parse a comma-separated list: `a,bc,def`.
@@ -32,14 +32,14 @@ comma and another item. An `item` is one or more (`1*`) letters. `ALPHA` is one
 of the RFC 5234 core rules, included automatically when you refer to it.
 
 `COMMA` is declared as its own rule so the comma becomes a named token rather
-than an anonymous literal — which means it shows up in the tree, and you can
+than an anonymous literal, which means it shows up in the tree, and you can
 attach behaviour to it later.
 
 ## 3 · Parse
 
 <CodeTabs id="docs-first-grammar-parse" label="The same shape, whatever the grammar" />
 
-Every parse returns the same shape — `{ rule, src, kids }` — whatever the
+Every parse returns the same shape (`{ rule, src, kids }`) whatever the
 grammar. Walk it once and the walker works for every language you define.
 
 ## 4 · Check that it rejects
@@ -61,7 +61,7 @@ still data at runtime rather than generated code:
 npm install @tabnas/debug @tabnas/railroad
 ```
 
-`@tabnas/debug` can describe the grammar and print it back as ABNF — if the
+`@tabnas/debug` can describe the grammar and print it back as ABNF: if the
 round-trip isn't what you wrote, the grammar isn't what you meant.
 `@tabnas/railroad` draws it as a syntax diagram.
 
@@ -70,19 +70,18 @@ You can also paste the grammar straight into the
 
 ## What you skipped
 
-Two things this grammar quietly relies on, worth knowing before you write a
-bigger one:
+This grammar depends on two behaviours:
 
 - **The lexer.** `ALPHA` and the number token `NR` are built in, and `COMMA` is
-  a fixed token. Beyond that you configure or write matchers yourself — tabnas
+  a fixed token. Beyond that you configure or write matchers yourself: tabnas
   separates lexing from parsing and is mostly about the parsing half.
 - **Repetition is desugared.** `*( … )` compiles to generated group rules, so
   the runtime rule names aren't only the ones you wrote. That matters when you
-  attach actions — see [attaching actions](/docs/actions/).
+  attach actions: see [attaching actions](/docs/actions/).
 
 ## Next
 
-- [A grammar with plugins](/docs/grammar-with-plugins/) — the other way to
+- [A grammar with plugins](/docs/grammar-with-plugins/): the other way to
   build, and usually the cheaper one.
-- [Attaching actions](/docs/actions/) — turn a tree into a value.
-- [The rule table](/docs/rule-table/) — what the ABNF compiled into.
+- [Attaching actions](/docs/actions/): turn a tree into a value.
+- [The rule table](/docs/rule-table/): what the ABNF compiled into.

@@ -56,7 +56,7 @@ const PROJECTS = [
     body: [
       `Aontu unifies JSON structures: you write schemas and unification rules,
        and it folds many partial configurations into one consistent result. The
-       language is a purpose-specific dialect of CUE — compact enough to write
+       language is a purpose-specific dialect of CUE: compact enough to write
        inline (\`a:1 b:$.a\`), with file evaluation and a REPL.`,
       `It is the clearest example of what the plugin model is for. Aontu defines
        no parser of its own. It starts from the jsonic grammar and layers on the
@@ -79,9 +79,9 @@ const PROJECTS = [
        call, while binary operations also read naturally infix (\`10 sub 3\`).
        It aims to keep the composability of concatenative, stack-based languages
        without making you track the stack in your head.`,
-      `The language is substantial — hierarchical types with typed signatures
+      `The language is substantial: hierarchical types with typed signatures
        driving dispatch, lists and maps and records, hygienic macros,
-       concurrency — and the toolchain around it is too: parser, type checker,
+       concurrency: and the toolchain around it is too: parser, type checker,
        formatter and LSP server all ship in one CLI. That whole front end is
        built on the tabnas engine in Go, which makes boru the answer to whether
        this scales past config formats.`,
@@ -107,7 +107,7 @@ const PROJECTS = [
 
     <section class="proj">
       <Heading level={2} id="chess">chess</Heading>
-      <p class="tagline">PGN and SAN — the notation chess games are written in</p>
+      <p class="tagline">PGN and SAN: the notation chess games are written in</p>
 
       <dl class="meta">
         <div><dt>Runtime</dt><dd>TypeScript · also ported to Go</dd></div>
@@ -132,7 +132,7 @@ const PROJECTS = [
         <chess-view source="edit">{IMMORTAL}</chess-view>
       </div>
       <p class="caption">
-        Anderssen–Kieseritzky, London, 21 June 1851 — the Immortal Game. Use
+        Anderssen–Kieseritzky, London, 21 June 1851: the Immortal Game. Use
         the controls, the arrow keys, or click any move. The notation below
         the board is <strong>editable</strong>: change it and the board
         re-parses as you type, so you can watch the grammar accept and
@@ -144,7 +144,7 @@ const PROJECTS = [
         That text is the whole input: a PGN game, parsed by
         <a href={REPO("chess")} target="_blank" rel="noopener">@tabnas/chess</a>
         into tag pairs, moves and a result. Everything on the board comes from
-        the parse — the players and date above it are the tag pairs, and each
+        the parse: the players and date above it are the tag pairs, and each
         move comes back as structure rather than as a string:
         <code>Nxg7+</code> is a knight, a capture, a destination of
         <code>g7</code> and a check. That is what makes the move list
@@ -163,7 +163,7 @@ const PROJECTS = [
 
     <section class="proj">
       <Heading level={2} id="gbnf">gbnf</Heading>
-      <p class="tagline">GBNF — the grammars that constrain what a model may say</p>
+      <p class="tagline">GBNF: the grammars that constrain what a model may say</p>
 
       <dl class="meta">
         <div><dt>Runtime</dt><dd>TypeScript · also ported to Go, C ABI, Python</dd></div>
@@ -270,7 +270,7 @@ const PROJECTS = [
       </p>
       <p>
         The full list is on the <a href="/releases/">releases</a> page, and the
-        <a href="/docs/">docs</a> build two grammars from nothing — one
+        <a href="/docs/">docs</a> build two grammars from nothing: one
         standalone, one on top of an existing plugin.
       </p>
     </section>
@@ -278,8 +278,8 @@ const PROJECTS = [
     <section class="proj">
       <Heading level={2} id="built-something">Built something?</Heading>
       <p>
-        If you've used tabnas for anything — a config dialect, a log format, a
-        query language, an experiment that didn't work — it's worth saying so in
+        If you've used tabnas for anything (a config dialect, a log format, a
+        query language, an experiment that didn't work) it's worth saying so in
         <a href={`${GITHUB_ORG}/parser/discussions`} target="_blank" rel="noopener">Discussions</a>.
         Real usage is the most useful thing a project this early can get, and
         this page is short precisely because there isn't much of it yet.

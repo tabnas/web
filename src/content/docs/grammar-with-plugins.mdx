@@ -1,6 +1,6 @@
 ---
-title: A grammar with plugins
-description: Build a configuration language by composing existing grammars instead of writing one.
+title: "A grammar with plugins"
+description: "Build a configuration language by composing existing grammars instead of writing one."
 section: Tutorials
 order: 3
 ---
@@ -12,7 +12,7 @@ import CodeTabs from "../../components/CodeTabs.astro";
 is the other way, and usually the cheaper one: start from a grammar that
 already parses something close, and add the pieces you need.
 
-We'll build a config format that takes arithmetic in its values — so
+We'll build a config format that takes arithmetic in its values, so
 `width: 2+3*4` yields `14`, not the string `"2+3*4"`. Writing that from
 scratch means an expression parser with operator precedence. Composing it takes
 about six lines.
@@ -23,7 +23,7 @@ about six lines.
 npm install @tabnas/jsonic @tabnas/expr
 ```
 
-[jsonic](https://github.com/tabnas/jsonic) is a relaxed JSON — unquoted keys,
+[jsonic](https://github.com/tabnas/jsonic) is a relaxed JSON: unquoted keys,
 implicit objects, comments, trailing commas.
 [expr](https://github.com/tabnas/expr) adds Pratt-parser expressions with a
 configurable precedence scale.
@@ -42,7 +42,7 @@ That is already a usable config format. What it doesn't do is arithmetic:
 
 <CodeTabs id="docs-plugins-expr" label="Layer on the expression plugin" />
 
-Values are now expression trees, and precedence is already handled — `1+2*3`
+Values are now expression trees, and precedence is already handled: `1+2*3`
 groups the multiplication first, without you saying so. Parentheses work too:
 
 <CodeTabs id="docs-plugins-parens" label="Parentheses too" />
@@ -64,7 +64,7 @@ And that's the language:
 
 You didn't write a parser. You picked one that was close, added a plugin for
 the part it was missing, and wrote ten lines of evaluation. No grammar file, no
-generated code, and no fork of jsonic — the base instance is untouched, so
+generated code, and no fork of jsonic: the base instance is untouched, so
 other code using it is unaffected.
 
 This is the normal way to build with tabnas, and it composes further:
@@ -81,6 +81,6 @@ language built from five of these plugins and no parser of its own.
 
 ## Next
 
-- [Extending a grammar](/docs/extending/) — adding and removing rules directly.
-- [The rule table](/docs/rule-table/) — what a plugin is actually doing.
-- [Packages](/docs/packages/) — everything available to compose.
+- [Extending a grammar](/docs/extending/): adding and removing rules directly.
+- [The rule table](/docs/rule-table/): what a plugin is actually doing.
+- [Packages](/docs/packages/): everything available to compose.

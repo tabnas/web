@@ -1,4 +1,4 @@
-Actions bind to alternate marks — `@val:o:add` is `val`'s open alternate that
+Actions bind to alternate marks: `@val:o:add` is `val`'s open alternate that
 pushes `add`, `@add:o:NR` is `add`'s open alternate on a number token. The ABNF
 text itself stays valid RFC 5234.
 

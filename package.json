@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "description": "Build a personal website, blog, or portfolio with Astro.",
+  "description": "Source of tabnas.dev, the project site and documentation for tabnas.",
   "cloudflare": {
     "label": "Astro Framework Starter",
     "products": [
@@ -15,14 +15,14 @@
     "@astrojs/cloudflare": "12.6.12",
     "@astrojs/mdx": "4.3.13",
     "@astrojs/sitemap": "3.6.1",
-    "@tabnas/abnf": "0.4.6",
+    "@tabnas/abnf": "0.4.7",
     "@tabnas/bnf": "0.1.9",
     "@tabnas/chess-view": "0.1.4",
     "@tabnas/expr": "0.5.7",
     "@tabnas/gbnf": "0.1.7",
     "@tabnas/json": "0.5.6",
     "@tabnas/jsonic": "0.6.5",
-    "@tabnas/parser": "0.8.11",
+    "@tabnas/parser": "0.9.0",
     "astro": "5.16.9",
     "typescript": "5.9.3"
   },
@@ -45,14 +45,16 @@
     "astro": "astro",
     "build": "node tools/deepen.mjs && astro build && pagefind --site dist && node tools/gen-markdown.mjs",
     "cf-typegen": "wrangler types",
-    "check": "npm run check-ax && npm run test-examples && npm run build && tsc && npm test && wrangler deploy --dry-run",
+    "check": "npm run check-ax && npm run test-examples && npm run build && npm run check-prose && tsc && npm test && wrangler deploy --dry-run",
     "check-ax": "node tools/check-ax.mjs",
     "deploy": "wrangler deploy",
     "dev": "astro dev",
     "gen-ax-data": "node tools/gen-ax-data.mjs",
     "preview": "npm run build && wrangler dev",
     "test-examples": "node tools/test-examples.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "check-prose": "node tools/prose.mjs",
+    "prose": "node tools/prose.mjs --vale"
   },
   "type": "module"
 }

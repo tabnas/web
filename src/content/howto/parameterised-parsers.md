@@ -1,6 +1,6 @@
 ---
-title: Write a parameterised parser
-description: One plugin, many dialects — take options and let them decide the tokens, the lexer and the rules.
+title: "Write a parameterised parser"
+description: "One plugin, many dialects: take options and let them decide the tokens, the lexer and the rules."
 group: Composing grammars
 order: 3
 packages: ["directive", "csv", "expr"]
@@ -73,8 +73,7 @@ base.parse('{"t":1}')       // => { t: 1 } — unchanged
 ## What options can reach
 
 An option is only useful if it can change something. In practice there are five
-levers, and `@tabnas/csv` — a grammar whose whole job is to be configurable —
-pulls all of them.
+levers, and `@tabnas/csv` (a grammar whose whole job is to be configurable) pulls all of them.
 
 ### Redefine a token
 
@@ -134,7 +133,7 @@ tn.options({ rule: { exclude: 'jsonic,imp' } })
 ### Wrap the parser
 
 When the option changes the shape of the *result* rather than the grammar, wrap
-`parser.start`. CSV's `stream` option does exactly this — records are handed to
+`parser.start`. CSV's `stream` option does exactly this: records are handed to
 a callback and the return value is empty:
 
 ```ts
@@ -154,8 +153,8 @@ rows
 ## When the options *are* the grammar
 
 `@tabnas/directive` is the extreme case: the plugin has no fixed syntax at all.
-Every part of it — the token that opens it, the optional closing token, what it
-does, and where it is allowed — arrives as an option, so the same plugin
+Every part of it (the token that opens it, the optional closing token, what it
+does, and where it is allowed) arrives as an option, so the same plugin
 installed twice gives two unrelated statements:
 
 ```ts
@@ -171,7 +170,7 @@ tn.parse('a: $HOME, b: ^hello')
 // => { a: '/home/dev', b: 'HELLO' }
 ```
 
-The `name` option is not decoration — it names the rule the plugin installs and
+The `name` option is not decoration: it names the rule the plugin installs and
 the counter it uses, which is what keeps two instances from colliding.
 
 `@tabnas/expr` sits in between: the option is a *table*, merged over a default
@@ -181,7 +180,7 @@ one to `null` removes it. See
 
 ## Fail fast on bad options
 
-A grammar that is misconfigured fails late and confusingly — usually as
+A grammar that is misconfigured fails late and confusingly: usually as
 "unexpected character" somewhere unrelated. Check what you depend on while you
 still have a good message to give. `tn.rule()` with no arguments returns the
 rule map, which is all a precondition needs:
@@ -199,9 +198,9 @@ const Suffix = (tn, opts) => {
 }
 ```
 
-`@tabnas/hoover` does exactly this, and the message it throws — *"the 'val'
+`@tabnas/hoover` does exactly this, and the message it throws (*"the 'val'
 rule is missing; register a grammar that defines it before the hoover
-plugin"* — tells the caller the fix rather than the symptom. That is the
+plugin"*) tells the caller the fix rather than the symptom. That is the
 standard to aim for: the engine ships no grammar of its own, so "register a
 grammar first" is the single most common mistake a plugin can catch.
 
@@ -210,14 +209,13 @@ grammar first" is the single most common mistake a plugin can catch.
 Options are a public interface, and a deep-merged one is easy to grow and hard
 to shrink. Two things keep it manageable: put every option in `defaults` so the
 full surface is readable in one place, and prefer options that select between
-behaviours over options that take a function — a callback is impossible to
+behaviours over options that take a function: a callback is impossible to
 serialise, diff, or accept from somewhere you don't trust, and the engine's
 [data-first design](/docs/how-it-works/) is the thing you would be giving up.
 
 ## See also
 
-- [Include one source from another](/how-to/include-other-sources/) —
-  `Directive` in use.
-- [Lex a token the engine doesn't know](/how-to/custom-tokens/) — the
+- [Include one source from another](/how-to/include-other-sources/): `Directive` in use.
+- [Lex a token the engine doesn't know](/how-to/custom-tokens/): the
   `match.value` matcher used above.
-- [Extending a grammar](/docs/extending/) — `make()`, `use()` and pruning rules.
+- [Extending a grammar](/docs/extending/): `make()`, `use()` and pruning rules.

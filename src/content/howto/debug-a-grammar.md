@@ -1,13 +1,13 @@
 ---
-title: Debug a grammar
-description: See the rules you actually have, watch a parse step by step, and draw the result.
+title: "Debug a grammar"
+description: "See the rules you actually have, watch a parse step by step, and draw the result."
 group: Working on a grammar
 order: 1
 packages: ["debug", "railroad"]
 ---
 
 A grammar that doesn't work is rarely a mystery for long, because a grammar is
-data: you can print it. The order below is the order to try things in — each
+data: you can print it. The order below is the order to try things in: each
 step is cheaper than the one after it, and most bugs are caught in the first
 two.
 
@@ -25,7 +25,7 @@ Object.keys(new Tabnas({ plugins: [json] }).rule())
 ```
 
 One level down, `def.open` and `def.close` are the alternates in the order they
-will be tried — which is the order that decides everything:
+will be tried, which is the order that decides everything:
 
 ```ts
 const tn = new Tabnas({ plugins: [json] })
@@ -65,7 +65,7 @@ repeating at one depth and is instead nesting shows up immediately.
 ## 3 · Describe the whole instance
 
 `@tabnas/debug` adds a `debug` property with three views. It is a development
-dependency — never ship it in a runtime path.
+dependency: never ship it in a runtime path.
 
 ```ts
 import { Debug } from '@tabnas/debug'
@@ -79,7 +79,7 @@ tn.debug.abnf()       // the live grammar rendered back as ABNF
 ```
 
 `print: false` matters. The default is `true`, which prints a full description
-every time `use()` is called afterwards — useful when you are bisecting which
+every time `use()` is called afterwards: useful when you are bisecting which
 plugin broke a grammar, and overwhelming otherwise.
 
 `model()` is the one to reach for in a test. Its fields:
@@ -87,7 +87,7 @@ plugin broke a grammar, and overwhelming otherwise.
 | Field | What it holds |
 |---|---|
 | `tag` | the instance tag |
-| `tokens` | `{ tin, name, fixed? }[]` — the token table |
+| `tokens` | `{ tin, name, fixed? }[]`: the token table |
 | `tokenSets` | named sets (`IGNORE`, `VAL`, `KEY`) → member tins |
 | `rules` | each rule's open/close alternates, structurally |
 | `graph` | per-rule push/replace edges |
@@ -110,7 +110,7 @@ hand-written ones don't have.
 `abnf()` is the useful trick for a grammar built by plugins: it renders whatever
 is actually installed as ABNF, so you can read a composed grammar as one
 document rather than as a stack of `use()` calls. It reads only the running
-engine, and it is best-effort — a token-set alternate or an arbitrary match
+engine, and it is best-effort: a token-set alternate or an arbitrary match
 regex has no ABNF spelling, and comes out as a comment or an empty alternative.
 For a grammar that *came* from ABNF it round-trips exactly, which makes it a
 good equality check in a test.
@@ -124,8 +124,8 @@ tn.use(Debug, { print: false, trace: true })
 tn.parse('1+2')
 ```
 
-The trace prints six kinds of line — `step`, `rule`, `lex`, `parse`, `node`,
-`stack` — and you can switch off the ones you don't need. Note that the option
+The trace prints six kinds of line (`step`, `rule`, `lex`, `parse`, `node`,
+`stack`) and you can switch off the ones you don't need. Note that the option
 is *merged* over defaults where everything is on, so narrowing means setting
 entries to `false`, not listing the ones you want:
 
@@ -146,10 +146,9 @@ parse  "2"     ["+"]~[#PL]  2  . . alt=0  []   g:abnf   r:add
 
 Read the `parse` lines. `alt=` is which alternate matched, `g:` its group tags,
 and `p:`/`r:` whether it pushed or repeated. The dots are stack depth. The two
-`add` rules at depth 2 with `r:add` between them are a repeat, not a nest —
-exactly the distinction that is hard to see any other way.
+`add` rules at depth 2 with `r:add` between them are a repeat, not a nest: exactly the distinction that is hard to see any other way.
 
-To capture a trace instead of printing it — in a test, say — supply a console:
+To capture a trace instead of printing it (in a test, say) supply a console:
 
 ```ts
 const lines = []
@@ -162,7 +161,7 @@ const tn = new Tabnas({
 ## 5 · Draw it
 
 `@tabnas/railroad` introspects a live instance and renders it. This is the view
-that makes a *shape* problem obvious — an optional that should have been a
+that makes a *shape* problem obvious: an optional that should have been a
 repetition, an alternative that can never be reached.
 
 ```ts
@@ -206,7 +205,7 @@ elem = val+ /* "," */
 ```
 
 Railroad introspects `@tabnas/parser` instances. Grammars still targeting the
-older `@tabnas/jsonic` engine — `ini` and `yaml` — are not yet supported.
+older `@tabnas/jsonic` engine (`ini` and `yaml`) are not yet supported.
 
 ## Reading the error you already have
 
@@ -227,8 +226,8 @@ That is two of the four things you were about to go and find out.
 
 ## See also
 
-- [Give good parse errors](/how-to/parse-errors/) — making that message useful
+- [Give good parse errors](/how-to/parse-errors/): making that message useful
   to someone who isn't you.
-- [Test a grammar](/how-to/test-a-grammar/) — turning today's bug into a test.
-- [Choose between alternates](/how-to/choose-between-alternates/) — what `alt=`
+- [Test a grammar](/how-to/test-a-grammar/): turning today's bug into a test.
+- [Choose between alternates](/how-to/choose-between-alternates/): what `alt=`
   in the trace is indexing.

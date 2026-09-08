@@ -12,7 +12,7 @@ const rows = [
     url: null,
     kind: "Runtime rule machine",
     algo: "Deterministic LL, no backtracking",
-    grammar: "Data — ABNF, JSON, or API",
+    grammar: "Data: ABNF, JSON, or API",
     codegen: "None",
     extend: "Add rules to an existing grammar",
     self: true,
@@ -48,7 +48,7 @@ const rows = [
     tool: "nearley",
     url: "https://nearley.js.org",
     kind: "Parser generator",
-    algo: "Earley — any CFG, ambiguity allowed",
+    algo: "Earley: any CFG, ambiguity allowed",
     grammar: ".ne file",
     codegen: "Generates source",
     extend: "Edit the grammar, recompile",
@@ -73,11 +73,10 @@ const rows = [
   <article class="cmp">
     <Heading level={1} id="tabnas-and-other-parsers">tabnas and other parsers</Heading>
     <p class="lede">
-      These are all good tools, and most are older, faster to reach for, and far
-      more widely used than tabnas. This page is about how they differ
-      mechanically, so you can tell whether tabnas is the wrong shape for what
-      you're doing — which, often, it will be.
-    </p>
+        Compare the grammar representation, parsing algorithm, and tooling
+        each project provides. Follow the project links for its own
+        documentation and supported features.
+      </p>
 
     <div class="table-wrap">
       <table>
@@ -109,14 +108,12 @@ const rows = [
     </div>
 
     <section>
-      <Heading level={2} id="the-one-real-difference">The one real difference</Heading>
+      <Heading level={2} id="the-one-real-difference">Grammar representation</Heading>
       <p>
-        Most of the tools above are generators: a grammar file goes in, parser
-        source comes out, and you compile it. That's a good trade — generated
-        parsers are fast and the grammar file is a clean artefact. The cost is
-        that the grammar and the parser are two different things, and extending
-        a language someone else wrote means editing their grammar and
-        regenerating.
+        <a href="https://www.antlr.org/">ANTLR</a> and
+        <a href="https://peggyjs.org/">Peggy</a> generate parser code from
+        grammar definitions. tabnas executes a rule table at runtime, so
+        plugins can change the grammar without generating parser source.
       </p>
       <p>
         tabnas keeps the grammar as data the engine walks at runtime. That
@@ -125,25 +122,19 @@ const rows = [
         <a href={REPO("jsonc")} target="_blank" rel="noopener">jsonc</a> is built on
         <a href={REPO("json")} target="_blank" rel="noopener">json</a>, and
         <a href={REPO("jsonic")} target="_blank" rel="noopener">jsonic</a> on that.
-        It also makes the grammar inspectable while it runs — you can print it
+        It also makes the grammar inspectable while it runs: you can print it
         back as ABNF or draw it. <a href="/why/">Why tabnas</a> has the longer version.
       </p>
       <p>
-        <a href="https://chevrotain.io" target="_blank" rel="noopener">Chevrotain</a>
-        is the closest in spirit: it also refuses code generation, and it's a
-        mature, well-tested toolkit. The difference is where the grammar lives.
-        In Chevrotain a grammar is TypeScript — methods on a class — so you
-        extend it by subclassing. In tabnas a grammar is data, which is what
-        makes the second half of the argument possible.
+        <a href="https://chevrotain.io/docs/">Chevrotain</a> also runs without
+        code generation. Its grammar uses a JavaScript DSL; tabnas exposes
+        a rule table that can be defined as data or through an API.
       </p>
       <p>
-        Because a grammar is flat declarative data rather than code, it is
-        something a language model can emit and something you can check before
-        running. None of the tools above are hostile to that, but a generator's
-        input is a grammar file with its own syntax and a toolkit's input is
-        code — both are harder targets than a table of rules and alternates.
-        Making parsing cheap enough to do casually is the point of the project;
-        see <a href="/agents/">agents</a>.
+        An agent can produce ABNF or a declarative tabnas rule table. Neither
+        representation establishes that the grammar is correct: validate it
+        and test valid and invalid inputs. The <a href="/agents/">agent
+        guide</a> describes those checks.
       </p>
     </section>
 
@@ -213,8 +204,7 @@ const rows = [
       </ul>
       <p class="fine">
         If something on this page is wrong or unfair to one of these projects,
-        please <a href={`${REPO("parser")}/issues`} target="_blank" rel="noopener">say so</a> —
-        getting a comparison wrong is worse than not having one.
+        please <a href={`${REPO("parser")}/issues`} target="_blank" rel="noopener">say so</a>: getting a comparison wrong is worse than not having one.
       </p>
     </section>
   </article>

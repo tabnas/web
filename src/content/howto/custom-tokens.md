@@ -1,13 +1,12 @@
 ---
-title: Lex a token the engine doesn't know
-description: Fixed literals, regex tokens, value literals, and a hand-written matcher for the cases none of those reach.
+title: "Lex a token the engine doesn't know"
+description: "Fixed literals, regex tokens, value literals, and a hand-written matcher for the cases none of those reach."
 group: Feeding the lexer
 order: 1
 ---
 
-You write the lexer. The engine ships a small set of built-in tokens — number,
-string, text, the JSON punctuation, space, newline, comment, end-of-source —
-and everything else in your language is a token you declare.
+You write the lexer. The engine ships a small set of built-in tokens (number,
+string, text, the JSON punctuation, space, newline, comment, end-of-source) and everything else in your language is a token you declare.
 
 There are four ways to declare one, in increasing order of effort. Use the
 first that works.
@@ -23,8 +22,8 @@ tn.options({ fixed: { token: { '#EQ': '=', '#AR': '->' } } })
 The name is yours; the value is matched literally. Longer literals win over
 shorter ones, so `->` and `-` can coexist.
 
-**Pick a name that isn't taken.** `#CM` is *comment*, not comma — the comma is
-`#CA` — and silently redefining a built-in token is an afternoon you won't get
+**Pick a name that isn't taken.** `#CM` is *comment*, not comma (the comma is
+`#CA`) and silently redefining a built-in token is an afternoon you won't get
 back. `tn.fixed('=')` returns the tin for a literal, or `undefined` if nothing
 claims it; `tn.token('#EQ')` does the same by name and creates the token if
 needed.
@@ -62,7 +61,7 @@ token is syntax. When it is a **value**, the next option is much less work.
 
 ## 3 · A value literal
 
-`match.value` produces a `#VL` token carrying a computed value — and `#VL` is
+`match.value` produces a `#VL` token carrying a computed value, and `#VL` is
 already in the `VAL` token set every grammar accepts, so it works everywhere a
 value works without touching a single rule:
 
@@ -97,7 +96,7 @@ Setting an entry to `null` removes it, which is how a dialect drops `true` or
 
 Some tokens are not regular: a raw block that runs to a terminator, a
 heredoc, an indentation counter. Write a matcher. It is handed the lexer, and
-its job is to return a token and advance the point — or return `undefined` and
+its job is to return a token and advance the point: or return `undefined` and
 leave the point alone.
 
 ```ts
@@ -132,7 +131,7 @@ tn.parse('{"a": <<x: 1, y: 2>>}')   // => { a: 'x: 1, y: 2' }
 tn.parse('[<<a>>, 1, "b"]')         // => [ 'a', 1, 'b' ]
 ```
 
-`order` decides where the matcher sits in the chain — lower runs earlier. It
+`order` decides where the matcher sits in the chain: lower runs earlier. It
 matters whenever your syntax shares a prefix with a built-in one: a matcher for
 `//path` has to run before the comment matcher, not after.
 
@@ -167,8 +166,8 @@ your grammar.)
 
 ## See also
 
-- [The rule table](/docs/rule-table/) — the built-in tokens, and their names.
-- [Handle strings, quotes and escapes](/how-to/strings-and-quoting/) — the
+- [The rule table](/docs/rule-table/): the built-in tokens, and their names.
+- [Handle strings, quotes and escapes](/how-to/strings-and-quoting/): the
   string matcher's own options, which usually beat writing a matcher.
-- [Write a parameterised parser](/how-to/parameterised-parsers/) — making the
+- [Write a parameterised parser](/how-to/parameterised-parsers/): making the
   token set an option.

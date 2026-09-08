@@ -1,6 +1,6 @@
 ---
-title: Quickstart
-description: Install the engine, write a rule table, and parse your first input in five minutes — the shortest path from nothing to a working parser.
+title: "Quickstart"
+description: "Install the engine, write a rule table, and parse your first input in five minutes: the shortest path from nothing to a working parser."
 section: Tutorials
 order: 1
 ---
@@ -19,12 +19,12 @@ npm install @tabnas/parser @tabnas/abnf
 
 ## 2 · Define a grammar
 
-An addition grammar, written in ABNF — `NR` is the built-in number token,
+An addition grammar, written in ABNF: `NR` is the built-in number token,
 `[ … ]` is optional, and the rule refers to itself to handle a whole chain.
 
 <CodeTabs id="docs-quickstart-grammar" label="An addition grammar, in ABNF" />
 
-`val` wraps the chain — it's the rule that will hold the running total.
+`val` wraps the chain: it's the rule that will hold the running total.
 
 ## 3 · Parse
 
@@ -33,25 +33,25 @@ That grammar recognises the input and builds a tree. Every parse has the same
 
 <CodeTabs id="docs-quickstart-parse" label="The tree it builds" />
 
-Each repetition of `add` is a sibling — the compiler turns the tail
+Each repetition of `add` is a sibling: the compiler turns the tail
 self-reference `[ PL add ]` into a same-depth repeat, not a nested push.
 (`PL` compiles to a token, so it never appears in `kids`.)
 
 ## 4 · Add actions
 
-Recognising isn't computing. To get a total, attach actions by reference — the
+Recognising isn't computing. To get a total, attach actions by reference: the
 grammar text stays untouched.
 
-Actions attach by **alternate mark** — a rule's alternate, named by its
+Actions attach by **alternate mark**: a rule's alternate, named by its
 leading discriminator. `'@val:o:add'` is the `val` rule's alternate that
 pushes `add`; `'@add:o:NR'` is the `add` rule's alternate on an `NR` token.
 `r.o` holds the tokens that alternate matched, so `r.o[0].val` is the number
-just read — already a number, courtesy of the lexer.
+just read: already a number, courtesy of the lexer.
 
 <CodeTabs id="docs-quickstart-actions" label="Two actions make it add" />
 
-`r.parent` is `val` for **every** repetition — that's the same-depth repeat
-again — so the total accumulates in one place, on `val`'s node, where
+`r.parent` is `val` for **every** repetition (that's the same-depth repeat
+again) so the total accumulates in one place, on `val`'s node, where
 `parse` returns it. The instance carries no state between calls.
 
 These are the same two actions a hand-written rule table uses for this
@@ -74,13 +74,13 @@ add  c:PL  s:#PL
 add  c:_  (empty)
 ```
 
-`add c:PL` is the repeat itself — a close-phase alternate you can attach an
+`add c:PL` is the repeat itself: a close-phase alternate you can attach an
 action to with `'@add:c:PL'`.
 
 ## Next steps
 
 - Open the [playground](/playground/) and edit this grammar live.
-- Read about [ABNF grammars](/docs/abnf-grammars/) — repetition, groups, left
+- Read about [ABNF grammars](/docs/abnf-grammars/): repetition, groups, left
   recursion, and `@ref` actions in full.
 - The [home page](/#a-grammar-end-to-end) shows this grammar four ways,
   including how to carry the total on the parse itself instead of in an outer

@@ -1,6 +1,6 @@
 ---
-title: Handle strings, quotes and escapes
-description: Change what quotes a string, which escapes exist, and what happens to the ones that don't.
+title: "Handle strings, quotes and escapes"
+description: "Change what quotes a string, which escapes exist, and what happens to the ones that don't."
 group: Feeding the lexer
 order: 3
 packages: ["csv"]
@@ -8,7 +8,7 @@ packages: ["csv"]
 
 The string matcher is configuration, not code. Which characters open a string,
 which of them may span lines, what the escape character is, which escapes are
-defined, and what an undefined escape means — all of it is `options.string`,
+defined, and what an undefined escape means: all of it is `options.string`,
 and the difference between a strict format and a relaxed one is a handful of
 those fields.
 
@@ -37,7 +37,7 @@ matcher from scratch.
 
 ## More quote characters
 
-`string.chars` is the complete set — set it, don't add to it:
+`string.chars` is the complete set: set it, don't add to it:
 
 ```ts
 const tn = new Tabnas({ plugins: [json] })
@@ -72,8 +72,8 @@ new Tabnas().use(jsonic).parse('a: `line1\nline2`')
 // => { a: 'line1\nline2' }
 ```
 
-For block-delimited strings with markers rather than quotes — triple quotes,
-heredocs — see
+For block-delimited strings with markers rather than quotes (triple quotes,
+heredocs) see
 [@tabnas/hoover](https://github.com/tabnas/hoover), which adds a configurable
 "hoovering" matcher, or write
 [a matcher of your own](/how-to/custom-tokens/#4--a-matcher-function).
@@ -101,8 +101,8 @@ tn.options({ string: { escapeChar: '~' } })
 tn.parse('"a~nb"')   // => 'a\nb'
 ```
 
-`allowUnknown` decides what an undefined escape does. `false` — the JSON
-setting — is an error; `true` — the jsonic setting — drops the escape character
+`allowUnknown` decides what an undefined escape does. `false` (the JSON
+setting) is an error; `true` (the jsonic setting) drops the escape character
 and keeps the character after it:
 
 ```ts
@@ -154,9 +154,9 @@ See [giving good parse errors](/how-to/parse-errors/).
 
 ## See also
 
-- [Lex a token the engine doesn't know](/how-to/custom-tokens/) — when the
+- [Lex a token the engine doesn't know](/how-to/custom-tokens/), when the
   string matcher's options run out.
-- [Handle comments and whitespace](/how-to/comments-and-whitespace/) — the other
+- [Handle comments and whitespace](/how-to/comments-and-whitespace/): the other
   half of the lexer's configuration.
-- [Extending a grammar](/docs/extending/) — deriving a stricter or looser
+- [Extending a grammar](/docs/extending/): deriving a stricter or looser
   dialect without touching the original.

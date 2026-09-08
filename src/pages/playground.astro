@@ -2,10 +2,10 @@
 import Base from "../layouts/Base.astro";
 ---
 
-<Base title="Playground" description="Write a grammar — as ABNF or as a rule table — type some input, and watch tabnas build the tree and the value, live in your browser." wide>
+<Base title="Playground" description="Write ABNF or a rule table, parse sample input, and inspect the syntax tree and value in your browser." wide>
   <div class="pg-head">
     <h1 id="playground">Playground<a class="heading-anchor" href="#playground" aria-hidden="true" tabindex="-1">#</a></h1>
-    <p>Write a grammar, type some input, and see what tabnas makes of it — the
+    <p>Write a grammar, type some input, and see what tabnas makes of it: the
       syntax tree and the value your actions build. Runs the real
       <code>@tabnas/parser</code> and <code>@tabnas/abnf</code> in your browser.</p>
 
@@ -58,8 +58,8 @@ import Base from "../layouts/Base.astro";
     </section>
   </div>
 
-  <p class="foot">Everything runs client-side — nothing is sent anywhere. The
-    share button encodes the grammar and input in the URL.</p>
+  <p class="foot">Parsing runs in your browser. The share button puts the grammar and input
+    in the URL fragment, so anyone with the link can read them.</p>
 </Base>
 
 <script>
@@ -204,7 +204,7 @@ import Base from "../layouts/Base.astro";
       b.classList.toggle("on", on);
       b.setAttribute("aria-pressed", String(on));
     }
-    ghint.textContent = next === "abnf" ? "(ABNF)" : "(JS object — passed to tn.grammar)";
+    ghint.textContent = next === "abnf" ? "(ABNF)" : "(JS object passed to tn.grammar)";
     if (rerun) run();
   }
 
@@ -304,7 +304,7 @@ import Base from "../layouts/Base.astro";
     syncUrl();
 
     if (blocked) {
-      setStatus("warn", "Not run — shared JS grammar");
+      setStatus("warn", "Not run: shared JS grammar");
       clearResult();
       return;
     }

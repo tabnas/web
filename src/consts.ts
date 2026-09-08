@@ -3,9 +3,8 @@
 export const SITE_TITLE = "tabnas";
 export const SITE_TAGLINE = "An extensible parsing engine, and a compile target for agents";
 export const SITE_DESCRIPTION =
-  "tabnas is a parsing engine for any language. Grammars are data: you extend " +
-  "one that already works instead of starting over, and an agent can write " +
-  "one directly.";
+  "tabnas runs extensible grammars as rule tables. Build on existing plugins, " +
+  "compile ABNF, or define a grammar directly with data and actions.";
 
 // Irish: "Tábla na nAistrithe" — a table of translations (i.e. a grammar).
 export const SITE_MOTTO = "Tábla na nAistrithe";
@@ -43,7 +42,7 @@ export const HOWTO_GROUPS: { name: string; blurb: string }[] = [
   {
     name: "Composing grammars",
     blurb:
-      "Assemble a language out of pieces that already work — other sources, " +
+      "Assemble a language out of pieces that already work: other sources, " +
       "expression syntax, and plugins that take options.",
   },
   {
@@ -55,12 +54,12 @@ export const HOWTO_GROUPS: { name: string; blurb: string }[] = [
   {
     name: "Feeding the lexer",
     blurb:
-      "Everything that happens before the rules run — the tokens your " +
+      "Everything that happens before the rules run: the tokens your " +
       "language needs, and the ones it should throw away.",
   },
   {
     name: "Working on a grammar",
-    blurb: "Seeing what a grammar does, telling the reader what went wrong, and keeping it honest.",
+    blurb: "Inspect a grammar, explain parse errors, and test its behaviour.",
   },
 ];
 
@@ -83,19 +82,19 @@ export const AGENT_NAV: { href: string; label: string; blurb: string }[] = [
     href: "/agents/",
     label: "Agents",
     blurb:
-      "how to build with tabnas — the format to emit, the constraints, how to verify your work",
+      "how to build with tabnas: the format to emit, the constraints, how to verify your work",
   },
   {
     href: "/skills/",
     label: "Skills",
     blurb:
-      "portable Agent Skills for authoring, debugging, testing and shipping grammars — one Agent Plugins package, installable in Claude Code, with a page per skill at /skills/<name>",
+      "portable Agent Skills for authoring, debugging, testing and shipping grammars: one Agent Plugins package, installable in Claude Code, with a page per skill at /skills/<name>",
   },
   {
     href: "/mcp/",
     label: "MCP",
     blurb:
-      "connect an agent over MCP — local stdio or hosted, dev.tabnas/mcp in the official registry, and the same tools as the `tabnas` command-line tool",
+      "connect an agent over MCP: local stdio or hosted, dev.tabnas/mcp in the official registry, and the same tools as the `tabnas` command-line tool",
   },
   {
     href: "/errors/",
@@ -107,7 +106,7 @@ export const AGENT_NAV: { href: string; label: string; blurb: string }[] = [
     href: "/api/",
     label: "API",
     blurb:
-      "every machine-readable endpoint this site serves, described by an OpenAPI 3.1 document at /openapi.json — plus markdown content negotiation, and the shape of an error response",
+      "every machine-readable endpoint this site serves, described by an OpenAPI 3.1 document at /openapi.json: plus markdown content negotiation, and the shape of an error response",
   },
   {
     href: "/versions.json",
@@ -191,25 +190,25 @@ export const PACKAGES: {
   go: boolean;
 }[] = [
   // The engine.
-  { name: "parser", tier: "engine", version: "0.8.11", npm: true, go: true,
-    blurb: "The engine — a pluggable, rule-based parsing machine and a uniform syntax tree." },
+  { name: "parser", tier: "engine", version: "0.9.0", npm: true, go: true,
+    blurb: "The engine: a pluggable, rule-based parsing machine and a uniform syntax tree." },
 
   // Grammar authoring and inspection.
-  { name: "abnf", tier: "tooling", version: "0.4.6", npm: true, go: true,
+  { name: "abnf", tier: "tooling", version: "0.4.7", npm: true, go: true,
     blurb: "Compile RFC 5234 ABNF straight into a working grammar." },
   { name: "bnf", tier: "tooling", version: "0.1.9", npm: true, go: true,
     blurb: "The shared BNF-family compiler behind abnf, ebnf and gbnf." },
   { name: "debug", tier: "tooling", version: "0.3.5", npm: true, go: true,
-    blurb: "Inspect a live grammar — describe it, render it back as ABNF." },
+    blurb: "Inspect a live grammar: describe it, render it back as ABNF." },
   { name: "railroad", tier: "tooling", version: "0.3.5", npm: true, go: true,
     blurb: "Render railroad (syntax) diagrams from a grammar." },
   { name: "support", tier: "tooling", version: "0.3.3", npm: true, go: true,
-    blurb: "Shared .tsv fixture loaders and the error-code census helpers — the machinery behind every repo's two-runtime specs." },
+    blurb: "Shared .tsv fixture loaders and the error-code census helpers: the machinery behind every repo's two-runtime specs." },
 
   // Agent tooling. TypeScript-only — tooling over the engine, not a parity
   // package, so there is no Go module (the only entry with go: false).
   { name: "mcp", tier: "agent", version: "0.1.13", npm: true, go: false,
-    blurb: "The MCP server and the unified tabnas CLI — the same seven operations from one core, listed in the MCP registry as dev.tabnas/mcp." },
+    blurb: "The MCP server and the unified tabnas CLI: the same seven operations from one core, listed in the MCP registry as dev.tabnas/mcp." },
 
   // Languages and data formats.
   { name: "json", tier: "grammar", version: "0.5.6", npm: true, go: true,
@@ -227,18 +226,18 @@ export const PACKAGES: {
   { name: "ini", tier: "grammar", version: "0.5.6", npm: true, go: true,
     blurb: "INI files." },
   { name: "csv", tier: "grammar", version: "0.5.6", npm: true, go: true,
-    blurb: "Delimited records — CSV, TSV, RFC 4180 quoting — into objects or arrays." },
+    blurb: "Delimited records (CSV, TSV, RFC 4180 quoting) into objects or arrays." },
   { name: "xml", tier: "grammar", version: "0.7.6", npm: true, go: true,
     blurb: "XML." },
   // Was a stub until 0.5.0 (2026-08-06), which replaced the parser outright
   // and took it from roughly 40% of CommonMark to the full 652/652 spec
   // suite. The blurb said "not yet implemented" for as long as that was true.
   { name: "markdown", tier: "grammar", version: "0.7.3", npm: true, go: true,
-    blurb: "Markdown — the full CommonMark spec, 652/652 on the reference suite." },
+    blurb: "Markdown: the full CommonMark spec, 652/652 on the reference suite." },
   { name: "css", tier: "grammar", version: "0.5.5", npm: true, go: true,
     blurb: "CSS, into an AST that preserves declaration order and duplicate properties." },
   { name: "c", tier: "grammar", version: "0.5.5", npm: true, go: true,
-    blurb: "C source, into a concrete syntax tree — every token, comment, and macro kept as-is." },
+    blurb: "C source, into a concrete syntax tree: every token, comment, and macro kept as-is." },
   { name: "proto", tier: "grammar", version: "0.4.5", npm: true, go: true,
     blurb: "Protocol Buffers .proto IDL (proto2, proto3, editions 2023/2024)." },
   { name: "zon", tier: "grammar", version: "0.5.5", npm: true, go: true,
@@ -246,21 +245,21 @@ export const PACKAGES: {
   { name: "feed", tier: "grammar", version: "0.6.6", npm: true, go: true,
     blurb: "RSS (0.90–2.0) and Atom (0.3, 1.0), normalised to one Atom-shaped result." },
   { name: "chess", tier: "grammar", version: "0.1.6", npm: true, go: true,
-    blurb: "PGN and SAN — chess games and moves, tag pairs, variations and annotations." },
+    blurb: "PGN and SAN: chess games and moves, tag pairs, variations and annotations." },
   { name: "gbnf", tier: "grammar", version: "0.1.7", npm: true, go: true,
-    blurb: "llama.cpp GBNF — check text against a constrained-decoding grammar, with no model." },
+    blurb: "llama.cpp GBNF: check text against a constrained-decoding grammar, with no model." },
 
   // Syntax plugins that layer onto a host grammar.
   { name: "expr", tier: "plugin", version: "0.5.7", npm: true, go: true,
-    blurb: "Pratt-parser expressions — infix, prefix, suffix, ternary, with configurable precedence." },
+    blurb: "Pratt-parser expressions: infix, prefix, suffix, ternary, with configurable precedence." },
   { name: "directive", tier: "plugin", version: "0.5.5", npm: true, go: true,
-    blurb: "Directive syntax — token sequences like @name or add<1,2> that trigger custom parsing." },
+    blurb: "Directive syntax: token sequences like @name or add<1,2> that trigger custom parsing." },
   { name: "hoover", tier: "plugin", version: "0.3.5", npm: true, go: true,
-    blurb: "String hoovering — block-delimited strings with unquoted internal spaces." },
+    blurb: "String hoovering: block-delimited strings with unquoted internal spaces." },
   { name: "path", tier: "plugin", version: "0.3.5", npm: true, go: true,
     blurb: "Track the property path to each value as it is parsed." },
   { name: "multisource", tier: "plugin", version: "0.5.5", npm: true, go: true,
-    blurb: "Merge multiple sources into one parse — a marked path is resolved and spliced in place." },
+    blurb: "Merge multiple sources into one parse: a marked path is resolved and spliced in place." },
 
   // Command line.
   { name: "jsonic-cli", tier: "cli", version: "0.5.5", npm: true, go: true,

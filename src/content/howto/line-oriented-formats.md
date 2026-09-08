@@ -1,6 +1,6 @@
 ---
-title: Parse a line-oriented format
-description: Make newlines significant — records, sections and one-statement-per-line syntax.
+title: "Parse a line-oriented format"
+description: "Make newlines significant: records, sections and one-statement-per-line syntax."
 group: Shaping the parse
 order: 3
 packages: ["csv"]
@@ -27,8 +27,7 @@ tn.options({
 })
 ```
 
-From that point `#LN` arrives as an ordinary token that your rules must handle
-— including in places you did not think about, which is why line-oriented
+From that point `#LN` arrives as an ordinary token that your rules must handle, including in places you did not think about, which is why line-oriented
 grammars tend to have an explicit blank-line alternate.
 
 ## Know what a newline token is
@@ -110,7 +109,7 @@ becomes `undefined` on the second line, and the failure looks like a data bug
 rather than a grammar bug.
 
 **`#ZZ` gets its own alternate.** A line-oriented grammar has to say what
-end-of-input means, in both phases — otherwise a file with no trailing newline
+end-of-input means, in both phases: otherwise a file with no trailing newline
 parses differently from one with.
 
 **Blank lines are an alternate, not an accident.** `{ s: '#LN', r: 'line' }`
@@ -122,7 +121,7 @@ collide. `r.u` is per-rule user data, which is why the key can sit there
 between the open and close phases of the same line.
 
 `#VAL` is the built-in token set covering number, string, text and value
-literals, and `resolveVal` turns the matched token into a real value — so
+literals, and `resolveVal` turns the matched token into a real value, so
 `5432` is a number and `true` is a boolean without any work.
 
 ## The reference solution: CSV
@@ -157,7 +156,7 @@ new Tabnas().use(jsonic).use(Csv, { record: { separators: ';' } }).parse('a,b;1,
 ```
 
 For very large inputs, `stream` hands each record to a callback instead of
-building an array — see
+building an array: see
 [writing a parameterised parser](/how-to/parameterised-parsers/).
 
 ## What this costs
@@ -170,8 +169,8 @@ and the contents second.
 
 ## See also
 
-- [Handle comments and whitespace](/how-to/comments-and-whitespace/) — the other
+- [Handle comments and whitespace](/how-to/comments-and-whitespace/): the other
   two members of `IGNORE`.
-- [Choose between alternates](/how-to/choose-between-alternates/) — `r` versus
+- [Choose between alternates](/how-to/choose-between-alternates/): `r` versus
   `p`, and the empty alternate.
-- [@tabnas/csv](https://github.com/tabnas/csv) — the grammar, and every option.
+- [@tabnas/csv](https://github.com/tabnas/csv): the grammar, and every option.
