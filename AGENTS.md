@@ -141,16 +141,22 @@ would show as a flagged move on the board rather than a wrong position.
 The section under the chess board parses version strings with
 `@tabnas/semver` in the reader's browser, from two editable boxes: a
 `simple` one holding plain releases and a `complex` one holding the cases
-that separate a parser from a pattern match. Under the verdicts is the
-accepted versions run through the plugin's `compare` and
-`Array.prototype.sort` — the specification's section 11, which the grammar
-has nothing to say about.
+that separate a parser from a pattern match. Each box has its **own
+verdict column** beneath it, on the same grid tracks, so a row sits under
+the box its line came from. Spanning both, below them, is the accepted
+versions run through the plugin's `compare` and `Array.prototype.sort` —
+the specification's section 11, which the grammar has nothing to say
+about.
 
 Two things to keep in mind when editing it:
 
 - **One engine instance for the section**, unlike gbnf, which builds a fresh
   one per compile. The semver grammar is fixed, so no edit can change the
   rule set, and compiling the embedded ABNF is the expensive step.
+- **The strip reads its operator off `compare`, never assumes `<`.** Two
+  versions differing only in build metadata rank EQUAL, and printing `<`
+  between them would have the strip contradict the paragraph under it.
+  Type `1.0.0+a` and `1.0.0+b` into either box to see the `=`.
 - **`JSON.stringify` cannot render the value.** An integer above
   `Number.MAX_SAFE_INTEGER` comes back as a `bigint` and `stringify` throws
   on one, which is why the demo formats the value by hand. The seeded
@@ -284,8 +290,12 @@ reached disk, the index came out empty, and the search box disabled itself with
 
 ## Build & test
 
-Node **22.18 or newer** (the tests import `.ts` sources directly, and
-unflagged type stripping landed in 22.18).
+Node **22.19 or newer**. The tests import `.ts` sources directly and
+unflagged type stripping landed in 22.18, which set the floor for a long
+time; it is 22.19 now because `unifont` (Astro's font support) resolves
+`undici@8.10.2`, which declares `node >=22.19.0`. A build dependency the
+lockfile actually installs decides the real minimum, so the declared one
+follows it rather than the other way round.
 
 ```bash
 npm install

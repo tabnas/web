@@ -184,7 +184,7 @@ const blurb = (id: string): string => {
         {SECTIONS.map((s) => (
           <li>
             <a href={`#${s.id}`}>{s.label}</a>
-            <span>{s.blurb}</span>
+            <span>{s.blurb}.</span>
           </li>
         ))}
       </ul>
@@ -276,7 +276,10 @@ const blurb = (id: string): string => {
             <textarea data-sv-complex spellcheck="false" rows="6">{SEMVER_COMPLEX}</textarea>
           </label>
         </div>
-        <output data-sv-out class="sv-out"></output>
+        <div class="sv-outs">
+          <output data-sv-out="simple" class="sv-out"></output>
+          <output data-sv-out="complex" class="sv-out"></output>
+        </div>
         <p class="sv-order" data-sv-order></p>
       </div>
       <p class="caption">
@@ -321,9 +324,8 @@ const blurb = (id: string): string => {
         <code>compare</code> sits beside the parser as an ordinary function
         over parsed values, and the strip under the verdicts is the accepted
         lines above passed through it and
-        <code>Array.prototype.sort</code>. The package is new, at 0.0.2, and
-        that corpus is the reason to trust it rather than its time in
-        service.
+        <code>Array.prototype.sort</code>. The package is new, and that
+        corpus is the reason to trust it rather than its time in service.
       </p>
     </section>
 
@@ -477,7 +479,10 @@ const blurb = (id: string): string => {
   if (root) {
     const simpleEl = root.querySelector("[data-sv-simple]");
     const complexEl = root.querySelector("[data-sv-complex]");
-    const outEl = root.querySelector("[data-sv-out]");
+    const outEls = {
+      simple: root.querySelector('[data-sv-out="simple"]'),
+      complex: root.querySelector('[data-sv-out="complex"]'),
+    };
     const orderEl = root.querySelector("[data-sv-order]");
 
     const tn = new Tabnas().use(Semver);
@@ -503,37 +508,47 @@ const blurb = (id: string): string => {
       ", build: [" + v.build.map((x) => JSON.stringify(x)).join(", ") + "] }";
 
     const run = () => {
-      const lines = [
-        ...simpleEl.value.split("\n"),
-        ...complexEl.value.split("\n"),
-      ].filter((s) => "" !== s);
-
+      // A verdict column per input box, so a row sits under the box its
+      // line came from. The two are parsed in box order, and the ranking
+      // below still spans both, because precedence is not per box.
       const parsed = [];
-      const rows = lines.map((src) => {
-        try {
-          const v = tn.parse(src);
-          parsed.push(v);
-          return row("accept", src, value(v));
-        } catch (e) {
-          return row("reject", src, oneLine(e));
-        }
-      });
-      outEl.replaceChildren(...rows);
+      const verdicts = (el) =>
+        el.value
+          .split("\n")
+          .filter((s) => "" !== s)
+          .map((src) => {
+            try {
+              const v = tn.parse(src);
+              parsed.push(v);
+              return row("accept", src, value(v));
+            } catch (e) {
+              return row("reject", src, oneLine(e));
+            }
+          });
+
+      outEls.simple.replaceChildren(...verdicts(simpleEl));
+      outEls.complex.replaceChildren(...verdicts(complexEl));
 
       // compare is a consistent comparator, so sort takes it as it is.
       // Versions that differ only in build metadata compare 0 and keep the
       // order they were given, which is what the specification asks for.
+      //
+      // The separator has to be read off compare, not assumed: two versions
+      // that differ only in build metadata rank EQUAL, and printing `<`
+      // between them would have the strip contradict the paragraph under it
+      // saying build metadata carries no weight. Type `1.0.0+a` and
+      // `1.0.0+b` into either box to see the `=`.
+      const ranked = parsed.sort(compare);
       orderEl.replaceChildren(
-        ...parsed
-          .sort(compare)
-          .map(format)
-          .flatMap((s, i) => {
-            const el = document.createElement("code");
-            el.textContent = s;
-            // A no-break space before the operator, so a line can only wrap
-            // after a `<` and never begin with one.
-            return 0 === i ? [el] : [document.createTextNode("\u00a0< "), el];
-          })
+        ...ranked.flatMap((v, i) => {
+          const el = document.createElement("code");
+          el.textContent = format(v);
+          if (0 === i) return [el];
+          // A no-break space before the operator, so a line can only wrap
+          // after it and never begin with one.
+          const op = 0 === compare(ranked[i - 1], v) ? "\u00a0= " : "\u00a0< ";
+          return [document.createTextNode(op), el];
+        })
       );
     };
 
@@ -769,8 +784,11 @@ const blurb = (id: string): string => {
     font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
     letter-spacing: 0.1em; color: var(--ink-mute);
   }
+  /* border-box, or `width: 100%` means 100% of the track PLUS the padding
+     and border: the textareas came out 440px inside a 409px column and hung
+     31px past everything laid out beneath them on the same grid. */
   .gbnf textarea, .sv textarea {
-    width: 100%; resize: vertical;
+    width: 100%; box-sizing: border-box; resize: vertical;
     font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5;
     color: var(--ink); background: var(--surface);
     border: 1px solid var(--border); border-radius: 10px;
@@ -780,6 +798,17 @@ const blurb = (id: string): string => {
 
   .gbnf-out, .sv-out { display: grid; gap: 0.3rem; margin-top: 0.9rem; }
   .gbnf-out:empty, .sv-out:empty { display: none; }
+
+  /* One verdict column per input box, on the same track sizes as .sv-panes
+     so a row sits under the box its line came from. align-items:start,
+     because the two columns hold different numbers of rows and a stretched
+     shorter column would space its rows out to match the taller one. */
+  .sv-outs {
+    display: grid; gap: 0.9rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  .sv-outs .sv-out { margin-top: 0; }
 
   /* EVERY verdict row is built by document.createElement, so none of them
      carries the data-astro-cid-* attribute Astro adds to elements written
@@ -836,7 +865,7 @@ const blurb = (id: string): string => {
        description beside it. */
     .toc ul { grid-template-columns: minmax(0, 1fr); }
     .toc li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
-    .gbnf-panes, .sv-panes { grid-template-columns: minmax(0, 1fr); }
+    .gbnf-panes, .sv-panes, .sv-outs { grid-template-columns: minmax(0, 1fr); }
     .gbnf :global(.gbnf-row), .sv :global(.sv-row) {
       grid-template-columns: minmax(0, 1fr); gap: 0.15rem;
     }
