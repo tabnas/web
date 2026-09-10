@@ -51,6 +51,45 @@ bump pre-1.0 can break things; the playground is the part most likely to go.
 `/releases` table (the live values come from the npm registry at runtime, with
 these as the fallback). Update them in the same commit.
 
+### The engine is held at `parser@0.9.0`, deliberately
+
+`@tabnas/parser@0.9.1` is published and this site does **not** take it. It
+regresses expression precedence in `@tabnas/expr`, on both `expr@0.5.7` and
+`expr@0.5.8`: `1+2*3` parses to `["*", 2, 3]`, dropping the `1 +` outright.
+The engine is the variable, not expr — hold expr and move the parser and it
+breaks; move expr and hold the parser and it does not.
+
+```bash
+npm run test-examples   # 98 runs green on 0.9.0; four fail on 0.9.1
+```
+
+The four are `docs-plugins-expr`, `docs-plugins-evaluate`,
+`docs-plugins-config` and `docs-extending-plugin`, all on the TypeScript side
+only. Their expected output is what the specification of an infix operator
+says it should be, so the fix is upstream and not on this page: do not restate
+those examples to match `0.9.1`. That is the same mistake as the `abnf@0.2.3`
+one above, which is what this repository already has one cautionary tale
+about.
+
+`@tabnas/semver` declares `parser >= 0.9.1` and `abnf >= 0.4.8` as peers, and
+it behaves identically on `0.9.0` / `0.4.7` — the version floor is not
+exercised by anything the site does. So `package.json` carries an
+`overrides` block pinning semver's view of those two peers to what the site
+installs, and a plain `npm install` resolves without flags:
+
+```json
+"overrides": { "@tabnas/semver": { "@tabnas/parser": "0.9.0", "@tabnas/abnf": "0.4.7" } }
+```
+
+**Delete that block and take `parser@latest` in the same commit**, the moment
+a published parser gets `npm run test-examples` back to green.
+
+Exactly three pins are held: `parser`, and `abnf` and `bnf` with it —
+`bnf@0.1.11` and `abnf@0.4.8` both require `parser >= 0.9.1`, so the three
+can only move together. Everything else is current: `expr`, `gbnf`, `json`
+and `jsonic` all declare `parser >= 0`, and their latest releases are green
+on `0.9.0`. Check that before assuming a package is stuck.
+
 ## Repository map
 
 | Path | What it is |
@@ -96,6 +135,30 @@ played and carries no copyright of its own — the annotations written about a
 game do, and there are none here — and an 1851 game settles it either way.
 Every ply is checked against the legal move generator in `chess/web`; a typo
 would show as a flagged move on the board rather than a wrong position.
+
+## The semver demo on /examples
+
+The section under the chess board parses version strings with
+`@tabnas/semver` in the reader's browser, from two editable boxes: a
+`simple` one holding plain releases and a `complex` one holding the cases
+that separate a parser from a pattern match. Under the verdicts is the
+accepted versions run through the plugin's `compare` and
+`Array.prototype.sort` — the specification's section 11, which the grammar
+has nothing to say about.
+
+Two things to keep in mind when editing it:
+
+- **One engine instance for the section**, unlike gbnf, which builds a fresh
+  one per compile. The semver grammar is fixed, so no edit can change the
+  rule set, and compiling the embedded ABNF is the expensive step.
+- **`JSON.stringify` cannot render the value.** An integer above
+  `Number.MAX_SAFE_INTEGER` comes back as a `bigint` and `stringify` throws
+  on one, which is why the demo formats the value by hand. The seeded
+  `9007199254740992.0.0` is there to keep that path exercised on every page
+  load; do not "simplify" it back to `JSON.stringify`.
+
+Every seeded line's verdict and value is checked before it ships, the same
+as everywhere else — see **Verifying code examples**.
 
 ## Tone: this is a project, not a product
 

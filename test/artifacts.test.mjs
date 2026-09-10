@@ -576,6 +576,24 @@ describe('internal links are canonical', () => {
     // never emitted one.
     assert.deepEqual([...new Set(missing.map((m) => m.split(': ')[1]))], [], 'links to pages that do not exist')
   })
+
+  // A same-page `#link` that lands nowhere scrolls nowhere, and nothing
+  // upstream catches it: the heading anchors rehype generates are correct by
+  // construction, but a hand-written list of section links — /examples has
+  // one — is a second copy of ids that are public URLs, and a renamed
+  // heading breaks it silently.
+  test('every same-page fragment link resolves to an element on that page', () => {
+    const dangling = []
+    for (const page of pages) {
+      const { document } = parseHTML(read(page))
+      for (const a of document.querySelectorAll('a[href^="#"]')) {
+        const id = decodeURIComponent(a.getAttribute('href').slice(1))
+        if ('' === id || 'top' === id) continue
+        if (!document.getElementById(id)) dangling.push(`${page}: #${id}`)
+      }
+    }
+    assert.deepEqual(dangling, [], 'fragment link(s) with no target')
+  })
 })
 
 // A description longer than a search result can show is truncated mid-phrase

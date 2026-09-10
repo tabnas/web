@@ -24,6 +24,30 @@ const IMMORTAL = `[Event "Casual game"]
 13. h5 Qg5 14. Qf3 Ng8 15. Bxf4 Qf6 16. Nc3 Bc5 17. Nd5 Qxb2 18. Bd6 Bxg1
 19. e5 Qxa1+ 20. Ke2 Na6 21. Nxg7+ Kd8 22. Qf6+ Nxf6 23. Be7# 1-0`;
 
+// Two boxes of version strings, seeded so the demo shows both what semver
+// makes easy and what it makes hard. Every line was run through
+// @tabnas/semver before it went on the page: the nine accepts produce the
+// values the prose describes, `v1.2.3` is the one rejection, and the
+// precedence strip comes out
+//
+//   0.9.0 < 1.0.0-alpha.beta.11+exp.sha.5114f85 < 1.0.0-beta.2
+//         < 1.0.0-beta.11 < 1.0.0-x-y-z.-- < 1.0.0 < 1.2.3 < 2.0.0
+//         < 9007199254740992.0.0
+//
+// which is the whole of section 11 in one line: numeric identifiers sort by
+// value (beta.2 before beta.11, not after), every pre-release sorts below
+// the release it leads to, and build metadata counts for nothing.
+const SEMVER_SIMPLE = ["0.9.0", "1.0.0", "1.2.3", "2.0.0"].join("\n");
+
+const SEMVER_COMPLEX = [
+  "1.0.0-beta.2",
+  "1.0.0-beta.11",
+  "1.0.0-alpha.beta.11+exp.sha.5114f85",
+  "1.0.0-x-y-z.--",
+  "9007199254740992.0.0",
+  "v1.2.3",
+].join("\n");
+
 // A constrained-decoding grammar small enough to read whole, and five
 // samples that between them show both directions. Every verdict below was
 // checked against @tabnas/gbnf before it went on the page: the two accepts
@@ -88,22 +112,51 @@ const PROJECTS = [
     ],
   },
 ];
+
+// The links at the top of the page, in page order. Each id is the same
+// string the matching <Heading id> carries below, and those ids are public
+// URLs — so a rename is two edits, here and at the heading. The two project
+// entries are read from PROJECTS rather than repeated, and
+// test/artifacts.test.mjs fails the build if any link on the site points at
+// a fragment no element on that page has.
+const SECTIONS: { id: string; label: string }[] = [
+  { id: "chess", label: "chess" },
+  { id: "semver", label: "semver" },
+  { id: "gbnf", label: "gbnf" },
+  ...PROJECTS.map((p) => ({ id: p.id, label: p.name })),
+  { id: "the-grammars-themselves", label: "The grammars themselves" },
+  { id: "built-something", label: "Built something?" },
+];
 ---
 
 <Base
   wide
   title="Examples"
-  description="Real languages built on the tabnas engine: a chess game you can step through, a GBNF grammar you can test in the page, aontu in TS and boru in Go."
+  description="Real languages built on the tabnas engine: a chess game to step through, semver strings parsed and ranked, a GBNF grammar to test, aontu in TS and boru in Go."
 >
   <article class="ex">
     <Heading level={1} id="examples">Examples</Heading>
     <p class="lede">
-      Two small languages running in this page, and two large ones you can go
-      and read. One parses chess notation, the other the grammars that
-      constrain what a language model may say. Of the large ones, one composes
-      existing grammar plugins into a configuration language, and the other
-      builds a full programming language and its toolchain.
+      Three small languages running in this page, and two large ones you can
+      go and read. One parses chess notation, one the version strings on every
+      release page, and one the grammars that constrain what a language model
+      may say. Of the large ones, one composes existing grammar plugins into a
+      configuration language, and the other builds a full programming language
+      and its toolchain.
     </p>
+
+    {/* Section links. A <p> rather than a heading, and marked
+        data-pagefind-ignore, for the reason the /how-to index gives: these
+        labels repeat every heading on the page, and indexing them once more
+        would put the same seven words in front of every result. */}
+    <nav class="toc" aria-label="Sections on this page" data-pagefind-ignore>
+      <p class="toc-head">On this page</p>
+      <ul>
+        {SECTIONS.map((s) => (
+          <li><a href={`#${s.id}`}>{s.label}</a></li>
+        ))}
+      </ul>
+    </nav>
 
     <section class="proj">
       <Heading level={2} id="chess">chess</Heading>
@@ -158,6 +211,87 @@ const PROJECTS = [
         legal move generator that resolves each parsed move against the
         position it is played in. Parsing the notation and playing the game are
         two jobs, and only one of them is the engine's.
+      </p>
+    </section>
+
+    <section class="proj">
+      <Heading level={2} id="semver">semver</Heading>
+      <p class="tagline">Semantic Versioning 2.0.0: the version strings on every release page</p>
+
+      <dl class="meta">
+        <div><dt>Runtime</dt><dd>TypeScript · also ported to Go</dd></div>
+        <div>
+          <dt>Built with</dt>
+          <dd class="pkgs">
+            <a class="chip" href={REPO("parser")} target="_blank" rel="noopener">@tabnas/parser</a>
+            <a class="chip" href={REPO("abnf")} target="_blank" rel="noopener">@tabnas/abnf</a>
+          </dd>
+        </div>
+        <div>
+          <dt>Source</dt>
+          <dd><a href={REPO("semver")} target="_blank" rel="noopener">github.com/tabnas/semver</a></dd>
+        </div>
+      </dl>
+
+      <div class="sv" data-sv>
+        <div class="sv-panes">
+          <label>
+            <span>simple</span>
+            <textarea data-sv-simple spellcheck="false" rows="4">{SEMVER_SIMPLE}</textarea>
+          </label>
+          <label>
+            <span>complex</span>
+            <textarea data-sv-complex spellcheck="false" rows="6">{SEMVER_COMPLEX}</textarea>
+          </label>
+        </div>
+        <output data-sv-out class="sv-out"></output>
+        <p class="sv-order" data-sv-order></p>
+      </div>
+      <p class="caption">
+        Both boxes are <strong>editable</strong>, and every line re-parses as
+        you type. The left one holds ordinary releases. The right one holds
+        the cases that separate a parser from a pattern match: an identifier
+        that sorts by value rather than by character, one made of nothing but
+        hyphens, an integer past <code>Number.MAX_SAFE_INTEGER</code>, and a
+        <code>v</code> prefix the specification does not allow.
+      </p>
+
+      <p>
+        An accepted line comes back as five fields rather than as a string.
+        <code>1.0.0-alpha.beta.11+exp.sha.5114f85</code> gives a core of
+        <code>1</code>, <code>0</code>, <code>0</code>, a
+        <code>prerelease</code> of <code>["alpha", "beta", 11]</code> and a
+        <code>build</code> of <code>["exp", "sha", "5114f85"]</code>. The
+        <code>11</code> is a number and <code>"beta"</code> a string because
+        the specification ranks the two kinds by different rules, so the
+        difference has to survive the parse. An integer above
+        <code>2^53 - 1</code> comes back as a <code>bigint</code> rather than
+        rounded to the nearest double.
+      </p>
+      <p>
+        The specification publishes its grammar, in BNF. The plugin
+        transcribes it into RFC 5234 ABNF, one production per production and
+        under the same names, and
+        <a href={REPO("abnf")} target="_blank" rel="noopener">@tabnas/abnf</a>
+        compiles that text into the engine's rule set when the plugin is
+        installed. Nothing in the plugin's code decides what a valid version
+        is. That the result accepts exactly what semver.org accepts is
+        checked rather than asserted: both runtimes generate a corpus of
+        58,449 strings and compare every verdict, every value and every
+        round trip against the regular expression semver.org publishes for
+        the purpose.
+      </p>
+      <p>
+        Ranking versions is a second job. Section 11 puts
+        <code>1.0.0-beta.2</code> below <code>1.0.0-beta.11</code>, puts any
+        pre-release below the release it leads to, and gives build metadata
+        no weight at all. A grammar can state none of that. So
+        <code>compare</code> sits beside the parser as an ordinary function
+        over parsed values, and the strip under the verdicts is the accepted
+        lines above passed through it and
+        <code>Array.prototype.sort</code>. The package is new, at 0.0.2, and
+        that corpus is the reason to trust it rather than its time in
+        service.
       </p>
     </section>
 
@@ -298,6 +432,101 @@ const PROJECTS = [
   import "@tabnas/chess-view";
 </script>
 
+{/* The semver demo. One engine instance for the page: unlike gbnf, the
+    grammar is fixed, so nothing an edit can do changes the rule set, and
+    compiling the ABNF is the expensive step. Without JavaScript the two
+    textareas still show the version strings, and the prose says what the
+    parser makes of them. */}
+<script>
+  import { Tabnas } from "@tabnas/parser";
+  import { Semver, compare, format } from "@tabnas/semver";
+
+  const root = document.querySelector("[data-sv]");
+  if (root) {
+    const simpleEl = root.querySelector("[data-sv-simple]");
+    const complexEl = root.querySelector("[data-sv-complex]");
+    const outEl = root.querySelector("[data-sv-out]");
+    const orderEl = root.querySelector("[data-sv-order]");
+
+    const tn = new Tabnas().use(Semver);
+
+    // Engine diagnostics are coloured for a terminal and run to several
+    // lines. A verdict line is neither.
+    const oneLine = (e) =>
+      String(e && e.message ? e.message : e)
+        .split("\n")[0]
+        .replace(/\u001b\[[0-9;]*m/g, "");
+
+    // JSON.stringify throws on a bigint, and a bigint is exactly what the
+    // interesting line produces. Render the value by hand: an integer as
+    // digits, a numeric pre-release identifier as digits, an alphanumeric
+    // one quoted — which is the distinction the value exists to record.
+    const num = (n) => ("bigint" === typeof n ? n + "n" : String(n));
+    const ident = (x) => ("string" === typeof x ? JSON.stringify(x) : num(x));
+    const value = (v) =>
+      "{ major: " + num(v.major) +
+      ", minor: " + num(v.minor) +
+      ", patch: " + num(v.patch) +
+      ", prerelease: [" + v.prerelease.map(ident).join(", ") + "]" +
+      ", build: [" + v.build.map((x) => JSON.stringify(x)).join(", ") + "] }";
+
+    const run = () => {
+      const lines = [
+        ...simpleEl.value.split("\n"),
+        ...complexEl.value.split("\n"),
+      ].filter((s) => "" !== s);
+
+      const parsed = [];
+      const rows = lines.map((src) => {
+        try {
+          const v = tn.parse(src);
+          parsed.push(v);
+          return row("accept", src, value(v));
+        } catch (e) {
+          return row("reject", src, oneLine(e));
+        }
+      });
+      outEl.replaceChildren(...rows);
+
+      // compare is a consistent comparator, so sort takes it as it is.
+      // Versions that differ only in build metadata compare 0 and keep the
+      // order they were given, which is what the specification asks for.
+      orderEl.replaceChildren(
+        ...parsed
+          .sort(compare)
+          .map(format)
+          .flatMap((s, i) => {
+            const el = document.createElement("code");
+            el.textContent = s;
+            // A no-break space before the operator, so a line can only wrap
+            // after a `<` and never begin with one.
+            return 0 === i ? [el] : [document.createTextNode("\u00a0< "), el];
+          })
+      );
+    };
+
+    function row(kind, text, why) {
+      const el = document.createElement("div");
+      el.className = "sv-row sv-" + kind;
+      const tag = document.createElement("b");
+      tag.textContent = kind;
+      const body = document.createElement("code");
+      body.textContent = text;
+      el.append(tag, body);
+      if (why) {
+        const note = document.createElement("small");
+        note.textContent = why;
+        el.append(note);
+      }
+      return el;
+    }
+
+    simpleEl.addEventListener("input", run);
+    complexEl.addEventListener("input", run);
+    run();
+  }
+</script>
+
 {/* The gbnf demo. Bundled the same way as chess-view — ordinary pinned
     dependencies, no vendored files. Without JavaScript the two textareas
     still show the grammar and the samples as text, which is the whole
@@ -398,6 +627,30 @@ const PROJECTS = [
   .ex :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
   .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
 
+  /* Section links, laid out as a row that wraps rather than the sticky
+     rail the docs use: this page has no sidebar to put one in, and seven
+     short labels fit on a line or two. */
+  .toc {
+    margin: 1.75rem 0 0; padding: 0.9rem 1.1rem;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .toc-head {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-mute); margin: 0 0 0.5rem;
+  }
+  .toc ul {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem;
+  }
+  .toc li { margin: 0; }
+  .toc a {
+    color: var(--ink-soft); text-decoration: none; font-size: 0.9rem;
+    font-family: var(--font-mono);
+  }
+  .toc a:hover { color: var(--primary); text-decoration: underline; }
+  .toc a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
   .proj { margin-top: 3.5rem; }
   .ex :global(h2) { font-size: 1.8rem; margin: 0 0 0.2rem; font-family: var(--font-mono); }
   .tagline { color: var(--accent); font-family: var(--font-heading); font-style: italic; font-size: 1.1rem; margin: 0 0 1rem; }
@@ -452,47 +705,64 @@ const PROJECTS = [
     margin: 0 0 1.5rem;
   }
 
-  /* The gbnf demo. Two editable boxes and a verdict list, in the same
-     surface-and-border idiom as .meta and .src above. */
-  .gbnf { margin: 0 0 0.6rem; }
-  .gbnf-panes { display: grid; gap: 0.9rem; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .gbnf-panes label { display: grid; gap: 0.35rem; min-width: 0; }
-  .gbnf-panes span {
+  /* The two in-page demos. Editable boxes and a verdict list, in the same
+     surface-and-border idiom as .meta and .src above. The shared rules are
+     written once against both, rather than under a name that would be true
+     of one of them: semver has no grammar box and gbnf has no ordering. */
+  .gbnf, .sv { margin: 0 0 0.6rem; }
+  .gbnf-panes, .sv-panes { display: grid; gap: 0.9rem; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .gbnf-panes label, .sv-panes label { display: grid; gap: 0.35rem; min-width: 0; }
+  .gbnf-panes span, .sv-panes span {
     font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
     letter-spacing: 0.1em; color: var(--ink-mute);
   }
-  .gbnf textarea {
+  .gbnf textarea, .sv textarea {
     width: 100%; resize: vertical;
     font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5;
     color: var(--ink); background: var(--surface);
     border: 1px solid var(--border); border-radius: 10px;
     padding: 0.75rem 0.9rem;
   }
-  .gbnf textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .gbnf textarea:focus-visible, .sv textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
-  .gbnf-out { display: grid; gap: 0.3rem; margin-top: 0.9rem; }
-  .gbnf-out:empty { display: none; }
-  .gbnf-row {
+  .gbnf-out, .sv-out { display: grid; gap: 0.3rem; margin-top: 0.9rem; }
+  .gbnf-out:empty, .sv-out:empty { display: none; }
+  .gbnf-row, .sv-row {
     display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0.6rem;
     align-items: baseline;
     padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 10px;
     background: var(--surface);
   }
-  .gbnf-row b {
+  .gbnf-row b, .sv-row b {
     font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
     letter-spacing: 0.1em;
   }
-  .gbnf-row code { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink); }
-  .gbnf-row small {
+  .gbnf-row code, .sv-row code { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink); }
+  .gbnf-row small, .sv-row small {
     grid-column: 2; font-size: 0.75rem; color: var(--ink-mute);
   }
-  .gbnf-accept b { color: var(--ok, #1d6b3f); }
-  .gbnf-reject b, .gbnf-compile b { color: var(--no, #9a3324); }
+  .gbnf-accept b, .sv-accept b { color: var(--ok, #1d6b3f); }
+  .gbnf-reject b, .gbnf-compile b, .sv-reject b { color: var(--no, #9a3324); }
+
+  /* The precedence strip: the accepted versions in compare() order. It
+     wraps rather than scrolls — the chain is the point of the section, and
+     a strip that runs off the edge hides its own ending on a phone. Each
+     `<` is glued to the version before it by a non-breaking space in the
+     script, so a wrapped line ends on the operator and cannot start with
+     one. */
+  .sv-order {
+    margin: 0.9rem 0 0; padding: 0.55rem 0.9rem;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface); color: var(--ink-mute);
+    font-size: 0.75rem; line-height: 1.9; max-width: none;
+  }
+  .sv-order:empty { display: none; }
+  .sv-order code { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink); }
 
   @media (max-width: 640px) {
     .meta > div { grid-template-columns: 1fr; gap: 0.2rem; }
-    .gbnf-panes { grid-template-columns: minmax(0, 1fr); }
-    .gbnf-row { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
-    .gbnf-row small { grid-column: 1; }
+    .gbnf-panes, .sv-panes { grid-template-columns: minmax(0, 1fr); }
+    .gbnf-row, .sv-row { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+    .gbnf-row small, .sv-row small { grid-column: 1; }
   }
 </style>

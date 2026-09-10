@@ -18,11 +18,12 @@
     "@tabnas/abnf": "0.4.7",
     "@tabnas/bnf": "0.1.9",
     "@tabnas/chess-view": "0.1.4",
-    "@tabnas/expr": "0.5.7",
-    "@tabnas/gbnf": "0.1.7",
-    "@tabnas/json": "0.5.6",
-    "@tabnas/jsonic": "0.6.5",
+    "@tabnas/expr": "0.5.8",
+    "@tabnas/gbnf": "0.1.8",
+    "@tabnas/json": "0.5.7",
+    "@tabnas/jsonic": "0.6.6",
     "@tabnas/parser": "0.9.0",
+    "@tabnas/semver": "0.0.2",
     "astro": "5.16.9",
     "typescript": "5.9.3"
   },
@@ -56,5 +57,11 @@
     "check-prose": "node tools/prose.mjs",
     "prose": "node tools/prose.mjs --vale"
   },
-  "type": "module"
+  "type": "module",
+  "overrides": {
+    "@tabnas/semver": {
+      "@tabnas/parser": "0.9.0",
+      "@tabnas/abnf": "0.4.7"
+    }
+  }
 }

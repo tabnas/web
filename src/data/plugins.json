@@ -416,6 +416,25 @@
       "repository": "https://github.com/tabnas/proto"
     },
     {
+      "name": "@tabnas/semver",
+      "repo": "semver",
+      "description": "Semantic Versioning 2.0.0 (semver.org) parsing for the tabnas engine, compiled from an ABNF grammar.",
+      "base": "@tabnas/abnf",
+      "extensions": [],
+      "errorCodes": [],
+      "clib": {
+        "library": "libtabnassemver",
+        "abi": "v1",
+        "errorCodes": [
+          "grammar",
+          "handle",
+          "internal",
+          "usage"
+        ]
+      },
+      "repository": "https://github.com/tabnas/semver"
+    },
+    {
       "name": "@tabnas/toml",
       "repo": "toml",
       "description": "TOML parsing for the tabnas engine.",

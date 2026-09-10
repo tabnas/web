@@ -211,13 +211,13 @@ export const PACKAGES: {
     blurb: "The MCP server and the unified tabnas CLI: the same seven operations from one core, listed in the MCP registry as dev.tabnas/mcp." },
 
   // Languages and data formats.
-  { name: "json", tier: "grammar", version: "0.5.6", npm: true, go: true,
+  { name: "json", tier: "grammar", version: "0.5.7", npm: true, go: true,
     blurb: "Standard JSON." },
   { name: "jsonc", tier: "grammar", version: "0.5.5", npm: true, go: true,
     blurb: "JSON with comments." },
   { name: "json5", tier: "grammar", version: "0.5.6", npm: true, go: true,
     blurb: "The JSON5 dialect." },
-  { name: "jsonic", tier: "grammar", version: "0.6.5", npm: true, go: true,
+  { name: "jsonic", tier: "grammar", version: "0.6.6", npm: true, go: true,
     blurb: "A dynamic JSON parser that isn't strict and can be customised." },
   { name: "yaml", tier: "grammar", version: "0.5.6", npm: true, go: true,
     blurb: "YAML." },
@@ -246,11 +246,13 @@ export const PACKAGES: {
     blurb: "RSS (0.90–2.0) and Atom (0.3, 1.0), normalised to one Atom-shaped result." },
   { name: "chess", tier: "grammar", version: "0.1.6", npm: true, go: true,
     blurb: "PGN and SAN: chess games and moves, tag pairs, variations and annotations." },
-  { name: "gbnf", tier: "grammar", version: "0.1.7", npm: true, go: true,
+  { name: "semver", tier: "grammar", version: "0.0.2", npm: true, go: true,
+    blurb: "Semantic Versioning 2.0.0, compiled from the specification's own grammar, with precedence." },
+  { name: "gbnf", tier: "grammar", version: "0.1.8", npm: true, go: true,
     blurb: "llama.cpp GBNF: check text against a constrained-decoding grammar, with no model." },
 
   // Syntax plugins that layer onto a host grammar.
-  { name: "expr", tier: "plugin", version: "0.5.7", npm: true, go: true,
+  { name: "expr", tier: "plugin", version: "0.5.8", npm: true, go: true,
     blurb: "Pratt-parser expressions: infix, prefix, suffix, ternary, with configurable precedence." },
   { name: "directive", tier: "plugin", version: "0.5.5", npm: true, go: true,
     blurb: "Directive syntax: token sequences like @name or add<1,2> that trigger custom parsing." },
