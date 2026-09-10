@@ -119,14 +119,43 @@ const PROJECTS = [
 // entries are read from PROJECTS rather than repeated, and
 // test/artifacts.test.mjs fails the build if any link on the site points at
 // a fragment no element on that page has.
-const SECTIONS: { id: string; label: string }[] = [
-  { id: "chess", label: "chess" },
-  { id: "semver", label: "semver" },
-  { id: "gbnf", label: "gbnf" },
-  ...PROJECTS.map((p) => ({ id: p.id, label: p.name })),
-  { id: "the-grammars-themselves", label: "The grammars themselves" },
-  { id: "built-something", label: "Built something?" },
+const SECTIONS: { id: string; label: string; blurb: string }[] = [
+  {
+    id: "chess",
+    label: "chess",
+    blurb: "PGN and SAN: the notation chess games are written in",
+  },
+  {
+    id: "semver",
+    label: "semver",
+    blurb: "Semantic Versioning 2.0.0: the version strings on every release page",
+  },
+  {
+    id: "gbnf",
+    label: "gbnf",
+    blurb: "GBNF: the grammars that constrain what a model may say",
+  },
+  ...PROJECTS.map((p) => ({ id: p.id, label: p.name, blurb: p.tagline })),
+  {
+    id: "the-grammars-themselves",
+    label: "The grammars themselves",
+    blurb: "The packages read as examples in their own right, each extending another",
+  },
+  {
+    id: "built-something",
+    label: "Built something?",
+    blurb: "Where to say so, and why usage is the most useful thing to report",
+  },
 ];
+
+// The blurb is written once, in SECTIONS, and read back here for the
+// section's own tagline. Two copies of the same sentence would drift, and
+// the one under the heading is the one a reader checks the link against.
+const blurb = (id: string): string => {
+  const found = SECTIONS.find((s) => s.id === id);
+  if (!found) throw new Error(`examples: no SECTIONS entry for ${id}`);
+  return found.blurb;
+};
 ---
 
 <Base
@@ -153,14 +182,17 @@ const SECTIONS: { id: string; label: string }[] = [
       <p class="toc-head">On this page</p>
       <ul>
         {SECTIONS.map((s) => (
-          <li><a href={`#${s.id}`}>{s.label}</a></li>
+          <li>
+            <a href={`#${s.id}`}>{s.label}</a>
+            <span>{s.blurb}</span>
+          </li>
         ))}
       </ul>
     </nav>
 
     <section class="proj">
       <Heading level={2} id="chess">chess</Heading>
-      <p class="tagline">PGN and SAN: the notation chess games are written in</p>
+      <p class="tagline">{blurb("chess")}</p>
 
       <dl class="meta">
         <div><dt>Runtime</dt><dd>TypeScript · also ported to Go</dd></div>
@@ -216,7 +248,7 @@ const SECTIONS: { id: string; label: string }[] = [
 
     <section class="proj">
       <Heading level={2} id="semver">semver</Heading>
-      <p class="tagline">Semantic Versioning 2.0.0: the version strings on every release page</p>
+      <p class="tagline">{blurb("semver")}</p>
 
       <dl class="meta">
         <div><dt>Runtime</dt><dd>TypeScript · also ported to Go</dd></div>
@@ -297,7 +329,7 @@ const SECTIONS: { id: string; label: string }[] = [
 
     <section class="proj">
       <Heading level={2} id="gbnf">gbnf</Heading>
-      <p class="tagline">GBNF: the grammars that constrain what a model may say</p>
+      <p class="tagline">{blurb("gbnf")}</p>
 
       <dl class="meta">
         <div><dt>Runtime</dt><dd>TypeScript · also ported to Go, C ABI, Python</dd></div>
@@ -639,17 +671,30 @@ const SECTIONS: { id: string; label: string }[] = [
     font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
     letter-spacing: 0.1em; color: var(--ink-mute); margin: 0 0 0.5rem;
   }
+  /* One section per line: the name, then what that section is. The name
+     column is sized to the longest label rather than a guessed width, so
+     the descriptions line up without a magic number. */
   .toc ul {
     list-style: none; margin: 0; padding: 0;
-    display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem;
+    display: grid; grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.45rem 1.1rem;
   }
-  .toc li { margin: 0; }
+  /* subgrid, so every row's description starts at the same x: the name
+     column is sized once by the longest label on the ul, rather than each
+     row measuring itself and landing somewhere different. The li stays a
+     real box (not display:contents) so the narrow layout below can stack
+     each pair without the rows interleaving. */
+  .toc li {
+    display: grid; grid-column: 1 / -1; grid-template-columns: subgrid;
+    align-items: baseline; margin: 0;
+  }
   .toc a {
     color: var(--ink-soft); text-decoration: none; font-size: 0.9rem;
     font-family: var(--font-mono);
   }
   .toc a:hover { color: var(--primary); text-decoration: underline; }
   .toc a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .toc li span { color: var(--ink-mute); font-size: 0.88rem; }
 
   .proj { margin-top: 3.5rem; }
   .ex :global(h2) { font-size: 1.8rem; margin: 0 0 0.2rem; font-family: var(--font-mono); }
@@ -711,7 +756,15 @@ const SECTIONS: { id: string; label: string }[] = [
      of one of them: semver has no grammar box and gbnf has no ordering. */
   .gbnf, .sv { margin: 0 0 0.6rem; }
   .gbnf-panes, .sv-panes { display: grid; gap: 0.9rem; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .gbnf-panes label, .sv-panes label { display: grid; gap: 0.35rem; min-width: 0; }
+  /* `auto 1fr`, not the default `auto auto`: the two labels are grid items
+     in one row, so both stretch to the taller one, and with two auto rows
+     each shared the slack — which pushed the shorter pane's textarea DOWN
+     and left the two boxes neither the same height nor aligned at the top.
+     Giving the slack to the textarea row alone makes both panes flush at
+     the top and the bottom whatever `rows` each one declares. */
+  .gbnf-panes label, .sv-panes label {
+    display: grid; grid-template-rows: auto 1fr; gap: 0.35rem; min-width: 0;
+  }
   .gbnf-panes span, .sv-panes span {
     font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
     letter-spacing: 0.1em; color: var(--ink-mute);
@@ -727,22 +780,39 @@ const SECTIONS: { id: string; label: string }[] = [
 
   .gbnf-out, .sv-out { display: grid; gap: 0.3rem; margin-top: 0.9rem; }
   .gbnf-out:empty, .sv-out:empty { display: none; }
-  .gbnf-row, .sv-row {
+
+  /* EVERY verdict row is built by document.createElement, so none of them
+     carries the data-astro-cid-* attribute Astro adds to elements written
+     in this file — and a scoped selector matches on that attribute. Plain
+     `.gbnf-row { … }` therefore compiles to a selector nothing on the page
+     can satisfy: the rows had no border, no background and no grid at all,
+     rendering as bare lines of text. The same rule AGENTS.md gives for a
+     child component's elements applies to a script's: reach them with
+     :global(), anchored on the container, which IS in this file and IS
+     scoped, so the escape hatch cannot leak past the demo. */
+  .gbnf :global(.gbnf-row), .sv :global(.sv-row) {
     display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0.6rem;
     align-items: baseline;
     padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 10px;
     background: var(--surface);
   }
-  .gbnf-row b, .sv-row b {
+  .gbnf :global(.gbnf-row b), .sv :global(.sv-row b) {
     font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
     letter-spacing: 0.1em;
   }
-  .gbnf-row code, .sv-row code { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink); }
-  .gbnf-row small, .sv-row small {
+  /* justify-self, because a grid item fills its track by default and the
+     global `code` rule paints a background: without it every verdict's
+     input is a full-width bar rather than a chip the width of the text. */
+  .gbnf :global(.gbnf-row code), .sv :global(.sv-row code) {
+    font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink);
+    justify-self: start; min-width: 0; max-width: 100%; overflow-wrap: anywhere;
+  }
+  .gbnf :global(.gbnf-row small), .sv :global(.sv-row small) {
     grid-column: 2; font-size: 0.75rem; color: var(--ink-mute);
   }
-  .gbnf-accept b, .sv-accept b { color: var(--ok, #1d6b3f); }
-  .gbnf-reject b, .gbnf-compile b, .sv-reject b { color: var(--no, #9a3324); }
+  .gbnf :global(.gbnf-accept b), .sv :global(.sv-accept b) { color: var(--ok, #1d6b3f); }
+  .gbnf :global(.gbnf-reject b), .gbnf :global(.gbnf-compile b),
+  .sv :global(.sv-reject b) { color: var(--no, #9a3324); }
 
   /* The precedence strip: the accepted versions in compare() order. It
      wraps rather than scrolls — the chain is the point of the section, and
@@ -757,12 +827,19 @@ const SECTIONS: { id: string; label: string }[] = [
     font-size: 0.75rem; line-height: 1.9; max-width: none;
   }
   .sv-order:empty { display: none; }
-  .sv-order code { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink); }
+  .sv-order :global(code) { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink); }
 
   @media (max-width: 640px) {
     .meta > div { grid-template-columns: 1fr; gap: 0.2rem; }
+    /* Name over description, one pair per row: at this width a name column
+       wide enough for "The grammars themselves" leaves nothing for the
+       description beside it. */
+    .toc ul { grid-template-columns: minmax(0, 1fr); }
+    .toc li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
     .gbnf-panes, .sv-panes { grid-template-columns: minmax(0, 1fr); }
-    .gbnf-row, .sv-row { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
-    .gbnf-row small, .sv-row small { grid-column: 1; }
+    .gbnf :global(.gbnf-row), .sv :global(.sv-row) {
+      grid-template-columns: minmax(0, 1fr); gap: 0.15rem;
+    }
+    .gbnf :global(.gbnf-row small), .sv :global(.sv-row small) { grid-column: 1; }
   }
 </style>
