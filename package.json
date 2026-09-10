@@ -39,7 +39,7 @@
     "yaml": "^2.9.0"
   },
   "engines": {
-    "node": ">=22.18"
+    "node": ">=22.19"
   },
   "private": true,
   "scripts": {
