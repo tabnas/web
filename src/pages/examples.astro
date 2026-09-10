@@ -112,6 +112,21 @@ const PROJECTS = [
     ],
   },
 ];
+
+// The links at the top of the page, in page order. Each id is the same
+// string the matching <Heading id> carries below, and those ids are public
+// URLs — so a rename is two edits, here and at the heading. The two project
+// entries are read from PROJECTS rather than repeated, and
+// test/artifacts.test.mjs fails the build if any link on the site points at
+// a fragment no element on that page has.
+const SECTIONS: { id: string; label: string }[] = [
+  { id: "chess", label: "chess" },
+  { id: "semver", label: "semver" },
+  { id: "gbnf", label: "gbnf" },
+  ...PROJECTS.map((p) => ({ id: p.id, label: p.name })),
+  { id: "the-grammars-themselves", label: "The grammars themselves" },
+  { id: "built-something", label: "Built something?" },
+];
 ---
 
 <Base
@@ -129,6 +144,19 @@ const PROJECTS = [
       configuration language, and the other builds a full programming language
       and its toolchain.
     </p>
+
+    {/* Section links. A <p> rather than a heading, and marked
+        data-pagefind-ignore, for the reason the /how-to index gives: these
+        labels repeat every heading on the page, and indexing them once more
+        would put the same seven words in front of every result. */}
+    <nav class="toc" aria-label="Sections on this page" data-pagefind-ignore>
+      <p class="toc-head">On this page</p>
+      <ul>
+        {SECTIONS.map((s) => (
+          <li><a href={`#${s.id}`}>{s.label}</a></li>
+        ))}
+      </ul>
+    </nav>
 
     <section class="proj">
       <Heading level={2} id="chess">chess</Heading>
@@ -598,6 +626,30 @@ const PROJECTS = [
   .ex { max-width: 52rem; }
   .ex :global(h1) { font-size: clamp(2.2rem, 5vw, 3rem); margin: 0 0 1rem; }
   .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+
+  /* Section links, laid out as a row that wraps rather than the sticky
+     rail the docs use: this page has no sidebar to put one in, and seven
+     short labels fit on a line or two. */
+  .toc {
+    margin: 1.75rem 0 0; padding: 0.9rem 1.1rem;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .toc-head {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-mute); margin: 0 0 0.5rem;
+  }
+  .toc ul {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem;
+  }
+  .toc li { margin: 0; }
+  .toc a {
+    color: var(--ink-soft); text-decoration: none; font-size: 0.9rem;
+    font-family: var(--font-mono);
+  }
+  .toc a:hover { color: var(--primary); text-decoration: underline; }
+  .toc a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
   .proj { margin-top: 3.5rem; }
   .ex :global(h2) { font-size: 1.8rem; margin: 0 0 0.2rem; font-family: var(--font-mono); }
