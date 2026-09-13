@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extract, findings, register, rules, TUTORIALS } from "../tools/prose.mjs";
+import { extract, findings, register, rules, TUTORIALS, QUESTIONS } from "../tools/prose.mjs";
 
 const banned = rules("worth noting\nseamless(?:ly)?\n");
 
@@ -66,6 +66,12 @@ test("first person singular passes as a question and fails as a statement", () =
     // the reader talking, and splitting it by sentence loses that.
     "My action never fires. Why?"];
   assert.deepEqual(register(ok, "faq/"), []);
+  // That form is the FAQ's alone. Anywhere else a block ending in a
+  // question would exempt every statement above it.
+  assert.equal(register(["My action never fires. Why?"], "docs/").length, 1);
+  for (const p of QUESTIONS) {
+    assert.ok(p.endsWith("/"), `${p} is a page prefix`);
+  }
   const bad = ["I wrote this parser last year."];
   assert.equal(register(bad, "faq/").length, 1);
   assert.ok(register(bad, "faq/")[0].startsWith("first person singular"));
@@ -110,7 +116,13 @@ test("emoji is a presentation, not a block, and a mark ends a sentence", () => {
   for (const glyph of ["\u2197\uFE0F", "1\uFE0F\u20E3", "\u{1F1EC}\u{1F1E7}"]) {
     assert.equal(register([`Ship it ${glyph}`], "docs/").length, 1);
   }
-  // `!=` is an operator, not the end of a sentence, so it does not
-  // spend the page's one mark.
+  // `!=` is an operator and `![` opens an image; neither spends the
+  // page's one mark. Everything else does, whatever precedes it.
   assert.deepEqual(register(["Use a != b and c != d.", "Then it works!"], "docs/"), []);
+  for (const pair of [["Really?!", "Great!"], ["Voilà!", "Done!"],
+    ["It works **now!**", "Next!"]]) {
+    const hits = register(pair, "docs/");
+    assert.equal(hits.length, 1, pair.join(" "));
+    assert.ok(hits[0].includes("2 exclamation marks"));
+  }
 });

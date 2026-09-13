@@ -5,7 +5,6 @@
 import Fs from 'node:fs'
 import Path from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
 
 import { prepare, ROOT } from './prose.mjs'
 

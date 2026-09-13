@@ -222,9 +222,9 @@ notice. `register()` in `tools/prose.mjs` now carries them, and
 
 **First person singular is allowed only in a question in the reader's
 voice.** That device is written three ways here, and all three pass: a
-question sentence (`does this string match my grammar?`), a block that
-states the problem and then asks (`My action never fires. Why?`, which
-is how the FAQ terms read), or the question quoted inside a sentence of
+question sentence (`does this string match my grammar?`), a block on the
+FAQ that states the problem and then asks (`My action never fires.
+Why?`), or the question quoted inside a sentence of
 its own (`Half of "my rule never fires" turns out to be a token that
 never lexed`). Anywhere else, `I`, `me` or `my` means the page left
 second person, and it fails. `My` opening a sentence is the same
@@ -243,8 +243,14 @@ deliberately.
 **No emoji, and one exclamation mark per page.** Emoji means emoji
 presentation, a variation selector, a keycap or a flag's regional
 indicators. A bare warning sign, check mark, arrow or dagger is a text
-symbol and is allowed. The mark has to end a sentence, so `!=` does not
-spend the page's one.
+symbol and is allowed. Every exclamation mark counts except the two that
+are punctuation for something else: the `!=` of an operator and the `!`
+that opens an image.
+
+The third question form is the FAQ's alone, and that is a register
+decision like the two page lists above it: on any other page, a block
+ending in a question would exempt every statement above it from the
+first-person rule.
 
 ### Vocabulary
 

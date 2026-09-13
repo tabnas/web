@@ -95,6 +95,13 @@ export const TUTORIALS = [
 ];
 export const PROJECT_VOICE = ["about/", "privacy/"];
 
+// The third form of the reader's question, where a block states the
+// problem and then asks: "My action never fires. Why?". That is how the
+// FAQ terms read, and splitting one by sentence loses it. It is allowed
+// on this page alone, because a block that merely ends in a question is
+// otherwise an exemption for everything above it.
+export const QUESTIONS = ["faq/"];
+
 // `I` is a pronoun only capitalised, because a lone lowercase `i` is
 // the one in `i.e.` or an index. The rest are pronouns however they
 // fall, the start of a sentence or a heading included.
@@ -106,16 +113,19 @@ const PLURAL = /\b(we|we'\w+|us|our|ours)\b/i;
 // text presentation, and a keycap or a flag sits in no symbol block.
 const EMOJI = /\p{Emoji_Presentation}|\uFE0F|\u20E3|[\u{1F1E6}-\u{1F1FF}]/u;
 
-// A sentence can close its markup after the mark; `!=` ends nothing.
-const EXCLAMATION = /\w!(?=["'\u2019\u201d)\]]*(?:\s|$))/gm;
+// Every mark except the two that are not punctuation: the `!=` of an
+// operator and the `!` that opens an image. Requiring a word character
+// before the mark, as this did, missed `Really?!`, `Great!!`, `Voilà!`
+// and a mark closing a bold run.
+const EXCLAMATION = /!(?![=[])/g;
 
 // A question in the reader's voice is this site's device, and it is
 // written three ways: as a question sentence ("does this string match
-// my grammar?"), as a block that ends in one after setting it up ("My
-// action never fires. Why?", which is how the FAQ terms read), or
-// quoted inside a sentence of its own ("How do I parse this", "my rule
-// never fires"). All three are the reader talking. Anything else in the
-// first person singular is a page that slipped out of second person.
+// my grammar?"), as a block on the FAQ that ends in one after setting
+// it up ("My action never fires. Why?"), or quoted inside a sentence of
+// its own ("How do I parse this", "my rule never fires"). All three are
+// the reader talking. Anything else in the first person singular is a
+// page that slipped out of second person.
 function sentences(text) {
   return text.split(/(?<=[.?!])\s+/).filter(Boolean);
 }
@@ -131,13 +141,14 @@ export function register(blocks, rel) {
   const hits = [];
   const tutorial = TUTORIALS.some((p) => rel.startsWith(p));
   const projectVoice = PROJECT_VOICE.some((p) => rel.startsWith(p));
+  const questions = QUESTIONS.some((p) => rel.startsWith(p));
   let marks = 0;
   for (const text of blocks) {
     marks += (text.match(EXCLAMATION) || []).length;
     if (EMOJI.test(text)) {
       hits.push(`emoji: ${text}`);
     }
-    const asks = text.trimEnd().endsWith("?");
+    const asks = questions && text.trimEnd().endsWith("?");
     for (const sentence of sentences(text)) {
       // `I/O` is not a pronoun. A slash is a word boundary.
       const bare = unquoted(sentence).replace(/\bI\/O\b/g, "");
