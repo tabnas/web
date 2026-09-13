@@ -184,7 +184,8 @@ checks. GitHub branch-protection requirements are configured separately.
 
 `tools/prose.mjs` reads every built HTML page, including imported content,
 metadata, navigation, and accessibility labels. It checks the text for banned
-phrases and em dashes, and prepares `.prose/` for Vale. Code, literal output,
+phrases and em dashes, checks the register rules below, and prepares
+`.prose/` for Vale. Code, literal output,
 scripts, and generated SVG labels are excluded. Metadata identifiers already
 printed as code on the page remain code for spelling checks. A missing build,
 empty extraction, or invalid vocabulary pattern fails.
@@ -194,6 +195,36 @@ levels remain editorial findings. The Google rule levels follow the source guide
 in `.vale.ini`. Keep the reason for
 any further change beside the rule. `test/prose-extraction.test.mjs` verifies extraction,
 metadata coverage, wrapped phrases, and code exclusions.
+
+### Register, checked rather than stated
+
+The voice rules above were stated and unenforced: `.vale.ini` turns
+`Google.We` and `Google.FirstPerson` off, because Google's versions
+cannot say "only in a tutorial", and nothing took their place. A
+reference page could slip into the first person and no check would
+notice. `register()` in `tools/prose.mjs` now carries them, and
+`test/prose-extraction.test.mjs` pins what it allows.
+
+**First person singular is allowed only in a question in the reader's
+voice.** That device is written two ways here, and both pass: a question
+sentence (`does this string match my grammar?`, and every FAQ heading),
+or the question quoted inside a sentence of its own (`Half of "my rule
+never fires" turns out to be a token that never lexed`). Anywhere else,
+`I`, `me` or `my` means the page left second person, and it fails.
+`I/O` is not a pronoun.
+
+**First person plural is allowed on two kinds of page.** A tutorial
+walks the reader through building something, which is where "we" belongs.
+And the pages whose subject IS this project speak as the project: the
+code "runs on your machine rather than ours", and "no cookies" are "set
+by us". Both kinds are lists in `tools/prose.mjs` rather than a path
+pattern, because a list reads as a decision and a regex reads as an
+accident. Adding a page to either list is a register decision; make it
+deliberately.
+
+**No emoji, and one exclamation mark per page.**
+
+### Vocabulary
 
 Vale's accepted spelling terms can shadow rejected phrases. The Node check
 still checks the shared rejection list, without an accepted-term exemption.

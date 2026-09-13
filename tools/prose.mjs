@@ -73,6 +73,70 @@ export function extract(html) {
   return { html: `<!doctype html><html><body>${body}</body></html>\n`, blocks, internalReferences };
 }
 
+// Page kinds, as lists rather than a path pattern. A rule about register
+// has to know which page it is on, and a regex over paths reads as an
+// accident where a list reads as a decision.
+//
+// TUTORIALS walk the reader through building something, which is where
+// STYLE-GUIDE.md allows "we". PROJECT_VOICE is where the subject IS the
+// project, so it speaks as itself: "the code runs on your machine rather
+// than ours", "no cookies set by us". Everywhere else, both are refused.
+export const TUTORIALS = [
+  "docs/quickstart/",
+  "docs/first-grammar/",
+  "docs/grammar-with-plugins/",
+];
+export const PROJECT_VOICE = ["about/", "privacy/"];
+
+const SINGULAR = /\b(I|I'\w+|me|my|mine)\b/;
+const PLURAL = /\b(we|we'\w+|us|our|ours)\b/i;
+
+// A question in the reader's voice is this site's device, and it is
+// written two ways: as a question sentence ("does this string match my
+// grammar?", and every FAQ heading), or quoted inside a sentence of its
+// own ("How do I parse this", "my rule never fires"). Both are the
+// reader talking. Anything else in the first person singular is a page
+// that slipped out of second person.
+function sentences(text) {
+  return text.split(/(?<=[.?!])\s+/).filter(Boolean);
+}
+
+
+// Straight and typographic pairs both appear on the site.
+function unquoted(text) {
+  return text.replace(/["\u201c\u2018][^"\u201c\u201d\u2018\u2019]*["\u201d\u2019]/g, " ");
+}
+
+
+export function register(blocks, rel) {
+  const hits = [];
+  const tutorial = TUTORIALS.some((p) => rel.startsWith(p));
+  const projectVoice = PROJECT_VOICE.some((p) => rel.startsWith(p));
+  let marks = 0;
+  for (const text of blocks) {
+    marks += (text.match(/!/g) || []).length;
+    if (/\p{Emoji_Presentation}/u.test(text)) {
+      hits.push(`emoji: ${text}`);
+    }
+    for (const sentence of sentences(text)) {
+      // `I/O` is not a pronoun. A slash is a word boundary.
+      const bare = unquoted(sentence).replace(/\bI\/O\b/g, "");
+      if (SINGULAR.test(bare) && !sentence.trimEnd().endsWith("?")) {
+        hits.push(`first person singular outside a question: ${sentence}`);
+      }
+    }
+    if (PLURAL.test(text) && !tutorial && !projectVoice) {
+      hits.push(`"we" outside a tutorial: ${text}`);
+    }
+  }
+  // STYLE-GUIDE.md rations exclamation marks; one page, one mark.
+  if (1 < marks) {
+    hits.push(`${marks} exclamation marks on one page`);
+  }
+  return hits;
+}
+
+
 export function findings(blocks, banned) {
   const hits = [];
   for (const text of blocks) {
@@ -110,6 +174,7 @@ export function prepare() {
     if (!content.blocks.length) throw new Error(`No prose extracted from ${rel}`);
     hits.push(...content.internalReferences.map((ref) => `${rel}: internal reference: ${ref}`));
     hits.push(...findings(content.blocks, banned).map((hit) => `${rel}: ${hit}`));
+    hits.push(...register(content.blocks, rel).map((hit) => `${rel}: ${hit}`));
     const target = join(OUT, rel);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, content.html); outputs.push(target);
