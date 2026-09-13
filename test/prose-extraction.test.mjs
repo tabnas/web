@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extract, findings, rules } from "../tools/prose.mjs";
+import { extract, findings, register, rules, TUTORIALS } from "../tools/prose.mjs";
 
 const banned = rules("# vocabulary\nworth noting\nseamless(?:ly)?\n");
 
@@ -52,4 +52,40 @@ test("internal records are detected in code-formatted prose and descriptive link
 test("introductory list text remains checked when the item contains nested paragraphs", () => {
   const { blocks } = extract('<html><body><ul><li>seamless results<p>Explanation.</p></li></ul></body></html>');
   assert.equal(findings(blocks, banned).length, 1);
+});
+
+
+test("first person singular passes as a question and fails as a statement", () => {
+  const ok = ["Do I have to write ABNF?", "None can answer does this match my grammar?",
+    'Half of "my rule never fires" turns out to be a token that never lexed.'];
+  assert.deepEqual(register(ok, "faq/"), []);
+  const bad = ["I wrote this parser last year."];
+  assert.equal(register(bad, "faq/").length, 1);
+  assert.ok(register(bad, "faq/")[0].startsWith("first person singular"));
+});
+
+test("I/O is not a pronoun", () => {
+  assert.deepEqual(register(["The disk I/O is buffered."], "docs/"), []);
+});
+
+test('"we" is a tutorial register, and the project speaks for itself', () => {
+  const we = ["We'll parse a comma-separated list."];
+  assert.deepEqual(register(we, "docs/first-grammar/"), []);
+  assert.deepEqual(register(["No cookies are set by us."], "privacy/"), []);
+  assert.equal(register(we, "docs/rule-table/").length, 1);
+  assert.ok(register(we, "docs/rule-table/")[0].startsWith('"we" outside a tutorial'));
+});
+
+test("every tutorial in the list is a real page kind, not a path guess", () => {
+  for (const p of TUTORIALS) {
+    assert.ok(p.startsWith("docs/") && p.endsWith("/"), `${p} is a page prefix`);
+  }
+});
+
+test("emoji are refused and exclamation marks are rationed", () => {
+  assert.equal(register(["Ship it \u{1F680}"], "docs/").length, 1);
+  assert.deepEqual(register(["One is fine!"], "docs/"), []);
+  const many = register(["First!", "Second!"], "docs/");
+  assert.equal(many.length, 1);
+  assert.ok(many[0].includes("exclamation marks"));
 });
