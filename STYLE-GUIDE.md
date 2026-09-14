@@ -85,6 +85,15 @@ The enforced phrase list is
 [reject.txt](.vale/styles/config/vocabularies/Tabnas/reject.txt).
 Node and Vale read this one list; do not add a second array in a linter.
 
+**That file holds patterns and nothing else.** Vale has no comment
+syntax in a vocabulary file: a `#` line is a pattern like any other, and
+a lone `#` bans the character, which reports `owner/repo#13` as an
+error. The Node half used to skip such lines, so a comment left the two
+gates banning different things; it now refuses to load a list that
+contains one. Write an apostrophe as `['’]`: a plain `'?` matches `lets`
+and `let's` and walks past `let’s`, which is what this site's pages
+produce.
+
 Avoid filler such as `worth noting`, `at its core`, and `when it comes to`;
 inflated vocabulary such as `leverage`, `seamless`, and `comprehensive`;
 and self-praise such as `load-bearing` or any form of `honest`.
@@ -192,8 +201,14 @@ empty extraction, or invalid vocabulary pattern fails.
 
 Vale also checks the website README. Its error-level rules fail CI; other
 levels remain editorial findings. The Google rule levels follow the source guides' house exceptions, recorded
-in `.vale.ini`. Keep the reason for
-any further change beside the rule. `test/prose-extraction.test.mjs` verifies extraction,
+in `.vale.ini` with the number of alerts each produced here: 1260 alerts
+across 99 files. Keep the reason for
+any further change beside the rule, and the count with it.
+`node tools/vale-counts.mjs` reads every one of those numbers, and the
+total in this sentence, against a live Vale run and fails on any
+difference; `npm run prose-counts` re-measures. A rule switched off is
+measured with it switched back on, because the count is the evidence for
+switching it off. `test/prose-extraction.test.mjs` verifies extraction,
 metadata coverage, wrapped phrases, and code exclusions.
 
 ### Register, checked rather than stated
@@ -206,12 +221,15 @@ notice. `register()` in `tools/prose.mjs` now carries them, and
 `test/prose-extraction.test.mjs` pins what it allows.
 
 **First person singular is allowed only in a question in the reader's
-voice.** That device is written two ways here, and both pass: a question
-sentence (`does this string match my grammar?`, and every FAQ heading),
-or the question quoted inside a sentence of its own (`Half of "my rule
-never fires" turns out to be a token that never lexed`). Anywhere else,
-`I`, `me` or `my` means the page left second person, and it fails.
-`I/O` is not a pronoun.
+voice.** That device is written three ways here, and all three pass: a
+question sentence (`does this string match my grammar?`), a block on the
+FAQ that states the problem and then asks (`My action never fires.
+Why?`), or the question quoted inside a sentence of
+its own (`Half of "my rule never fires" turns out to be a token that
+never lexed`). Anywhere else, `I`, `me` or `my` means the page left
+second person, and it fails. `My` opening a sentence is the same
+pronoun as `my` inside one. `I/O` is not a pronoun, and neither is the
+`i` of `i.e.`: `I` counts only capitalised.
 
 **First person plural is allowed on two kinds of page.** A tutorial
 walks the reader through building something, which is where "we" belongs.
@@ -222,7 +240,17 @@ pattern, because a list reads as a decision and a regex reads as an
 accident. Adding a page to either list is a register decision; make it
 deliberately.
 
-**No emoji, and one exclamation mark per page.**
+**No emoji, and one exclamation mark per page.** Emoji means emoji
+presentation, a variation selector, a keycap or a flag's regional
+indicators. A bare warning sign, check mark, arrow or dagger is a text
+symbol and is allowed. Every exclamation mark counts except the two that
+are punctuation for something else: the `!=` of an operator and the `!`
+that opens an image.
+
+The third question form is the FAQ's alone, and that is a register
+decision like the two page lists above it: on any other page, a block
+ending in a question would exempt every statement above it from the
+first-person rule.
 
 ### Vocabulary
 

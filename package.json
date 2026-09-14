@@ -55,7 +55,8 @@
     "test-examples": "node tools/test-examples.mjs",
     "test": "node --test test/*.test.mjs",
     "check-prose": "node tools/prose.mjs",
-    "prose": "node tools/prose.mjs --vale"
+    "prose": "node tools/prose.mjs --vale && node tools/vale-counts.mjs",
+    "prose-counts": "node tools/vale-counts.mjs --write"
   },
   "type": "module",
   "overrides": {

@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extract, findings, register, rules, TUTORIALS } from "../tools/prose.mjs";
+import { extract, findings, register, rules, TUTORIALS, QUESTIONS } from "../tools/prose.mjs";
 
-const banned = rules("# vocabulary\nworth noting\nseamless(?:ly)?\n");
+const banned = rules("worth noting\nseamless(?:ly)?\n");
 
 test("prose checks metadata, labels, and phrases split across markup or lines", () => {
   const { blocks } = extract(`<html><head><meta name="description" content="seamless results"></head><body>
@@ -26,6 +26,10 @@ test("literal examples, scripts, SVG output, and code identifiers are excluded",
 
 test("invalid vocabulary patterns fail instead of being silently skipped", () => {
   assert.throws(() => rules("["), SyntaxError);
+  // Vale reads a `#` line as a pattern, and a lone `#` bans the
+  // character, so a list that carries one is refused rather than
+  // filtered: skipping it here would ban different things on each side.
+  assert.throws(() => rules("# a note\nworth noting\n"), /comment lines/);
 });
 
 test("metadata keeps displayed identifiers as code, including a trailing colon", () => {
@@ -57,11 +61,23 @@ test("introductory list text remains checked when the item contains nested parag
 
 test("first person singular passes as a question and fails as a statement", () => {
   const ok = ["Do I have to write ABNF?", "None can answer does this match my grammar?",
-    'Half of "my rule never fires" turns out to be a token that never lexed.'];
+    'Half of "my rule never fires" turns out to be a token that never lexed.',
+    // An FAQ term states the problem and then asks. The whole block is
+    // the reader talking, and splitting it by sentence loses that.
+    "My action never fires. Why?"];
   assert.deepEqual(register(ok, "faq/"), []);
+  // That form is the FAQ's alone. Anywhere else a block ending in a
+  // question would exempt every statement above it.
+  assert.equal(register(["My action never fires. Why?"], "docs/").length, 1);
+  for (const p of QUESTIONS) {
+    assert.ok(p.endsWith("/"), `${p} is a page prefix`);
+  }
   const bad = ["I wrote this parser last year."];
   assert.equal(register(bad, "faq/").length, 1);
   assert.ok(register(bad, "faq/")[0].startsWith("first person singular"));
+  // `My` opening a sentence is the same pronoun as `my` inside one.
+  assert.equal(register(["My parser is fast."], "docs/").length, 1);
+  assert.equal(register(["Mine is faster."], "docs/").length, 1);
 });
 
 test("I/O is not a pronoun", () => {
@@ -88,4 +104,25 @@ test("emoji are refused and exclamation marks are rationed", () => {
   const many = register(["First!", "Second!"], "docs/");
   assert.equal(many.length, 1);
   assert.ok(many[0].includes("exclamation marks"));
+});
+
+test("emoji is a presentation, not a block, and a mark ends a sentence", () => {
+  // Text presentation: documentation uses these as symbols.
+  for (const symbol of ["\u26A0", "\u2713", "\u2194", "\u2020"]) {
+    assert.deepEqual(register([`A ${symbol} marker.`], "docs/"), []);
+  }
+  // Emoji that sit in no symbol block: a variation selector, a keycap,
+  // a flag's regional indicators.
+  for (const glyph of ["\u2197\uFE0F", "1\uFE0F\u20E3", "\u{1F1EC}\u{1F1E7}"]) {
+    assert.equal(register([`Ship it ${glyph}`], "docs/").length, 1);
+  }
+  // `!=` is an operator and `![` opens an image; neither spends the
+  // page's one mark. Everything else does, whatever precedes it.
+  assert.deepEqual(register(["Use a != b and c != d.", "Then it works!"], "docs/"), []);
+  for (const pair of [["Really?!", "Great!"], ["Voilà!", "Done!"],
+    ["It works **now!**", "Next!"]]) {
+    const hits = register(pair, "docs/");
+    assert.equal(hits.length, 1, pair.join(" "));
+    assert.ok(hits[0].includes("2 exclamation marks"));
+  }
 });

@@ -11,10 +11,17 @@ const DIST = join(ROOT, "dist");
 const OUT = join(ROOT, ".prose");
 const VOCAB = join(ROOT, ".vale/styles/config/vocabularies/Tabnas/reject.txt");
 
+// Vale has no comment syntax in a vocabulary file: it reads a `#` line
+// as a pattern, and a lone `#` bans the character. Skipping them here
+// would leave the two halves banning different things, so a list that
+// carries one is refused rather than filtered.
 export function rules(source) {
-  return source.split(/\r?\n/).map((s) => s.trim())
-    .filter((s) => s && !s.startsWith("#"))
-    .map((source) => ({ source, re: new RegExp(`\\b(?:${source})\\b`, "gi") }));
+  const lines = source.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+  const comments = lines.filter((s) => s.startsWith("#"));
+  if (comments.length) {
+    throw new Error(`The prose vocabulary has comment lines, and Vale reads them as patterns: ${comments.join(" / ")}`);
+  }
+  return lines.map((source) => ({ source, re: new RegExp(`\\b(?:${source})\\b`, "gi") }));
 }
 
 export function extract(html) {
@@ -88,15 +95,37 @@ export const TUTORIALS = [
 ];
 export const PROJECT_VOICE = ["about/", "privacy/"];
 
-const SINGULAR = /\b(I|I'\w+|me|my|mine)\b/;
+// The third form of the reader's question, where a block states the
+// problem and then asks: "My action never fires. Why?". That is how the
+// FAQ terms read, and splitting one by sentence loses it. It is allowed
+// on this page alone, because a block that merely ends in a question is
+// otherwise an exemption for everything above it.
+export const QUESTIONS = ["faq/"];
+
+// `I` is a pronoun only capitalised, because a lone lowercase `i` is
+// the one in `i.e.` or an index. The rest are pronouns however they
+// fall, the start of a sentence or a heading included.
+const SINGULAR_I = /\b(I|I'\w+)\b/;
+const SINGULAR_MY = /\b(me|my|mine)\b/i;
 const PLURAL = /\b(we|we'\w+|us|our|ours)\b/i;
 
+// Emoji, not "symbol in this block". A bare warning sign or arrow is
+// text presentation, and a keycap or a flag sits in no symbol block.
+const EMOJI = /\p{Emoji_Presentation}|\uFE0F|\u20E3|[\u{1F1E6}-\u{1F1FF}]/u;
+
+// Every mark except the two that are not punctuation: the `!=` of an
+// operator and the `!` that opens an image. Requiring a word character
+// before the mark, as this did, missed `Really?!`, `Great!!`, `Voilà!`
+// and a mark closing a bold run.
+const EXCLAMATION = /!(?![=[])/g;
+
 // A question in the reader's voice is this site's device, and it is
-// written two ways: as a question sentence ("does this string match my
-// grammar?", and every FAQ heading), or quoted inside a sentence of its
-// own ("How do I parse this", "my rule never fires"). Both are the
-// reader talking. Anything else in the first person singular is a page
-// that slipped out of second person.
+// written three ways: as a question sentence ("does this string match
+// my grammar?"), as a block on the FAQ that ends in one after setting
+// it up ("My action never fires. Why?"), or quoted inside a sentence of
+// its own ("How do I parse this", "my rule never fires"). All three are
+// the reader talking. Anything else in the first person singular is a
+// page that slipped out of second person.
 function sentences(text) {
   return text.split(/(?<=[.?!])\s+/).filter(Boolean);
 }
@@ -112,16 +141,19 @@ export function register(blocks, rel) {
   const hits = [];
   const tutorial = TUTORIALS.some((p) => rel.startsWith(p));
   const projectVoice = PROJECT_VOICE.some((p) => rel.startsWith(p));
+  const questions = QUESTIONS.some((p) => rel.startsWith(p));
   let marks = 0;
   for (const text of blocks) {
-    marks += (text.match(/!/g) || []).length;
-    if (/\p{Emoji_Presentation}/u.test(text)) {
+    marks += (text.match(EXCLAMATION) || []).length;
+    if (EMOJI.test(text)) {
       hits.push(`emoji: ${text}`);
     }
+    const asks = questions && text.trimEnd().endsWith("?");
     for (const sentence of sentences(text)) {
       // `I/O` is not a pronoun. A slash is a word boundary.
       const bare = unquoted(sentence).replace(/\bI\/O\b/g, "");
-      if (SINGULAR.test(bare) && !sentence.trimEnd().endsWith("?")) {
+      if ((SINGULAR_I.test(bare) || SINGULAR_MY.test(bare)) &&
+        !asks && !sentence.trimEnd().endsWith("?")) {
         hits.push(`first person singular outside a question: ${sentence}`);
       }
     }
