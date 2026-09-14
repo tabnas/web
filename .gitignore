@@ -208,3 +208,6 @@ dist
 .prose/
 .vale/styles/Google/
 .vale/styles/.vale-config/
+
+# Written by the counts script while measuring, removed after.
+.vale-counts.ini
