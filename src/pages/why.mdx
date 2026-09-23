@@ -76,7 +76,7 @@ To parse `{"foo":1}`, first split the source into tokens. This is
 lexing. tabnas tries registered lexers in order; you can also register
 custom lexers for your language.
 
-After lexing we end up with a token stream:
+Lexing produces a token stream:
 
 ```json
 {"foo":1}
@@ -89,7 +89,7 @@ becomes:
 OB  KEY  CN  VAL  CB
 ```
 
-where we give each token a code name, such as OB, "Open Brace", for `{`.
+where each token has a code name, such as OB, "Open Brace", for `{`.
 
 Many parsing systems mix lexing (clumps of characters) and parsing
 (semantic units), forcing both into the grammar with equal status. For
@@ -127,28 +127,27 @@ Build a grammar that adds numbers:
 1+2+3 # and the result should be 6
 ```
 
-The builtin lexer already handles numbers and fixed strings, so we can
-assume our tokens are:
+The builtin lexer already handles numbers and fixed strings, so you can
+assume these tokens:
 
 ```
 NR - number
 PL - plus character
 ```
 
-That means we have to parse this series of tokens:
+That means the parser has to handle this series of tokens:
 
 ```
 NR PL NR PL NR
 ```
 
-Each time we see a number `NR` we want to add it to the running total.
-If we see a plus character after a number, then we keep going,
-otherwise we're done.
+Each number `NR` adds to the running total. A plus character after a
+number means the parse keeps going; otherwise it is done.
 
 If you're familiar with
 [ABNF](https://en.wikipedia.org/wiki/Augmented_Backus%E2%80%93Naur_form)
 (Augmented Backus-Naur Form) from [Internet
-RFCs](https://www.ietf.org/process/rfcs/), here is our little grammar:
+RFCs](https://www.ietf.org/process/rfcs/), here is the grammar:
 
 ```
 val = add
@@ -166,10 +165,9 @@ The next steps define its rule table directly in TypeScript so you can see
 how the engine executes it. The Go API supports the same grammar.
 
 Create a tabnas parser and define its grammar. You can do
-this with declarative JSON (apart from actions). First, we set some
-options. We want to have a special custom token `PL` that represents
-the `+` character.  And we want to start with the grammar rule
-`val`. That means the top level of the grammar tree is a `val`,
+this with declarative JSON (apart from actions). First, set some
+options. Define a custom token `PL` that represents the `+`
+character, and start with the grammar rule `val`. That means the top level of the grammar tree is a `val`,
 representing the final value of the additions.
 
 ```ts
@@ -192,7 +190,7 @@ tn.grammar({
   ...
 ```
 
-Now we can define our rules. Let's start with `val`, which sets up our
+Now define the rules. Start with `val`, which sets up the
 accumulator for the addition, and expects to have `add` as a child rule:
 
 ```ts
@@ -218,13 +216,13 @@ accumulator for the addition, and expects to have `add` as a child rule:
   ...     
 ```
 
-The `open` array is a list of *alternates*. We try to match tokens and
-then perform associated actions. But in this case we are just
-starting, in the "open" state of the `val` rule, so we don't look at
-any tokens, we just immediately "push" the `add` rule onto the rule
+The `open` array is a list of *alternates*. The parser tries to match
+each one's tokens and then performs its actions. Here the parse is just
+starting, in the "open" state of the `val` rule, so the alternate looks
+at no tokens and immediately "pushes" the `add` rule onto the rule
 stack. That means the `add` rule is the next rule to run.
 
-Our action at this point is to set our result value to 0, since
+The action at this point sets the result value to 0, since
 nothing has been added yet. Every rule gets an instance, and each rule
 instance has a `node` value, where you store the value of that rule.
 
@@ -254,11 +252,10 @@ Most alternates try to match a sequence of tokens. In this case the
 first alternate of the `add` rule looks for `NR`, a number. Token
 names are prefixed with `#` to make them easier to see.
 
-If we do match a number, our action is to add it to the running total
-we set up in the `val` rule. We get our parent's node
-(`r.parent.node`) and add the value of the first token we matched
-(`r.o[0].val`).  We're in the "open" state, so `r.o` holds the
-sequence of tokens we matched.  The `val` field of a token holds its
+If a number matches, the action adds it to the running total set up
+in the `val` rule. It takes the parent's node (`r.parent.node`) and
+adds the value of the first matched token (`r.o[0].val`). The rule
+is in the "open" state, so `r.o` holds the sequence of matched tokens. The `val` field of a token holds its
 evaluated value. For `NR`, this is a number.
 
 The rule has no children to push. It transitions from open to close:
@@ -280,16 +277,16 @@ The rule has no children to push. It transitions from open to close:
   ...
 ```
 
-In the first alternate, we try to match a plus token (`PL`). If it
-does match, we "repeat" the rule - run the `add` rule again. A new
+The first alternate tries to match a plus token (`PL`). If it
+does match, the parser "repeats" the rule: it runs the `add` rule again. A new
 instance starts in the "open" state, looking for another number to add.
 
-If the first alternate does not match, then we hit the second
-alternate, and do nothing. This will close our rule, and head back up
-to the `val` rule. We do need this empty alternate, because when no
+If the first alternate does not match, the parser reaches the second
+alternate, which does nothing. That closes the rule and heads back up
+to the `val` rule. The empty alternate is needed, because when no
 alternate matches, that's a parse error.
 
-Now we're back up the stack, closing the `val` rule:
+The parse is now back up the stack, closing the `val` rule:
 
 ```ts
   ...
@@ -302,8 +299,8 @@ Now we're back up the stack, closing the `val` rule:
   ...
 ```
 
-Again nothing to do, so we successfully complete the parse. The
-grammar has accepted the input, and we return the value of the top
+Again there is nothing to do, so the parse completes. The grammar
+has accepted the input, and the parser returns the value of the top
 level `node`:
 
 ```
