@@ -26,6 +26,21 @@ dependency change.
   however direct the route through one looks.
 - **This repository's own version sites are not dependencies.** They
   include the root entry of its own lockfile. A release bump moves them.
+- **Versions track the latest release.** Every dependency is kept at
+  its latest published version, and none is held on an older one. That
+  is the maintainer's standing instruction, so moving a dependency to
+  its latest version needs no further one. Holding a dependency back,
+  or adding, removing or re-pointing one, still does.
+
+**Held back, by the maintainer's instruction (2026-09-23).** `astro`,
+`@astrojs/mdx` and `@astrojs/cloudflare` stay on their current majors
+(5, 4 and 12), at the latest release within each. Astro 7 and adapter 14
+need a site migration. Rehype plugins then need a declared Markdown
+processor package, pages prerender in workerd by default, and the build
+output moves to `dist/client` and `dist/server`, which pagefind, the
+Markdown twins, the tests and the wrangler config all assume is `dist/`.
+`renovate.json` holds the same three majors. Lift the hold only on the
+maintainer's instruction.
 
 ## What this project is
 
