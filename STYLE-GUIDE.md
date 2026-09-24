@@ -201,7 +201,7 @@ empty extraction, or invalid vocabulary pattern fails.
 
 Vale also checks the website README. Its error-level rules fail CI; other
 levels remain editorial findings. The Google rule levels follow the source guides' house exceptions, recorded
-in `.vale.ini` with the number of alerts each produced here: 1289 alerts
+in `.vale.ini` with the number of alerts each produced here: 1286 alerts
 across 99 files. Keep the reason for
 any further change beside the rule, and the count with it.
 `node tools/vale-counts.mjs` reads every one of those numbers, and the

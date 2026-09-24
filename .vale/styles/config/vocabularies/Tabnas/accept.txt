@@ -225,6 +225,7 @@ ANTLR's
 nearley
 SGLang
 XGrammar
+XPath
 Anderssen
 Kieseritzky
 RFC's
@@ -233,6 +234,7 @@ misparse
 [Aa][Bb][Nn][Ff]
 [Bb][Nn][Ff]
 [Mm][Cc][Pp]
+[Ll][Ss][Pp]
 [Jj][Ss][Oo][Nn]
 [Jj][Ss][Oo][Nn][Cc]
 [Yy][Aa][Mm][Ll]

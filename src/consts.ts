@@ -198,6 +198,8 @@ export const PACKAGES: {
     blurb: "Compile RFC 5234 ABNF straight into a working grammar." },
   { name: "bnf", tier: "tooling", version: "0.1.19", npm: true, go: true,
     blurb: "The shared BNF-family compiler behind abnf, ebnf and gbnf." },
+  { name: "ebnf", tier: "tooling", version: "0.1.8", npm: true, go: true,
+    blurb: "Compile W3C EBNF, the notation the XML and XPath specifications use, into a working grammar." },
   { name: "debug", tier: "tooling", version: "0.3.8", npm: true, go: true,
     blurb: "Inspect a live grammar: describe it, render it back as ABNF." },
   { name: "railroad", tier: "tooling", version: "0.3.7", npm: true, go: true,
@@ -263,9 +265,12 @@ export const PACKAGES: {
   { name: "multisource", tier: "plugin", version: "0.5.8", npm: true, go: true,
     blurb: "Merge multiple sources into one parse: a marked path is resolved and spliced in place." },
 
-  // Command line.
+  // Command line. lsp sits here rather than under agent tooling: what it
+  // ships is two commands, the server an editor launches and the generator.
   { name: "jsonic-cli", tier: "cli", version: "0.5.7", npm: true, go: true,
     blurb: "Command-line interface for @tabnas/jsonic." },
+  { name: "lsp", tier: "cli", version: "0.1.3", npm: true, go: true,
+    blurb: "One language server for every tabnas grammar, and a generator for single-language servers and their editor plugins." },
 ];
 
 export const TIER_LABEL: Record<Tier, string> = {
