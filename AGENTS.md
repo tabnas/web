@@ -144,15 +144,12 @@ apply:
 a peer with a floor, and `abnf` declares `bnf` the same way, so bumping one
 alone can leave a peer unsatisfied.
 
-`package.json` still carries an `overrides` block for `@tabnas/semver`, left
-over from the hold, when it pinned semver's view of its `parser` and `abnf`
-peers to the held versions. It now names the same versions as the direct
-pins, so it holds nothing back. npm refuses to install when an override names
-a different version from the direct pin, so move both in the same commit:
-
-```json
-"overrides": { "@tabnas/semver": { "@tabnas/parser": "<the parser pin>", "@tabnas/abnf": "<the abnf pin>" } }
-```
+`package.json` has no `overrides` block. The last one was left over from the
+hold: it pinned `@tabnas/semver`'s view of its `parser` and `abnf` peers to
+the held versions. Once it named the same versions as the direct pins it
+held nothing back, and deleting it left `package-lock.json` byte for byte the
+same. semver's peer floors (`parser >=0.9.1`, `abnf >=0.4.8`) are met by the
+direct pins. Adding an override is a dependency change like any other.
 
 ## Repository map
 

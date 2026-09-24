@@ -58,11 +58,5 @@
     "prose": "node tools/prose.mjs --vale && node tools/vale-counts.mjs",
     "prose-counts": "node tools/vale-counts.mjs --write"
   },
-  "type": "module",
-  "overrides": {
-    "@tabnas/semver": {
-      "@tabnas/parser": "0.12.2",
-      "@tabnas/abnf": "0.4.15"
-    }
-  }
+  "type": "module"
 }
