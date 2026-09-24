@@ -93,44 +93,43 @@ bump pre-1.0 can break things; the playground is the part most likely to go.
 `/releases` table (the live values come from the npm registry at runtime, with
 these as the fallback). Update them in the same commit.
 
-### The engine is held at `parser@0.9.0`, deliberately
+### No tabnas package is held
 
-`@tabnas/parser@0.9.1` is published and this site does **not** take it. It
-regresses expression precedence in `@tabnas/expr`, on both `expr@0.5.7` and
-`expr@0.5.8`: `1+2*3` parses to `["*", 2, 3]`, dropping the `1 +` outright.
-The engine is the variable, not expr — hold expr and move the parser and it
-breaks; move expr and hold the parser and it does not.
+Every `@tabnas` package in `package.json` is pinned exactly at its latest
+release, the engine included. The only `package.json` dependencies held
+below their latest are `astro`, `@astrojs/mdx` and `@astrojs/cloudflare`, by
+the maintainer's instruction above. `npm view` is the record of what is
+latest, not this file.
 
-```bash
-npm run test-examples   # 98 runs green on 0.9.0; four fail on 0.9.1
-```
+The engine was held once. The site stayed on `parser@0.9.0` while `0.9.1` was
+published, because `0.9.1` regressed expression precedence in
+`@tabnas/expr`: `1+2*3` parsed to `["*", 2, 3]`, dropping the `1 +`, and
+`npm run test-examples` failed four TypeScript examples
+(`docs-plugins-expr`, `docs-plugins-evaluate`, `docs-plugins-config` and
+`docs-extending-plugin`). The engine fixed it upstream, and on the current
+releases all 98 runs are green again. Two rules from that episode still
+apply:
 
-The four are `docs-plugins-expr`, `docs-plugins-evaluate`,
-`docs-plugins-config` and `docs-extending-plugin`, all on the TypeScript side
-only. Their expected output is what the specification of an infix operator
-says it should be, so the fix is upstream and not on this page: do not restate
-those examples to match `0.9.1`. That is the same mistake as the `abnf@0.2.3`
-one above, which is what this repository already has one cautionary tale
-about.
+- When an engine release turns an example red and the example's expected
+  output is what the language specifies, the fix is upstream. Do not restate
+  the example to match the engine: that is the `abnf@0.2.3` mistake above.
+- Holding a package back needs the maintainer's instruction (see the core
+  principle at the top). Report the failing examples and the release that
+  broke them; do not pin the older version on your own.
 
-`@tabnas/semver` declares `parser >= 0.9.1` and `abnf >= 0.4.8` as peers, and
-it behaves identically on `0.9.0` / `0.4.7` — the version floor is not
-exercised by anything the site does. So `package.json` carries an
-`overrides` block pinning semver's view of those two peers to what the site
-installs, and a plain `npm install` resolves without flags:
+`parser`, `abnf` and `bnf` move together. `bnf` and `abnf` declare `parser` as
+a peer with a floor, and `abnf` declares `bnf` the same way, so bumping one
+alone can leave a peer unsatisfied.
+
+`package.json` still carries an `overrides` block for `@tabnas/semver`, left
+over from the hold, when it pinned semver's view of its `parser` and `abnf`
+peers to the held versions. It now names the same versions as the direct
+pins, so it holds nothing back. npm refuses to install when an override names
+a different version from the direct pin, so move both in the same commit:
 
 ```json
-"overrides": { "@tabnas/semver": { "@tabnas/parser": "0.9.0", "@tabnas/abnf": "0.4.7" } }
+"overrides": { "@tabnas/semver": { "@tabnas/parser": "<the parser pin>", "@tabnas/abnf": "<the abnf pin>" } }
 ```
-
-**Delete that block and take `parser@latest` in the same commit**, the moment
-a published parser gets `npm run test-examples` back to green.
-
-Exactly three pins are held: `parser`, and `abnf` and `bnf` with it —
-`bnf@0.1.11` and `abnf@0.4.8` both require `parser >= 0.9.1`, so the three
-can only move together. Everything else is current: `expr`, `gbnf`, `json`
-and `jsonic` all declare `parser >= 0`, and their latest releases are green
-on `0.9.0`. Check that before assuming a package is stuck.
 
 ## Repository map
 
