@@ -88,7 +88,7 @@ own; it publishes nothing.
 ## Prose checks
 
 Follow [STYLE-GUIDE.md](STYLE-GUIDE.md). Build the site, then run
-`npm run check-prose` for the local phrase check. Install Vale 3.9.1,
+`npm run check-prose` for the local phrase check. Install Vale 3.22.0,
 run `vale sync`, then `npm run prose` for the full prose check.
 Use `VALE=/path/to/vale` to select a local binary. The prose workflow pins
 both Vale and the Google rules. `npm run check` includes the local check.

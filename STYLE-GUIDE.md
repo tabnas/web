@@ -174,7 +174,7 @@ literal labels and output; write descriptive alt text for the reader.
 
 ## Prose checks
 
-Follow Voxgig's two-gate pattern: Vale 3.9.1, Google v0.7.1 pinned by URL,
+Follow Voxgig's two-gate pattern: Vale 3.22.0, Google v0.7.1 pinned by URL,
 and one shared phrase vocabulary. Retain tabnas's British spelling and
 Diátaxis structure. Voxgig's thirteen-part comparison template and sentence
 quotas do not apply to these references.
@@ -201,7 +201,7 @@ empty extraction, or invalid vocabulary pattern fails.
 
 Vale also checks the website README. Its error-level rules fail CI; other
 levels remain editorial findings. The Google rule levels follow the source guides' house exceptions, recorded
-in `.vale.ini` with the number of alerts each produced here: 1286 alerts
+in `.vale.ini` with the number of alerts each produced here: 1414 alerts
 across 99 files. Keep the reason for
 any further change beside the rule, and the count with it.
 `node tools/vale-counts.mjs` reads every one of those numbers, and the

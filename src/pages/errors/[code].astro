@@ -256,11 +256,9 @@ const versionsAgree = sitePin === registry.engine;
           the engine's error registry</a>
       ) : (
         <span>the declaring package's <code>tabnas.plugin.json</code> descriptor</span>
-      )}
-      {isEngine && isAbi && (
+      )}{isEngine && isAbi && (
         <span>, and from the <code>clib</code> block of each descriptor that carries one</span>
-      )}.{" "}
-      {versionsAgree ? (
+      )}.{" "}{versionsAgree ? (
         <>Engine {registry.engine}.</>
       ) : (
         <>Catalogue from engine {registry.engine}; this site pins {sitePin} (<a href="/versions.json">versions</a>).</>

@@ -223,7 +223,7 @@ function main() {
       "--config", join(ROOT, ".vale.ini"), "--minAlertLevel=error",
       ...outputs, join(ROOT, "README.md"),
     ], { cwd: ROOT, stdio: "inherit" });
-    if (result.error) throw new Error(`Cannot run Vale: ${result.error.message}. Install Vale 3.9.1 and run vale sync.`);
+    if (result.error) throw new Error(`Cannot run Vale: ${result.error.message}. Install Vale 3.22.0 and run vale sync.`);
     if (result.status) process.exitCode = 1;
   }
   if (hits.length) process.exitCode = 1;

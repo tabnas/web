@@ -1,3 +1,21 @@
+# Words Vale's dictionary does not have, accepted by name.
+#
+# LISTED ONE BY ONE, never matched by suffix. A pattern like `\w+ise`
+# accepts any word ending in those letters, `madeupise` included, and
+# punches a hole through the gate this file exists to make usable.
+#
+# CASE PAIRS ARE ONE ENTRY, WRITTEN AS A REGEX. Two plain lines make
+# Vale enforce one spelling over the other, and it then reports the
+# other as a misspelling.
+#
+# AN ACRONYM PUTS ITS CAPITALS IN THE SAME ENTRY: `(?:[Jj]son|JSON)`.
+# Vale 3.9.2 and later enforce an entry's case through Vale.Terms, so
+# `[Jj]son` alone reports every `JSON` as "Use '[Jj]son' instead of
+# 'JSON'", and a separate `JSON` line does not help: the `[Jj]son`
+# entry still claims the word.
+#
+# AN ENTRY MATCHES A WHOLE WORD. `[Ee]nder` accepts `ender` and not
+# `enders`, so a plural or a possessive is an entry of its own.
 [Aa]cyclicity
 [Aa]ontu
 [Bb]ooleans
@@ -8,7 +26,7 @@
 [Oo]nboarding
 [Rr]eachability
 [Rr]eparseable
-[Ss][Ss][Oo]
+(?:[Ss]so|SSO)
 [Ss]andboxing
 [Ss]everities
 [Ss]tderr
@@ -104,13 +122,16 @@ lockfile's
 lookaround
 lossy
 Makefile's
+matcher's
 matchers
 megacorp
 megacorp's
 metacharacters
+misconfigured
 misspelt
 multisource
 namespace
+namespaces
 Neovim
 npm
 npm's
@@ -222,6 +243,7 @@ lookups
 Earley
 Paull's
 ANTLR's
+PEG's
 nearley
 SGLang
 XGrammar
@@ -231,26 +253,26 @@ Kieseritzky
 RFC's
 streamable
 misparse
-[Aa][Bb][Nn][Ff]
-[Bb][Nn][Ff]
-[Mm][Cc][Pp]
-[Ll][Ss][Pp]
-[Jj][Ss][Oo][Nn]
-[Jj][Ss][Oo][Nn][Cc]
-[Yy][Aa][Mm][Ll]
-[Tt][Oo][Mm][Ll]
-[Ii][Nn][Ii]
-[Cc][Ss][Vv]
-[Xx][Mm][Ll]
-[Cc][Ss][Ss]
+(?:[Aa]bnf|ABNF)
+(?:[Bb]nf|BNF)
+(?:[Mm]cp|MCP)
+(?:[Ll]sp|LSP)
+(?:[Jj]son|JSON)
+(?:[Jj]sonc|JSONC)
+(?:[Yy]aml|YAML)
+(?:[Tt]oml|TOML)
+(?:[Ii]ni|INI)
+(?:[Cc]sv|CSV)
+(?:[Xx]ml|XML)
+(?:[Cc]ss|CSS)
 proto
-[Zz][Oo][Nn]
-[Gg][Bb][Nn][Ff]
-[Ee][Bb][Nn][Ff]
+(?:[Zz]on|ZON)
+(?:[Gg]bnf|GBNF)
+(?:[Ee]bnf|EBNF)
 expr
 [Ss]emver
-[Aa][Ss][Cc][Ii][Ii]
-[Uu][Nn][Ii][Cc][Oo][Dd][Ee]
+(?:[Aa]scii|ASCII)
+[Uu]nicode
 boru
 bareword
 builtin's

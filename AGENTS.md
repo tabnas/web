@@ -654,6 +654,6 @@ rather than deleting either as duplication.
 
 Apply [STYLE-GUIDE.md](STYLE-GUIDE.md) to all published text. `npm run check`
 includes a rendered-page prose gate, covering imported content, metadata,
-navigation, and accessibility labels. `npm run prose` also runs Vale 3.9.1
+navigation, and accessibility labels. `npm run prose` also runs Vale 3.22.0
 with Google v0.7.1; `.github/workflows/docs.yml` runs it in CI. Code and literal
 output are excluded. Change generated content at its source.

@@ -1,5 +1,5 @@
 ---
-title: "Handle strings, quotes and escapes"
+title: "Handle strings, quotes, and escapes"
 description: "Change what quotes a string, which escapes exist, and what happens to the ones that don't."
 group: Feeding the lexer
 order: 3

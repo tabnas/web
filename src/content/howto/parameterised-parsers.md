@@ -1,6 +1,6 @@
 ---
 title: "Write a parameterised parser"
-description: "One plugin, many dialects: take options and let them decide the tokens, the lexer and the rules."
+description: "One plugin, many dialects: take options and let them decide the tokens, the lexer, and the rules."
 group: Composing grammars
 order: 3
 packages: ["directive", "csv", "expr"]
