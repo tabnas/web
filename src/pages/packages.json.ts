@@ -6,7 +6,7 @@
 // for "which versions is this documentation describing".
 
 import type { APIRoute } from "astro";
-import { PACKAGES, TIER_LABEL, REPO, SITE_TITLE } from "../consts";
+import { PACKAGES, TIER_LABEL, REPO_OF, SITE_TITLE } from "../consts";
 import { SITE_URL } from "../openapi";
 
 export const GET: APIRoute = () => {
@@ -26,7 +26,7 @@ export const GET: APIRoute = () => {
       version: p.version,
       npm: p.npm ? `@tabnas/${p.name}` : null,
       go: p.go ? `github.com/tabnas/${p.name}/go` : null,
-      repository: REPO(p.name),
+      repository: REPO_OF(p),
     })),
   };
 

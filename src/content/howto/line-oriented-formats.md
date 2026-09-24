@@ -120,7 +120,7 @@ created per parse, so the instance stays reusable and concurrent parses cannot
 collide. `r.u` is per-rule user data, which is why the key can sit there
 between the open and close phases of the same line.
 
-`#VAL` is the built-in token set covering number, string, text and value
+`#VAL` is the built-in token set covering number, string, text, and value
 literals, and `resolveVal` turns the matched token into a real value, so
 `5432` is a number and `true` is a boolean without any work.
 

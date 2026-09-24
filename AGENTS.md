@@ -52,7 +52,7 @@ sweep, an install or a fetch, a release, a wait on CI, a benchmark, a
 script or loop you write, and anything sent to the background.
 
 - **Minimal is enough.** One line with the step and a count, such as
-  `conformance: 412/1500 (27%)`, meets it. When no total is known, print
+  `conformance: 412 of 1500 (27%)`, meets it. When no total is known, print
   what is known (the step, the current item, the elapsed time) and say the
   percentage is unknown rather than inventing one.
 - **Build it into what you write.** A script or loop prints a line per
@@ -144,15 +144,12 @@ apply:
 a peer with a floor, and `abnf` declares `bnf` the same way, so bumping one
 alone can leave a peer unsatisfied.
 
-`package.json` still carries an `overrides` block for `@tabnas/semver`, left
-over from the hold, when it pinned semver's view of its `parser` and `abnf`
-peers to the held versions. It now names the same versions as the direct
-pins, so it holds nothing back. npm refuses to install when an override names
-a different version from the direct pin, so move both in the same commit:
-
-```json
-"overrides": { "@tabnas/semver": { "@tabnas/parser": "<the parser pin>", "@tabnas/abnf": "<the abnf pin>" } }
-```
+`package.json` has no `overrides` block. The last one was left over from the
+hold: it pinned `@tabnas/semver`'s view of its `parser` and `abnf` peers to
+the held versions. Once it named the same versions as the direct pins it
+held nothing back, and deleting it left `package-lock.json` byte for byte the
+same. semver's peer floors (`parser >=0.9.1`, `abnf >=0.4.8`) are met by the
+direct pins. Adding an override is a dependency change like any other.
 
 ## Repository map
 
@@ -654,6 +651,6 @@ rather than deleting either as duplication.
 
 Apply [STYLE-GUIDE.md](STYLE-GUIDE.md) to all published text. `npm run check`
 includes a rendered-page prose gate, covering imported content, metadata,
-navigation, and accessibility labels. `npm run prose` also runs Vale 3.9.1
+navigation, and accessibility labels. `npm run prose` also runs Vale 3.22.0
 with Google v0.7.1; `.github/workflows/docs.yml` runs it in CI. Code and literal
 output are excluded. Change generated content at its source.

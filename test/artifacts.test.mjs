@@ -10,6 +10,7 @@
 
 import { test, describe, before } from 'node:test'
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -731,19 +732,37 @@ describe('the sitemap', () => {
   })
 
   // A lastmod Google does not believe is a lastmod Google discards, for the
-  // whole site. These come from git, so they cannot be in the future — and
-  // they cannot all be the same instant, which is what a build stamp looks
-  // like and also what a shallow clone's boundary commit produces.
+  // whole site. These come from git, so each one is the date of a commit in
+  // this repository's history, and never in the future. And they cannot all
+  // be the same instant, which is what a build stamp looks like and also
+  // what a shallow clone's boundary commit produces.
+  //
+  // "Not all the same" is the claim, so the check is more than one distinct
+  // date. It used to demand more than five, and how many there are is a
+  // fact about the history, not about the build: one commit that touches
+  // most of the site (a dependency bump, a prose pass) dates every page it
+  // touched alike, and origin/main then had five, from a correct lastmod.
   test('the dates are real and not all the same', (t) => {
     if (!dated.length) return t.skip('built from a shallow clone: no history to date pages by')
     const dates = dated.map((e) => e.match(/<lastmod>(.*?)<\/lastmod>/)[1])
+    const commits = new Set(
+      execFileSync('git', ['log', '--format=%cI'], {
+        cwd: ROOT,
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+      })
+        .split('\n')
+        .filter(Boolean)
+        .map((d) => Date.parse(d)),
+    )
     const now = Date.now()
     for (const date of dates) {
-      const t = Date.parse(date)
-      assert.ok(Number.isFinite(t), `${date} is not a date`)
-      assert.ok(t <= now, `${date} is in the future`)
+      const at = Date.parse(date)
+      assert.ok(Number.isFinite(at), `${date} is not a date`)
+      assert.ok(at <= now, `${date} is in the future`)
+      assert.ok(commits.has(at), `${date} is not the date of any commit: rebuild after a rebase`)
     }
-    assert.ok(new Set(dates).size > 5, 'every page claims the same date — that is a build stamp')
+    assert.ok(new Set(dates).size > 1, 'every page claims the same date — that is a build stamp')
   })
 
   // The map in tools/lastmod.mjs is hand-kept, so a new page rendering from a

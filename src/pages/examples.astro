@@ -161,7 +161,7 @@ const blurb = (id: string): string => {
 <Base
   wide
   title="Examples"
-  description="Real languages built on the tabnas engine: a chess game to step through, semver strings parsed and ranked, a GBNF grammar to test, aontu in TS and boru in Go."
+  description="Real languages built on the tabnas engine: a chess game to step through, semver strings parsed and ranked, a GBNF grammar to test, aontu in TS, and boru in Go."
 >
   <article class="ex">
     <Heading level={1} id="examples">Examples</Heading>
@@ -228,7 +228,7 @@ const blurb = (id: string): string => {
       <p>
         That text is the whole input: a PGN game, parsed by
         <a href={REPO("chess")} target="_blank" rel="noopener">@tabnas/chess</a>
-        into tag pairs, moves and a result. Everything on the board comes from
+        into tag pairs, moves, and a result. Everything on the board comes from
         the parse: the players and date above it are the tag pairs, and each
         move comes back as structure rather than as a string:
         <code>Nxg7+</code> is a knight, a capture, a destination of
@@ -312,7 +312,7 @@ const blurb = (id: string): string => {
         installed. Nothing in the plugin's code decides what a valid version
         is. That the result accepts exactly what semver.org accepts is
         checked rather than asserted: both runtimes generate a corpus of
-        58,449 strings and compare every verdict, every value and every
+        58,449 strings and compare every verdict, every value, and every
         round trip against the regular expression semver.org publishes for
         the purpose.
       </p>

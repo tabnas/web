@@ -177,18 +177,27 @@ export const ORG: {
 // release; keep it in step when bumping the pinned deps (see AGENTS.md).
 // /releases renders these server-side and then replaces each one client-side
 // with the live value from the npm registry, falling back to this when the
-// fetch fails. Each is an npm package under @tabnas/* and a Go module under
-// github.com/tabnas/<name>/go.
-export type Tier = "engine" | "tooling" | "agent" | "grammar" | "plugin" | "cli";
+// fetch fails. Each is an npm package under @tabnas/*, and a Go module under
+// github.com/tabnas/<name>/go when `go` is true. Each is released from the
+// repository of the same name, unless `repo` names the repository and the
+// directory it is built from.
+export type Tier = "engine" | "tooling" | "agent" | "grammar" | "view" | "plugin" | "cli";
 
-export const PACKAGES: {
+// The order the tiers are listed in, wherever the site groups PACKAGES. One
+// list, so a new tier cannot be left out of one page's groups.
+export const TIER_ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "view", "plugin", "cli"];
+
+export type Package = {
   name: string;
   tier: Tier;
   blurb: string;
   version: string;
   npm: boolean;
   go: boolean;
-}[] = [
+  repo?: { name: string; dir: string };
+};
+
+export const PACKAGES: Package[] = [
   // The engine.
   { name: "parser", tier: "engine", version: "0.12.2", npm: true, go: true,
     blurb: "The engine: a pluggable, rule-based parsing machine and a uniform syntax tree." },
@@ -197,7 +206,9 @@ export const PACKAGES: {
   { name: "abnf", tier: "tooling", version: "0.4.15", npm: true, go: true,
     blurb: "Compile RFC 5234 ABNF straight into a working grammar." },
   { name: "bnf", tier: "tooling", version: "0.1.19", npm: true, go: true,
-    blurb: "The shared BNF-family compiler behind abnf, ebnf and gbnf." },
+    blurb: "The shared BNF-family compiler behind abnf, ebnf, and gbnf." },
+  { name: "ebnf", tier: "tooling", version: "0.1.8", npm: true, go: true,
+    blurb: "Compile W3C EBNF, the notation the XML and XPath specifications use, into a working grammar." },
   { name: "debug", tier: "tooling", version: "0.3.8", npm: true, go: true,
     blurb: "Inspect a live grammar: describe it, render it back as ABNF." },
   { name: "railroad", tier: "tooling", version: "0.3.7", npm: true, go: true,
@@ -206,7 +217,7 @@ export const PACKAGES: {
     blurb: "Shared .tsv fixture loaders and the error-code census helpers: the machinery behind every repo's two-runtime specs." },
 
   // Agent tooling. TypeScript-only — tooling over the engine, not a parity
-  // package, so there is no Go module (the only entry with go: false).
+  // package, so there is no Go module (go: false, as for chess-view).
   { name: "mcp", tier: "agent", version: "0.1.16", npm: true, go: false,
     blurb: "The MCP server and the unified tabnas CLI: the same seven operations from one core, listed in the MCP registry as dev.tabnas/mcp." },
 
@@ -217,6 +228,8 @@ export const PACKAGES: {
     blurb: "JSON with comments." },
   { name: "json5", tier: "grammar", version: "0.5.8", npm: true, go: true,
     blurb: "The JSON5 dialect." },
+  { name: "jsonl", tier: "grammar", version: "0.1.9", npm: true, go: true,
+    blurb: "JSON Lines (NDJSON): one standard-JSON value per line." },
   { name: "jsonic", tier: "grammar", version: "0.7.1", npm: true, go: true,
     blurb: "A dynamic JSON parser that isn't strict and can be customised." },
   { name: "yaml", tier: "grammar", version: "0.5.8", npm: true, go: true,
@@ -245,7 +258,14 @@ export const PACKAGES: {
   { name: "feed", tier: "grammar", version: "0.6.8", npm: true, go: true,
     blurb: "RSS (0.90–2.0) and Atom (0.3, 1.0), normalised to one Atom-shaped result." },
   { name: "chess", tier: "grammar", version: "0.1.8", npm: true, go: true,
-    blurb: "PGN and SAN: chess games and moves, tag pairs, variations and annotations." },
+    blurb: "PGN and SAN: chess games and moves, tag pairs, variations, and annotations." },
+  // chess's web component, released from chess/web, so it sits with chess.
+  // Its own tier, because it is not a grammar: the grammar counts on the
+  // about, faq and home pages must not include it. npm only, with no Go
+  // module.
+  { name: "chess-view", tier: "view", version: "0.1.4", npm: true, go: false,
+    repo: { name: "chess", dir: "web" },
+    blurb: "A <chess-view> web component: a 2D chessboard view of a PGN game, with move navigation and highlighted notation." },
   { name: "semver", tier: "grammar", version: "0.0.3", npm: true, go: true,
     blurb: "Semantic Versioning 2.0.0, compiled from the specification's own grammar, with precedence." },
   { name: "gbnf", tier: "grammar", version: "0.1.11", npm: true, go: true,
@@ -263,9 +283,12 @@ export const PACKAGES: {
   { name: "multisource", tier: "plugin", version: "0.5.8", npm: true, go: true,
     blurb: "Merge multiple sources into one parse: a marked path is resolved and spliced in place." },
 
-  // Command line.
-  { name: "jsonic-cli", tier: "cli", version: "0.5.7", npm: true, go: true,
+  // Command line. lsp sits here rather than under agent tooling: what it
+  // ships is two commands, the server an editor launches and the generator.
+  { name: "jsonic-cli", tier: "cli", version: "0.5.8", npm: true, go: true,
     blurb: "Command-line interface for @tabnas/jsonic." },
+  { name: "lsp", tier: "cli", version: "0.1.3", npm: true, go: true,
+    blurb: "One language server for every tabnas grammar, and a generator for single-language servers and their editor plugins." },
 ];
 
 export const TIER_LABEL: Record<Tier, string> = {
@@ -273,10 +296,17 @@ export const TIER_LABEL: Record<Tier, string> = {
   tooling: "Grammar tooling",
   agent: "Agent tooling",
   grammar: "Languages and formats",
+  view: "Web components",
   plugin: "Syntax plugins",
   cli: "Command line",
 };
 
 export const REPO = (name: string) => `${GITHUB_ORG}/${name}`;
+// REPO_OF is the repository a package is released from. SOURCE is the page
+// that shows its source: that repository, or the directory in it that
+// `repo.dir` names.
+export const REPO_OF = (p: Package) => REPO(p.repo?.name ?? p.name);
+export const SOURCE = (p: Package) =>
+  p.repo ? `${REPO(p.repo.name)}/tree/main/${p.repo.dir}` : REPO(p.name);
 export const NPM = (name: string) => `https://www.npmjs.com/package/@tabnas/${name}`;
 export const GODOC = (name: string) => `https://pkg.go.dev/github.com/tabnas/${name}/go`;

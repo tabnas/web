@@ -16,21 +16,23 @@ npm install
 npm run dev            # local dev server
 npm run test-examples  # run every example and compare against its expect.txt
 npm run build          # astro build + pagefind search index, into dist/
-npm run check          # test-examples, build, tsc, and a dry-run deploy
+npm run check          # check-ax, test-examples, build, check-prose, tsc, npm test, dry-run deploy
 ```
 
 **`npm run check` is the gate, and you have to run it yourself.** A pull request
-here does get two automated checks (CodeQL, from GitHub's *default setup*, and
-a Cloudflare build) but neither runs this repo's tests: one is a security scan,
-the other a build. Nothing on the server executes the examples. So green checks
-on a PR are not evidence the site works; `npm run check` is.
+here does get three automated checks (CodeQL, from GitHub's *default setup*, a
+Cloudflare build, and the prose gate in `.github/workflows/docs.yml`) but none
+runs `npm test`: one is a security scan, one a build, and the prose gate checks
+the rendered pages with Vale. Nothing on the server executes the examples. So
+green checks on a PR are not evidence the site works; `npm run check` is.
 
 ## Deployment is automatic
 
 **Merging to `main` is the deploy step.** Cloudflare builds and publishes the
 site from `main` through its own Git integration, so there is nothing to run
-and no workflow file to look for: the absence of `.github/workflows/` here
-does *not* mean deployment is manual.
+and no deploy workflow to look for: `.github/workflows/` holds only the prose
+gate, and the absence of a deploy workflow there does *not* mean deployment is
+manual.
 
 Do not run `npm run deploy` (`wrangler deploy`) **by hand** as part of
 shipping a change. Note it is not an inert script: `npm run deploy` is
@@ -88,7 +90,7 @@ own; it publishes nothing.
 ## Prose checks
 
 Follow [STYLE-GUIDE.md](STYLE-GUIDE.md). Build the site, then run
-`npm run check-prose` for the local phrase check. Install Vale 3.9.1,
+`npm run check-prose` for the local phrase check. Install Vale 3.22.0,
 run `vale sync`, then `npm run prose` for the full prose check.
 Use `VALE=/path/to/vale` to select a local binary. The prose workflow pins
 both Vale and the Google rules. `npm run check` includes the local check.

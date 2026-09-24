@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Heading from "../components/Heading.astro";
 import CodeTabs from "../components/CodeTabs.astro";
-import { PACKAGES, TIER_LABEL, REPO, GITHUB_ORG } from "../consts";
+import { PACKAGES, TIER_LABEL, TIER_ORDER, REPO, GITHUB_ORG } from "../consts";
 import mcpTools from "../data/mcp-tools.json";
 import skillsData from "../data/skills.json";
 
@@ -16,11 +16,8 @@ const nSkills = TOOL_WORDS[skillsData.skills.length] ?? String(skillsData.skills
 const hostedUrl = skillsData.mcp["tabnas-hosted"]?.url;
 const stdio = skillsData.mcp["tabnas"];
 const stdioCommand = Array.isArray(stdio?.command) ? stdio.command.join(" ") : "";
-import type { Tier } from "../consts";
-
 const AGENTS_MD = (name: string) => `${REPO(name)}/blob/main/AGENTS.md`;
-const ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "plugin", "cli"];
-const groups = ORDER.map((tier) => ({
+const groups = TIER_ORDER.map((tier) => ({
   tier,
   label: TIER_LABEL[tier],
   items: PACKAGES.filter((p) => p.tier === tier),
@@ -362,7 +359,7 @@ const groups = ORDER.map((tier) => ({
           <p class="agrp-head">{g.label}</p>
           <p class="chips">
             {g.items.map((p) => (
-              <a class="chip" href={AGENTS_MD(p.name)} target="_blank" rel="noopener">{p.name}</a>
+              <a class="chip" href={AGENTS_MD(p.repo?.name ?? p.name)} target="_blank" rel="noopener">{p.name}</a>
             ))}
           </p>
         </div>
