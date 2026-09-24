@@ -14,6 +14,11 @@
 # 'JSON'", and a separate `JSON` line does not help: the `[Jj]son`
 # entry still claims the word.
 #
+# A NAME WITH ONE CORRECT CASE IS ONE EXACT ENTRY: `TS`, `DOMPurify`.
+# The widened form above is for a name also written in lower case, as
+# a package name is. An exact entry makes Vale report any other case
+# of the name ("Use 'TS' instead of 'ts'"), which is the point.
+#
 # AN ENTRY MATCHES A WHOLE WORD. `[Ee]nder` accepts `ender` and not
 # `enders`, so a plural or a possessive is an entry of its own.
 [Aa]cyclicity
@@ -26,7 +31,7 @@
 [Oo]nboarding
 [Rr]eachability
 [Rr]eparseable
-(?:[Ss]so|SSO)
+SSO
 [Ss]andboxing
 [Ss]everities
 [Ss]tderr
@@ -103,7 +108,7 @@ Ghoniem
 git's
 goldened
 goldens
-grpc
+gRPC
 healthcheck
 hostnames
 iff
@@ -209,8 +214,8 @@ unsuffixed
 [Uu]ntrusted
 untyped
 uppercases
-uri
-uri's
+URI
+URI's
 util
 validators
 vendored
@@ -272,8 +277,8 @@ proto
 (?:[Ee]bnf|EBNF)
 expr
 [Ss]emver
-(?:[Aa]scii|ASCII)
-[Uu]nicode
+ASCII
+Unicode
 boru
 bareword
 builtin's
