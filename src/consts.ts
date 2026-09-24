@@ -251,7 +251,7 @@ export const PACKAGES: Package[] = [
     blurb: "CSS, into an AST that preserves declaration order and duplicate properties." },
   { name: "c", tier: "grammar", version: "0.5.8", npm: true, go: true,
     blurb: "C source, into a concrete syntax tree: every token, comment, and macro kept as-is." },
-  { name: "proto", tier: "grammar", version: "0.4.7", npm: true, go: true,
+  { name: "proto", tier: "grammar", version: "0.5.0", npm: true, go: true,
     blurb: "Protocol Buffers .proto IDL (proto2, proto3, editions 2023/2024)." },
   { name: "zon", tier: "grammar", version: "0.5.8", npm: true, go: true,
     blurb: "Zig Object Notation, as used by build.zig.zon manifests." },
