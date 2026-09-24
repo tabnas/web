@@ -232,7 +232,7 @@ export const PACKAGES: Package[] = [
     blurb: "JSON Lines (NDJSON): one standard-JSON value per line." },
   { name: "jsonic", tier: "grammar", version: "0.7.1", npm: true, go: true,
     blurb: "A dynamic JSON parser that isn't strict and can be customised." },
-  { name: "yaml", tier: "grammar", version: "0.5.8", npm: true, go: true,
+  { name: "yaml", tier: "grammar", version: "0.5.9", npm: true, go: true,
     blurb: "YAML." },
   { name: "toml", tier: "grammar", version: "0.5.8", npm: true, go: true,
     blurb: "TOML." },
@@ -263,7 +263,7 @@ export const PACKAGES: Package[] = [
   // Its own tier, because it is not a grammar: the grammar counts on the
   // about, faq and home pages must not include it. npm only, with no Go
   // module.
-  { name: "chess-view", tier: "view", version: "0.1.4", npm: true, go: false,
+  { name: "chess-view", tier: "view", version: "0.1.5", npm: true, go: false,
     repo: { name: "chess", dir: "web" },
     blurb: "A <chess-view> web component: a 2D chessboard view of a PGN game, with move navigation and highlighted notation." },
   { name: "semver", tier: "grammar", version: "0.0.3", npm: true, go: true,

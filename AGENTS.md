@@ -168,7 +168,6 @@ direct pins. Adding an override is a dependency change like any other.
 | `src/errors.ts` | The error registry, assembled from the engine, plugin and C-ABI code sets. |
 | `test/` | `node --test` suites over the Worker and the built output. |
 | `src/components/Heading.astro` | Heading + `#` anchor for hand-written `.astro` pages. |
-| `public/chess-game.js` | **Vendored build artifact**, not source. See below. |
 | `src/layouts/` | `Base`, `DocsLayout`, `BlogPost`, `MdxPage`. |
 | `src/styles/` | `tokens.css` (design tokens), `global.css`, per-page sheets. |
 | `ROADMAP.md` | The site plan. **Read it before changing content or tone.** |
