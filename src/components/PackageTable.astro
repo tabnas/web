@@ -6,9 +6,7 @@
 // the shape a list takes when nobody remembers to update it. Driving it from
 // the same registry the homepage and /releases already use means a new package
 // appears here the moment it is added, and cannot silently go missing.
-import { PACKAGES, TIER_LABEL, REPO, NPM, GODOC, type Tier } from "../consts";
-
-const TIER_ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "plugin", "cli"];
+import { PACKAGES, TIER_LABEL, TIER_ORDER, SOURCE, NPM, GODOC, type Tier } from "../consts";
 
 // A one-line orientation per group, so the table is not just a list of names.
 const TIER_NOTE: Record<Tier, string> = {
@@ -16,6 +14,7 @@ const TIER_NOTE: Record<Tier, string> = {
   tooling: "Write, inspect, draw, and test grammars.",
   agent: "Serve the fleet to an agent: the MCP server and the tabnas CLI, one implementation behind both.",
   grammar: "Ready-made languages and data formats. Each is a plugin, so you can extend one rather than start over.",
+  view: "Custom elements for a web page that bundle a grammar and the engine.",
   plugin: "Syntax that layers onto a host grammar instead of standing alone.",
   cli: "Command-line entry points.",
 };
@@ -46,7 +45,7 @@ const groups = TIER_ORDER.map((tier) => ({
         <tbody>
           {g.items.map((p) => (
             <tr>
-              <td class="pkg-name"><a href={REPO(p.name)} target="_blank" rel="noopener"><code>@tabnas/{p.name}</code></a></td>
+              <td class="pkg-name"><a href={SOURCE(p)} target="_blank" rel="noopener"><code>@tabnas/{p.name}</code></a></td>
               <td>{p.blurb}</td>
               <td class="pkg-ver"><code>{p.version}</code></td>
               <td class="pkg-links">

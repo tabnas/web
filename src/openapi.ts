@@ -14,7 +14,7 @@
 // Nothing here is aspirational: every operation below is a URL that answers
 // today, and the response schemas are the shapes those URLs actually return.
 
-import { PACKAGES, ORG, AUTHOR, GITHUB_ORG, SITE_DESCRIPTION } from "./consts";
+import { PACKAGES, TIER_ORDER, ORG, AUTHOR, GITHUB_ORG, SITE_DESCRIPTION } from "./consts";
 import { errorRegistry } from "./errors";
 import mcpTools from "./data/mcp-tools.json";
 import skillsData from "./data/skills.json";
@@ -469,7 +469,7 @@ export function buildOpenApi(): Record<string, unknown> {
             tier: {
               type: "string",
               description: "What kind of package it is.",
-              enum: ["engine", "tooling", "agent", "grammar", "plugin", "cli"],
+              enum: TIER_ORDER,
             },
             description: { type: "string" },
             version: {
@@ -484,7 +484,13 @@ export function buildOpenApi(): Record<string, unknown> {
               type: ["string", "null"],
               description: "The Go module path, or null if it does not ship as a Go module.",
             },
-            repository: { type: "string", format: "uri" },
+            repository: {
+              type: "string",
+              format: "uri",
+              description:
+                "The GitHub repository the package is released from, which is not always the " +
+                "one of the same name.",
+            },
           },
         },
         ErrorRegistry: {

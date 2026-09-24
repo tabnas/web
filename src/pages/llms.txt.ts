@@ -18,7 +18,7 @@ import {
   PROJECT_NAV,
   AGENT_NAV,
   PACKAGES,
-  REPO,
+  SOURCE,
 } from "../consts";
 import pkg from "../../package.json";
 import skillsData from "../data/skills.json";
@@ -119,7 +119,7 @@ export const GET: APIRoute = async () => {
   ];
 
   const packages = PACKAGES.filter((p) => HEADLINE.includes(p.name)).map(
-    (p) => `- [@tabnas/${p.name}](${REPO(p.name)}): ${p.blurb}`,
+    (p) => `- [@tabnas/${p.name}](${SOURCE(p)}): ${p.blurb}`,
   );
 
   // How to actually call it, cheapest setup first. The commands come from the

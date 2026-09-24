@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Heading from "../components/Heading.astro";
 import CodeTabs from "../components/CodeTabs.astro";
-import { PACKAGES, NPM, REPO, GODOC, GITHUB_ORG, SITE_TAGLINE, SPONSOR, AUTHOR } from "../consts";
+import { PACKAGES, NPM, REPO, SOURCE, GODOC, GITHUB_ORG, SITE_TAGLINE, SPONSOR, AUTHOR } from "../consts";
 import emblem from "../assets/brand/mark.svg";
 
 const core = PACKAGES.filter(
@@ -273,7 +273,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
           <Heading level={3} id={p.name}>@tabnas/{p.name}</Heading>
           <p>{p.blurb}</p>
           <p class="pkg-links">
-            <a href={REPO(p.name)} target="_blank" rel="noopener">source</a>
+            <a href={SOURCE(p)} target="_blank" rel="noopener">source</a>
             {p.npm && <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>}
             {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">go</a>}
           </p>
@@ -284,7 +284,7 @@ const grammars = PACKAGES.filter((p) => p.tier === "grammar");
     <p class="chips">
       <span class="chips-label">Languages:</span>
       {grammars.map((p) => (
-        <a class="chip" href={REPO(p.name)} target="_blank" rel="noopener">{p.name}</a>
+        <a class="chip" href={SOURCE(p)} target="_blank" rel="noopener">{p.name}</a>
       ))}
       <a class="chip more" href="/releases/">all {PACKAGES.length} packages</a>
     </p>

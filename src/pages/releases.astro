@@ -1,15 +1,15 @@
 ---
 import Base from "../layouts/Base.astro";
 import Heading from "../components/Heading.astro";
-import { PACKAGES, TIER_LABEL, NPM, REPO, GODOC, STATUS_URL, GITHUB_ORG } from "../consts";
-import type { Tier } from "../consts";
+import { PACKAGES, TIER_LABEL, TIER_ORDER, NPM, SOURCE, GODOC, STATUS_URL, GITHUB_ORG } from "../consts";
 
-const ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "plugin", "cli"];
-const groups = ORDER.map((tier) => ({
+const groups = TIER_ORDER.map((tier) => ({
   tier,
   label: TIER_LABEL[tier],
   items: PACKAGES.filter((p) => p.tier === tier),
 })).filter((g) => g.items.length);
+const goCount = PACKAGES.filter((p) => p.go).length;
+const hosted = PACKAGES.filter((p) => p.repo);
 ---
 
 <Base
@@ -21,9 +21,13 @@ const groups = ORDER.map((tier) => ({
     <Heading level={1} id="releases">Releases</Heading>
     <p class="lede">
       {PACKAGES.length} packages, most of them a grammar extending another
-      grammar in this list. Each is released from its own repository, and
-      publishes to npm as <code>@tabnas/&lt;name&gt;</code> and to Go as
-      <code>github.com/tabnas/&lt;name&gt;/go</code>.
+      grammar in this list. Each publishes to npm as
+      <code>@tabnas/&lt;name&gt;</code>, and {goCount} of them to Go as
+      <code>github.com/tabnas/&lt;name&gt;/go</code>. Each is released from
+      its own repository{hosted.map((p) => (
+        <>, except <code>@tabnas/{p.name}</code>, which the {p.repo?.name}
+        repository releases from <code>{p.repo?.dir}/</code></>
+      ))}.
     </p>
 
     <p class="note">
@@ -56,7 +60,7 @@ const groups = ORDER.map((tier) => ({
                   </td>
                   <td class="what">{p.blurb}</td>
                   <td class="links">
-                    <a href={REPO(p.name)} target="_blank" rel="noopener">source</a>
+                    <a href={SOURCE(p)} target="_blank" rel="noopener">source</a>
                     {p.npm && <a href={NPM(p.name)} target="_blank" rel="noopener">npm</a>}
                     {p.go && <a href={GODOC(p.name)} target="_blank" rel="noopener">go</a>}
                   </td>

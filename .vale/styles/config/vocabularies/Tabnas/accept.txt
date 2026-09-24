@@ -259,6 +259,7 @@ misparse
 (?:[Ll]sp|LSP)
 (?:[Jj]son|JSON)
 (?:[Jj]sonc|JSONC)
+(?:[Jj]sonl|JSONL)
 (?:[Yy]aml|YAML)
 (?:[Tt]oml|TOML)
 (?:[Ii]ni|INI)
