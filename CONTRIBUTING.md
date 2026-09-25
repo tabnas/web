@@ -10,7 +10,7 @@ npm install
 npm run dev      # local dev server
 npm run build    # production build (Astro + Pagefind + markdown twins)
 npm run preview  # build, then wrangler dev — the real Worker runtime
-npm run check    # everything CI runs
+npm run check    # the gate: CI does not run it, so run it yourself
 ```
 
 Node 22.19+ is required — the test suites import TypeScript sources directly,

@@ -20,10 +20,13 @@ npm run check          # check-ax, test-examples, build, check-prose, tsc, npm t
 ```
 
 **`npm run check` is the gate, and you have to run it yourself.** A pull request
-here does get three automated checks (CodeQL, from GitHub's *default setup*, a
-Cloudflare build, and the prose gate in `.github/workflows/docs.yml`) but none
-runs `npm test`: one is a security scan, one a build, and the prose gate checks
-the rendered pages with Vale. Nothing on the server executes the examples. So
+here does get four automated checks (CodeQL, from GitHub's *default setup*, a
+Cloudflare build, the prose gate in `.github/workflows/docs.yml`, and the
+dependency gate in `.github/workflows/deps-gate.yml`) but none runs `npm test`:
+one is a security scan, one a build, the prose gate checks the rendered pages
+with Vale, and the dependency gate checks that `package.json` and
+`package-lock.json` name no local path. Nothing on the server executes the
+examples. So
 green checks on a PR are not evidence the site works; `npm run check` is.
 
 ## Deployment is automatic
@@ -31,8 +34,8 @@ green checks on a PR are not evidence the site works; `npm run check` is.
 **Merging to `main` is the deploy step.** Cloudflare builds and publishes the
 site from `main` through its own Git integration, so there is nothing to run
 and no deploy workflow to look for: `.github/workflows/` holds only the prose
-gate, and the absence of a deploy workflow there does *not* mean deployment is
-manual.
+and dependency gates, and the absence of a deploy workflow there does *not*
+mean deployment is manual.
 
 Do not run `npm run deploy` (`wrangler deploy`) **by hand** as part of
 shipping a change. Note it is not an inert script: `npm run deploy` is
