@@ -42,7 +42,6 @@ const ASSET_PREFIXES = [
   "/fonts/",
   "/brand/",
   "/diagrams/",
-  "/schema/",
 ];
 
 /** Extensions that are their own representation and are never negotiated. */

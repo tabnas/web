@@ -517,6 +517,64 @@ describe('plugin descriptor schema', () => {
     delete descriptor.translate.writes
     assert.equal(validate(descriptor), false, 'a render without its input shape passed')
   })
+
+  test('repository paths cannot escape or name another location syntax', () => {
+    const schema = readJson(schemaFile)
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema)
+    const base = {
+      $schema: `${ORIGIN}/${schemaFile}`,
+      name: '@tabnas/example',
+      go: 'github.com/tabnas/example/go',
+      description: 'An example plugin.',
+      engine: '@tabnas/parser',
+      grammar: 'grammar.json',
+      clib: {
+        dir: 'go/clib',
+        library: 'libtabnasexample',
+        abi: 'v1',
+        errorCodes: [],
+      },
+      errorCodes: [],
+      docs: `${ORIGIN}/docs/packages`,
+      repository: 'https://github.com/tabnas/example',
+      versionSource: 'ts/package.json',
+    }
+    for (const grammar of [
+      '../outside/grammar.json',
+      '..\\outside\\grammar.json',
+      'C:\\grammar.json',
+      '\\\\server\\grammar.json',
+      'https://host/grammar.json',
+    ]) {
+      assert.equal(validate({ ...base, grammar }), false, grammar)
+    }
+    assert.equal(validate({ ...base, grammar: 'grammar/example.json' }), true, JSON.stringify(validate.errors))
+  })
+
+  test('semantic token overrides are members of the server legend', () => {
+    const schema = readJson(schemaFile)
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema)
+    const base = {
+      $schema: `${ORIGIN}/${schemaFile}`,
+      name: '@tabnas/example',
+      go: 'github.com/tabnas/example/go',
+      description: 'An example plugin.',
+      engine: '@tabnas/parser',
+      clib: {
+        dir: 'go/clib',
+        library: 'libtabnasexample',
+        abi: 'v1',
+        errorCodes: [],
+      },
+      errorCodes: [],
+      docs: `${ORIGIN}/docs/packages`,
+      repository: 'https://github.com/tabnas/example',
+      versionSource: 'ts/package.json',
+    }
+    assert.equal(validate({ ...base, semanticTokens: { '#ID': 'property' } }), true)
+    assert.equal(validate({ ...base, semanticTokens: { '#ID': 'function' } }), false)
+    assert.equal(validate({ ...base, semanticTokens: { '#ID': 'porperty' } }), false)
+  })
 })
 
 describe('the declared runtime', () => {

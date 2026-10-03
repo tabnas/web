@@ -245,10 +245,22 @@ describe('serving pages', () => {
     const yaml = await get('/openapi.yaml')
     assert.equal(yaml.headers.get('content-type'), 'application/yaml; charset=utf-8')
 
-    for (const path of ['/openapi.json', '/errors.json', '/llms.txt', '/why.md']) {
+    for (const path of ['/openapi.json', '/errors.json', '/schema/plugin.schema.json', '/llms.txt', '/why.md']) {
       const res = await get(path)
       assert.equal(res.headers.get('access-control-allow-origin'), '*', path)
     }
+  })
+
+  test('schema failures stay on the structured machine path', async () => {
+    const missing = await get('/schema/no-such-schema.json', { headers: { accept: BROWSER } })
+    assert.equal(missing.status, 404)
+    assert.equal(missing.headers.get('access-control-allow-origin'), '*')
+    assert.equal(JSON.parse(await missing.text()).error.code, 'not_found')
+
+    const write = await get('/schema/plugin.schema.json', { method: 'POST' })
+    assert.equal(write.status, 405)
+    assert.equal(write.headers.get('allow'), 'GET, HEAD, OPTIONS')
+    assert.equal(JSON.parse(await write.text()).error.code, 'method_not_allowed')
   })
 
   test('generated files are served as themselves', async () => {
