@@ -477,6 +477,106 @@ describe('catalogue endpoints', () => {
   })
 })
 
+describe('plugin descriptor schema', () => {
+  const schemaFile = 'schema/plugin.schema.json'
+
+  test('the URL every descriptor names is built as a valid schema', () => {
+    const schema = readJson(schemaFile)
+    assert.equal(schema.$id, `${ORIGIN}/${schemaFile}`)
+    const ajv = new Ajv2020({ allErrors: true, strict: false })
+    assert.doesNotThrow(() => ajv.compile(schema))
+  })
+
+  test('translation parts require a matching write shape and render', () => {
+    const schema = readJson(schemaFile)
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema)
+    const descriptor = {
+      $schema: `${ORIGIN}/${schemaFile}`,
+      name: '@tabnas/example',
+      go: 'github.com/tabnas/example/go',
+      description: 'An example plugin.',
+      engine: '@tabnas/parser',
+      clib: {
+        dir: 'go/clib',
+        library: 'libtabnasexample',
+        abi: 'v1',
+        errorCodes: ['usage'],
+      },
+      errorCodes: [],
+      docs: `${ORIGIN}/docs/packages`,
+      repository: 'https://github.com/tabnas/example',
+      versionSource: 'ts/package.json',
+      translate: {
+        reads: 'tree',
+        writes: 'tree',
+        render: 'alchemy/render.alc',
+      },
+    }
+
+    assert.equal(validate(descriptor), true, JSON.stringify(validate.errors))
+    delete descriptor.translate.writes
+    assert.equal(validate(descriptor), false, 'a render without its input shape passed')
+  })
+
+  test('repository paths cannot escape or name another location syntax', () => {
+    const schema = readJson(schemaFile)
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema)
+    const base = {
+      $schema: `${ORIGIN}/${schemaFile}`,
+      name: '@tabnas/example',
+      go: 'github.com/tabnas/example/go',
+      description: 'An example plugin.',
+      engine: '@tabnas/parser',
+      grammar: 'grammar.json',
+      clib: {
+        dir: 'go/clib',
+        library: 'libtabnasexample',
+        abi: 'v1',
+        errorCodes: [],
+      },
+      errorCodes: [],
+      docs: `${ORIGIN}/docs/packages`,
+      repository: 'https://github.com/tabnas/example',
+      versionSource: 'ts/package.json',
+    }
+    for (const grammar of [
+      '../outside/grammar.json',
+      '..\\outside\\grammar.json',
+      'C:\\grammar.json',
+      '\\\\server\\grammar.json',
+      'https://host/grammar.json',
+    ]) {
+      assert.equal(validate({ ...base, grammar }), false, grammar)
+    }
+    assert.equal(validate({ ...base, grammar: 'grammar/example.json' }), true, JSON.stringify(validate.errors))
+  })
+
+  test('semantic token overrides are members of the server legend', () => {
+    const schema = readJson(schemaFile)
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema)
+    const base = {
+      $schema: `${ORIGIN}/${schemaFile}`,
+      name: '@tabnas/example',
+      go: 'github.com/tabnas/example/go',
+      description: 'An example plugin.',
+      engine: '@tabnas/parser',
+      clib: {
+        dir: 'go/clib',
+        library: 'libtabnasexample',
+        abi: 'v1',
+        errorCodes: [],
+      },
+      errorCodes: [],
+      docs: `${ORIGIN}/docs/packages`,
+      repository: 'https://github.com/tabnas/example',
+      versionSource: 'ts/package.json',
+    }
+    assert.equal(validate({ ...base, semanticTokens: { '#ID': 'property' } }), true)
+    assert.equal(validate({ ...base, semanticTokens: { '#ID': 'function' } }), false)
+    assert.equal(validate({ ...base, semanticTokens: { '#ID': 'porperty' } }), false)
+  })
+})
+
 describe('the declared runtime', () => {
   test('is new enough for the TypeScript imports these tests use', () => {
     // These suites import .ts source directly. Node strips types without a
@@ -695,11 +795,16 @@ describe('cache policy', () => {
   })
 
   test('the unhashed static files are cached but not immutable', () => {
-    for (const prefix of ['/fonts/*', '/brand/*', '/diagrams/*']) {
+    for (const prefix of ['/fonts/*', '/brand/*', '/diagrams/*', '/schema/*']) {
       assert.ok(headers.includes(prefix), `${prefix} has no cache policy`)
     }
     // A file that keeps its name across deploys must stay replaceable.
     assert.doesNotMatch(headers, /\/fonts\/\*\n\s+Cache-Control:[^\n]*immutable/)
+    assert.match(
+      headers,
+      /\/schema\/\*[\s\S]*?Access-Control-Allow-Origin: \*/,
+      'the public schema must be readable cross-origin',
+    )
   })
 
   test('HTML keeps the revalidating default', () => {
