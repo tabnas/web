@@ -36,7 +36,14 @@
 const CANONICAL_HOST = "tabnas.dev";
 
 /** Paths the Worker never handles, even if run_worker_first sends them here. */
-const ASSET_PREFIXES = ["/_astro/", "/pagefind/", "/fonts/", "/brand/", "/diagrams/"];
+const ASSET_PREFIXES = [
+  "/_astro/",
+  "/pagefind/",
+  "/fonts/",
+  "/brand/",
+  "/diagrams/",
+  "/schema/",
+];
 
 /** Extensions that are their own representation and are never negotiated. */
 const NEVER_NEGOTIATED = /\.[a-z0-9]+$/i;

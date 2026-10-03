@@ -17,7 +17,8 @@
 			"!/pagefind/*",
 			"!/fonts/*",
 			"!/brand/*",
-			"!/diagrams/*"
+			"!/diagrams/*",
+			"!/schema/*"
 		]
 	},
 	"observability": {

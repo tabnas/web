@@ -15,12 +15,14 @@
 //
 // Usage: node tools/check-ax.mjs
 
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import Ajv2020 from 'ajv/dist/2020.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+const FLEET = join(ROOT, '..')
 const problems = []
 
 // --- 1. generated data is current -------------------------------------------
@@ -33,7 +35,56 @@ try {
   problems.push('src/data is stale — run `node tools/gen-ax-data.mjs`')
 }
 
-// --- 2. every navigable page has an llms.txt line ----------------------------
+// --- 2. every plugin descriptor conforms to its published schema ------------
+
+const pluginSchemaPath = join(ROOT, 'public', 'schema', 'plugin.schema.json')
+let validatePlugin = null
+try {
+  const schema = JSON.parse(readFileSync(pluginSchemaPath, 'utf8'))
+  const ajv = new Ajv2020({ allErrors: true, strict: false })
+  validatePlugin = ajv.compile(schema)
+} catch (error) {
+  problems.push(`plugin.schema.json cannot be compiled — ${error.message}`)
+}
+
+// The fleet is normally a set of sibling checkouts. An aggregate checkout can
+// put repositories one directory lower, so inspect both layouts, as the data
+// generator does. CI may clone this repository alone; compiling the schema is
+// still mandatory there, while descriptor validation resumes whenever the
+// sibling sources are present.
+if (validatePlugin && existsSync(FLEET)) {
+  const dirs = []
+  for (const first of readdirSync(FLEET, { withFileTypes: true })) {
+    if (!first.isDirectory() || first.name === 'node_modules') continue
+    const firstPath = join(FLEET, first.name)
+    dirs.push(firstPath)
+    for (const second of readdirSync(firstPath, { withFileTypes: true })) {
+      if (second.isDirectory() && second.name !== 'node_modules') {
+        dirs.push(join(firstPath, second.name))
+      }
+    }
+  }
+
+  for (const dir of dirs) {
+    const file = join(dir, 'tabnas.plugin.json')
+    if (!existsSync(file)) continue
+    let descriptor
+    try {
+      descriptor = JSON.parse(readFileSync(file, 'utf8'))
+    } catch (error) {
+      problems.push(`${file}: not valid JSON — ${error.message}`)
+      continue
+    }
+    if (!validatePlugin(descriptor)) {
+      const detail = validatePlugin.errors
+        .map((error) => `${error.instancePath || '/'} ${error.message}`)
+        .join('; ')
+      problems.push(`${file}: does not match plugin.schema.json — ${detail}`)
+    }
+  }
+}
+
+// --- 3. every navigable page has an llms.txt line ----------------------------
 
 // Read the source rather than importing it: consts.ts is TypeScript, and this
 // tool is plain Node with no build step. The lists are plain object literals,
@@ -66,7 +117,7 @@ for (const href of navigable) {
   }
 }
 
-// --- 3. the pages the agent surfaces promise actually exist ------------------
+// --- 4. the pages the agent surfaces promise actually exist ------------------
 
 const PAGES = [
   ['src/pages/skills.astro', '/skills'],
@@ -112,7 +163,7 @@ for (const stale of [
   }
 }
 
-// --- 4. the 404 recovery routes agree -----------------------------------------
+// --- 5. the 404 recovery routes agree -----------------------------------------
 
 // src/worker.ts writes the markdown and JSON 404 bodies; src/pages/404.astro
 // renders the HTML one. Both read ENTRY_POINTS from the Worker, so the only

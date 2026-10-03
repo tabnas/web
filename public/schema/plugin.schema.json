@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tabnas.dev/schema/plugin.schema.json",
+  "title": "tabnas plugin descriptor",
+  "description": "The machine-readable descriptor carried by a tabnas plugin repository.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "name",
+    "go",
+    "description",
+    "engine",
+    "clib",
+    "errorCodes",
+    "docs",
+    "repository",
+    "versionSource"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://tabnas.dev/schema/plugin.schema.json"
+    },
+    "name": {
+      "description": "The npm package name.",
+      "type": "string",
+      "pattern": "^@tabnas/[a-z0-9][a-z0-9-]*$"
+    },
+    "go": {
+      "description": "The Go module path.",
+      "type": "string",
+      "pattern": "^github\\.com/tabnas/[a-z0-9][a-z0-9-]*/go$"
+    },
+    "rust": {
+      "description": "The crates.io package name, when the descriptor needs to state it explicitly.",
+      "type": "string",
+      "pattern": "^tabnas-[a-z0-9][a-z0-9-]*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base": {
+      "description": "The tabnas package this plugin extends or compiles through.",
+      "$ref": "#/$defs/packageName"
+    },
+    "engine": {
+      "const": "@tabnas/parser"
+    },
+    "grammar": {
+      "description": "The authored grammar source, when the plugin has one file to name.",
+      "$ref": "#/$defs/relativePath"
+    },
+    "extensions": {
+      "description": "File-name extensions, including the leading dot.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^\\.[A-Za-z0-9][A-Za-z0-9+_-]*$"
+      }
+    },
+    "mediaTypes": {
+      "description": "Internet media types associated with the format.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+$"
+      }
+    },
+    "languageId": {
+      "description": "The stable language identifier used by editor and host registries.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9+_-]*$"
+    },
+    "pluginKind": {
+      "description": "How a host composes the package.",
+      "enum": ["grammar", "compiler", "modifier"]
+    },
+    "grammarKind": {
+      "description": "How the grammar is represented and loaded.",
+      "enum": ["data", "compiled", "closure", "imperative", "external"]
+    },
+    "lexStream": {
+      "description": "Whether the lex stream is safe for incremental consumers.",
+      "enum": ["clean", "speculative"]
+    },
+    "syncGroups": {
+      "description": "Grammar-specific recovery groups, in preference order.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "semanticTokens": {
+      "description": "Overrides from grammar token names to LSP semantic token types.",
+      "type": "object",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "optionsSchema": {
+      "description": "A repository-relative options schema path, or the options schema itself.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/relativePath"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "specDir": {
+      "description": "The repository-relative shared conformance-fixture directory.",
+      "$ref": "#/$defs/relativePath"
+    },
+    "clib": {
+      "description": "The uniform C ABI built from the Go implementation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dir", "library", "abi", "errorCodes"],
+      "properties": {
+        "dir": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "library": {
+          "type": "string",
+          "pattern": "^libtabnas[a-z0-9]+$"
+        },
+        "abi": {
+          "const": "v1"
+        },
+        "errorCodes": {
+          "$ref": "#/$defs/errorCodes"
+        }
+      }
+    },
+    "errorCodes": {
+      "description": "Parse and plugin diagnostic codes owned by this package.",
+      "$ref": "#/$defs/errorCodes"
+    },
+    "docs": {
+      "description": "The package documentation URL.",
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "repository": {
+      "description": "The source repository URL.",
+      "type": "string",
+      "pattern": "^https://github\\.com/tabnas/[a-z0-9][a-z0-9-]*$"
+    },
+    "versionSource": {
+      "description": "The repository-relative manifest that owns the package version.",
+      "$ref": "#/$defs/relativePath"
+    },
+    "translate": {
+      "$ref": "#/$defs/translation"
+    }
+  },
+  "$defs": {
+    "packageName": {
+      "type": "string",
+      "pattern": "^@tabnas/[a-z0-9][a-z0-9-]*$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "errorCodes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
+    "shape": {
+      "enum": ["tree", "records"]
+    },
+    "partPath": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/relativePath"
+        },
+        {
+          "pattern": "\\.alc$"
+        }
+      ]
+    },
+    "translation": {
+      "description": "The structural shapes a format reads and writes, and the alchemy parts that bridge them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reads"],
+      "dependentRequired": {
+        "writes": ["render"],
+        "render": ["writes"],
+        "loss": ["render"]
+      },
+      "properties": {
+        "reads": {
+          "description": "One input shape, or shapes in preference order.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/shape"
+            },
+            {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/shape"
+              }
+            }
+          ]
+        },
+        "writes": {
+          "$ref": "#/$defs/shape"
+        },
+        "lift": {
+          "description": "The repository-relative alchemy source that adapts parsed events.",
+          "$ref": "#/$defs/partPath"
+        },
+        "render": {
+          "description": "A repository-relative alchemy source, or a render supplied by alchemy.",
+          "oneOf": [
+            {
+              "enum": ["json", "csv"]
+            },
+            {
+              "$ref": "#/$defs/partPath"
+            }
+          ]
+        },
+        "loss": {
+          "description": "User-facing statements of information the render does not preserve.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

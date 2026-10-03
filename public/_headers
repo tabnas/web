@@ -27,3 +27,9 @@
   Cache-Control: public, max-age=2592000
 /diagrams/*
   Cache-Control: public, max-age=2592000
+
+# Stable contract URL: cache briefly so an editor is not fetching the same
+# schema on every validation, but let a corrected contract reach it promptly.
+/schema/*
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *

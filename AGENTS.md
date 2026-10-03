@@ -470,6 +470,7 @@ generated** — none is a page to hand-edit:
 | `/packages.json` | `src/consts.ts`'s `PACKAGES` |
 | `/errors.json`, `/errors/<code>.json` | `src/errors.ts`, which assembles the same three code sets `/errors/<code>` reasons about |
 | `/openapi.json`, `/openapi.yaml`, `/api` | `src/openapi.ts` — one document, serialised twice and rendered once |
+| `/schema/plugin.schema.json` | `public/schema/plugin.schema.json` — the descriptor schema every `tabnas.plugin.json` names |
 | `/.well-known/mcp` | `src/data/skills.json` + `src/data/mcp-tools.json` |
 | `/robots.txt` | `src/pages/robots.txt.ts` |
 | `/<page>.md` | the built HTML, converted by `tools/gen-markdown.mjs` |
