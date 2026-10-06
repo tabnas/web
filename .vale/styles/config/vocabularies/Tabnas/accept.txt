@@ -307,3 +307,4 @@ tokenisation
 tokenising
 toolkit's
 ANDed
+transduce

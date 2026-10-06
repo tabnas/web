@@ -181,11 +181,11 @@ export const ORG: {
 // github.com/tabnas/<name>/go when `go` is true. Each is released from the
 // repository of the same name, unless `repo` names the repository and the
 // directory it is built from.
-export type Tier = "engine" | "tooling" | "agent" | "grammar" | "view" | "plugin" | "cli";
+export type Tier = "engine" | "tooling" | "agent" | "grammar" | "view" | "plugin" | "streaming" | "cli";
 
 // The order the tiers are listed in, wherever the site groups PACKAGES. One
 // list, so a new tier cannot be left out of one page's groups.
-export const TIER_ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "view", "plugin", "cli"];
+export const TIER_ORDER: Tier[] = ["engine", "tooling", "agent", "grammar", "view", "plugin", "streaming", "cli"];
 
 export type Package = {
   name: string;
@@ -280,13 +280,26 @@ export const PACKAGES: Package[] = [
     blurb: "String hoovering: block-delimited strings with unquoted internal spaces." },
   { name: "path", tier: "plugin", version: "0.3.10", npm: true, go: true,
     blurb: "Track the property path to each value as it is parsed." },
-  { name: "multisource", tier: "plugin", version: "0.5.10", npm: true, go: true,
+  { name: "multisource", tier: "plugin", version: "0.6.0", npm: true, go: true,
     blurb: "Merge multiple sources into one parse: a marked path is resolved and spliced in place." },
+
+  // Streaming: a parse as a stream of events, and the language that composes
+  // them. alchemy owns the shared types (events, tables, Routers and
+  // Renderers); transduce and render build on them, and the host passes
+  // their implementations to alchemy's compile.
+  { name: "alchemy", tier: "streaming", version: "0.2.0", npm: true, go: true,
+    blurb: "A small, typed, functional language for streaming transducers and renderers, and the types they share." },
+  { name: "transduce", tier: "streaming", version: "0.2.0", npm: true, go: true,
+    blurb: "Streaming transducers over any tabnas parser: source events, selectors, bounded captures and tables." },
+  { name: "render", tier: "streaming", version: "0.2.0", npm: true, go: true,
+    blurb: "Incremental CSV from streamed tables and JSON from streamed events: the renderers alchemy runs." },
 
   // Command line. lsp sits here rather than under agent tooling: what it
   // ships is two commands, the server an editor launches and the generator.
   { name: "jsonic-cli", tier: "cli", version: "0.5.10", npm: true, go: true,
     blurb: "Command-line interface for @tabnas/jsonic." },
+  { name: "alchemy-cli", tier: "cli", version: "0.1.1", npm: true, go: true,
+    blurb: "The alchemy command: check, explain and run alchemy programs over JSON documents." },
   { name: "lsp", tier: "cli", version: "0.1.4", npm: true, go: true,
     blurb: "One language server for every tabnas grammar, and a generator for single-language servers and their editor plugins." },
 ];
@@ -298,6 +311,7 @@ export const TIER_LABEL: Record<Tier, string> = {
   grammar: "Languages and formats",
   view: "Web components",
   plugin: "Syntax plugins",
+  streaming: "Streaming",
   cli: "Command line",
 };
 

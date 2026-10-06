@@ -124,9 +124,27 @@ tn.parse('rows: @"rows.csv"')
 // => { rows: [ [ 'a', 'b' ], [ '1', '2' ] ] }
 ```
 
-Out of the box: `.jsonic` and `.jsc` parse with the host instance, `.json`
-parses as strict JSON, `.js` is evaluated as a module, and anything else is
-inserted as a raw string.
+Out of the box: `.jsonic` and `.jsc` parse with the host instance, `.js` is
+evaluated as a module, and anything else is inserted as a raw string. That
+includes `.json`: multisource depends on no grammar, so it brings no JSON
+parser of its own. Register one for the `json` kind, built with the parser you
+prefer:
+
+```ts
+import { Jsonic } from '@tabnas/jsonic'
+
+const strict = Jsonic.make('json')
+
+const tn = new Tabnas().use(jsonic).use(MultiSource, {
+  resolver: makeMemResolver({ 'limits.json': '{"max": 10}' }),
+  processor: {
+    json: (res) => { res.val = strict(res.src) },
+  },
+})
+
+tn.parse('limits: @"limits.json"')
+// => { limits: { max: 10 } }
+```
 
 ## Knowing what was read
 
