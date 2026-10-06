@@ -199,7 +199,7 @@ export type Package = {
 
 export const PACKAGES: Package[] = [
   // The engine.
-  { name: "parser", tier: "engine", version: "0.12.9", npm: true, go: true,
+  { name: "parser", tier: "engine", version: "0.12.10", npm: true, go: true,
     blurb: "The engine: a pluggable, rule-based parsing machine and a uniform syntax tree." },
 
   // Grammar authoring and inspection.
@@ -247,7 +247,7 @@ export const PACKAGES: Package[] = [
   // suite. The blurb said "not yet implemented" for as long as that was true.
   { name: "markdown", tier: "grammar", version: "0.7.8", npm: true, go: true,
     blurb: "Markdown: the full CommonMark spec, 652/652 on the reference suite." },
-  { name: "css", tier: "grammar", version: "0.5.10", npm: true, go: true,
+  { name: "css", tier: "grammar", version: "0.5.11", npm: true, go: true,
     blurb: "CSS, into an AST that preserves declaration order and duplicate properties." },
   { name: "c", tier: "grammar", version: "0.5.10", npm: true, go: true,
     blurb: "C source, into a concrete syntax tree: every token, comment, and macro kept as-is." },
@@ -255,7 +255,7 @@ export const PACKAGES: Package[] = [
     blurb: "Protocol Buffers .proto IDL (proto2, proto3, editions 2023/2024)." },
   { name: "zon", tier: "grammar", version: "0.5.12", npm: true, go: true,
     blurb: "Zig Object Notation, as used by build.zig.zon manifests." },
-  { name: "feed", tier: "grammar", version: "0.6.11", npm: true, go: true,
+  { name: "feed", tier: "grammar", version: "0.6.12", npm: true, go: true,
     blurb: "RSS (0.90–2.0) and Atom (0.3, 1.0), normalised to one Atom-shaped result." },
   { name: "chess", tier: "grammar", version: "0.1.10", npm: true, go: true,
     blurb: "PGN and SAN: chess games and moves, tag pairs, variations, and annotations." },
@@ -296,7 +296,7 @@ export const PACKAGES: Package[] = [
 
   // Command line. lsp sits here rather than under agent tooling: what it
   // ships is two commands, the server an editor launches and the generator.
-  { name: "jsonic-cli", tier: "cli", version: "0.5.10", npm: true, go: true,
+  { name: "jsonic-cli", tier: "cli", version: "0.5.11", npm: true, go: true,
     blurb: "Command-line interface for @tabnas/jsonic." },
   { name: "alchemy-cli", tier: "cli", version: "0.1.1", npm: true, go: true,
     blurb: "The alchemy command: check, explain and run alchemy programs over JSON documents." },
