@@ -22,7 +22,7 @@
     "@tabnas/gbnf": "0.1.14",
     "@tabnas/json": "0.5.13",
     "@tabnas/jsonic": "0.7.4",
-    "@tabnas/parser": "0.12.9",
+    "@tabnas/parser": "0.12.10",
     "@tabnas/semver": "0.0.6",
     "astro": "5.18.2",
     "typescript": "7.0.2"
