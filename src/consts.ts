@@ -287,18 +287,18 @@ export const PACKAGES: Package[] = [
   // them. alchemy owns the shared types (events, tables, Routers and
   // Renderers); transduce and render build on them, and the host passes
   // their implementations to alchemy's compile.
-  { name: "alchemy", tier: "streaming", version: "0.2.1", npm: true, go: true,
+  { name: "alchemy", tier: "streaming", version: "0.2.2", npm: true, go: true,
     blurb: "A small, typed, functional language for streaming transducers and renderers, and the types they share." },
-  { name: "transduce", tier: "streaming", version: "0.2.2", npm: true, go: true,
+  { name: "transduce", tier: "streaming", version: "0.2.3", npm: true, go: true,
     blurb: "Streaming transducers over any tabnas parser: source events, selectors, bounded captures and tables." },
-  { name: "render", tier: "streaming", version: "0.2.1", npm: true, go: true,
+  { name: "render", tier: "streaming", version: "0.2.2", npm: true, go: true,
     blurb: "Incremental CSV from streamed tables and JSON from streamed events: the renderers alchemy runs." },
 
   // Command line. lsp sits here rather than under agent tooling: what it
   // ships is two commands, the server an editor launches and the generator.
   { name: "jsonic-cli", tier: "cli", version: "0.5.13", npm: true, go: true,
     blurb: "Command-line interface for @tabnas/jsonic." },
-  { name: "alchemy-cli", tier: "cli", version: "0.1.3", npm: true, go: true,
+  { name: "alchemy-cli", tier: "cli", version: "0.1.4", npm: true, go: true,
     blurb: "The alchemy command: check, explain and run alchemy programs over JSON documents." },
   { name: "lsp", tier: "cli", version: "0.1.6", npm: true, go: true,
     blurb: "One language server for every tabnas grammar, and a generator for single-language servers and their editor plugins." },
