@@ -213,7 +213,7 @@
       "name": "@tabnas/feed",
       "repo": "feed",
       "description": "RSS (0.90 to 2.0) and Atom (0.3, 1.0) feed parsing for the tabnas engine, normalized to an Atom shape.",
-      "base": null,
+      "base": "@tabnas/xml",
       "extensions": [
         ".rss",
         ".atom"
@@ -429,7 +429,7 @@
       "name": "@tabnas/multisource",
       "repo": "multisource",
       "description": "Multi-source document assembly for the tabnas engine: resolves and merges included sources.",
-      "base": null,
+      "base": "@tabnas/directive",
       "extensions": [],
       "errorCodes": [
         "multisource_cycle",
@@ -470,7 +470,7 @@
       "name": "@tabnas/proto",
       "repo": "proto",
       "description": "Protocol Buffers IDL parsing for the tabnas engine (proto2, proto3, editions).",
-      "base": "@tabnas/abnf",
+      "base": null,
       "extensions": [
         ".proto"
       ],
@@ -491,7 +491,7 @@
       "name": "@tabnas/semver",
       "repo": "semver",
       "description": "Semantic Versioning 2.0.0 (semver.org) parsing for the tabnas engine, compiled from an ABNF grammar.",
-      "base": "@tabnas/abnf",
+      "base": null,
       "extensions": [],
       "errorCodes": [],
       "clib": {
@@ -514,7 +514,10 @@
       "extensions": [
         ".toml"
       ],
-      "errorCodes": [],
+      "errorCodes": [
+        "invalid_datetime",
+        "toml_key_conflict"
+      ],
       "clib": {
         "library": "libtabnastoml",
         "abi": "v1",
@@ -531,7 +534,7 @@
       "name": "@tabnas/xml",
       "repo": "xml",
       "description": "XML 1.0 parsing for the tabnas engine, with namespaces and entities.",
-      "base": "@tabnas/jsonic",
+      "base": null,
       "extensions": [
         ".xml"
       ],
