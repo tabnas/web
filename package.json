@@ -17,7 +17,7 @@
     "@astrojs/sitemap": "3.7.4",
     "@tabnas/abnf": "0.4.20",
     "@tabnas/bnf": "0.1.28",
-    "@tabnas/chess-view": "0.1.5",
+    "@tabnas/chess-view": "0.1.6",
     "@tabnas/expr": "0.5.15",
     "@tabnas/gbnf": "0.1.17",
     "@tabnas/json": "0.5.16",

@@ -263,7 +263,7 @@ export const PACKAGES: Package[] = [
   // Its own tier, because it is not a grammar: the grammar counts on the
   // about, faq and home pages must not include it. npm only, with no Go
   // module.
-  { name: "chess-view", tier: "view", version: "0.1.5", npm: true, go: false,
+  { name: "chess-view", tier: "view", version: "0.1.6", npm: true, go: false,
     repo: { name: "chess", dir: "web" },
     blurb: "A <chess-view> web component: a 2D chessboard view of a PGN game, with move navigation and highlighted notation." },
   { name: "semver", tier: "grammar", version: "0.0.9", npm: true, go: true,
@@ -287,18 +287,18 @@ export const PACKAGES: Package[] = [
   // them. alchemy owns the shared types (events, tables, Routers and
   // Renderers); transduce and render build on them, and the host passes
   // their implementations to alchemy's compile.
-  { name: "alchemy", tier: "streaming", version: "0.2.3", npm: true, go: true,
+  { name: "alchemy", tier: "streaming", version: "0.2.4", npm: true, go: true,
     blurb: "A small, typed, functional language for streaming transducers and renderers, and the types they share." },
-  { name: "transduce", tier: "streaming", version: "0.2.4", npm: true, go: true,
+  { name: "transduce", tier: "streaming", version: "0.2.5", npm: true, go: true,
     blurb: "Streaming transducers over any tabnas parser: source events, selectors, bounded captures and tables." },
-  { name: "render", tier: "streaming", version: "0.2.3", npm: true, go: true,
+  { name: "render", tier: "streaming", version: "0.2.4", npm: true, go: true,
     blurb: "Incremental CSV from streamed tables and JSON from streamed events: the renderers alchemy runs." },
 
   // Command line. lsp sits here rather than under agent tooling: what it
   // ships is two commands, the server an editor launches and the generator.
   { name: "jsonic-cli", tier: "cli", version: "0.5.14", npm: true, go: true,
     blurb: "Command-line interface for @tabnas/jsonic." },
-  { name: "alchemy-cli", tier: "cli", version: "0.1.5", npm: true, go: true,
+  { name: "alchemy-cli", tier: "cli", version: "0.1.6", npm: true, go: true,
     blurb: "The alchemy command: check, explain and run alchemy programs over JSON documents." },
   { name: "lsp", tier: "cli", version: "0.1.7", npm: true, go: true,
     blurb: "One language server for every tabnas grammar, and a generator for single-language servers and their editor plugins." },
