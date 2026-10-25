@@ -298,8 +298,8 @@ export const PACKAGES: Package[] = [
   // ships is two commands, the server an editor launches and the generator.
   { name: "jsonic-cli", tier: "cli", version: "0.5.14", npm: true, go: true,
     blurb: "Command-line interface for @tabnas/jsonic." },
-  { name: "alchemy-cli", tier: "cli", version: "0.1.6", npm: true, go: true,
-    blurb: "The alchemy command: check, explain and run alchemy programs over JSON documents." },
+  { name: "dmog", tier: "cli", version: "0.2.0", npm: true, go: true,
+    blurb: "The dmog command (data mogrify): translate a document between the tabnas formats, and check, explain and run alchemy programs over one." },
   { name: "lsp", tier: "cli", version: "0.1.7", npm: true, go: true,
     blurb: "One language server for every tabnas grammar, and a generator for single-language servers and their editor plugins." },
 ];
