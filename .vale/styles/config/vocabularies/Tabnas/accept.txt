@@ -25,9 +25,11 @@
 [Aa]ontu
 [Bb]ooleans
 [Cc]losedness
+dmog
 [Ee]num
 [Ee]nv
 [Hh]ermeticity
+mogrify
 [Oo]nboarding
 [Rr]eachability
 [Rr]eparseable
